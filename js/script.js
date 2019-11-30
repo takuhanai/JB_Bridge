@@ -97,7 +97,10 @@ window.onload = function(){
 
   const obNames = [
 		'view01',
+		'view02',
 		'view03',
+		'view04',
+		'view05',
 		'2P_caisson_GL',
 		'2P_tower_GL',
 		'3P_caisson_GL',
@@ -141,8 +144,11 @@ window.onload = function(){
 					 ];
 
 	const obCamera = [
-				'view01'
-//				'view03'
+				'view01',
+				'view02',
+				'view03',
+				'view04',
+				'view05'
 				];
 
 	const obLoading = [];
@@ -1192,10 +1198,30 @@ window.onload = function(){
 	}
 
 	function keyUp(e) {
+		console.log(e.keyCode);
 		if (e.keyCode === 87 && opening_count >= OPENING_LENGTH) {//w key
 			drawMode += 1;
 			drawMode %= numDrawMode;
 			drawUpdate();
+		}
+		switch (e.keyCode) {
+			case 49: //1 key
+				camMode = 0;
+				break;
+			case 50: //2 key
+				camMode = 1;
+				break;
+			case 51: //3 key
+				camMode = 2;
+				break;
+			case 52: //4 key
+				camMode = 3;
+				break;
+			case 53: //5 key
+				camMode = 4;
+				break;
+			default:
+				return;
 		}
 	}
 
