@@ -141,8 +141,8 @@ window.onload = function(){
 					 ];
 
 	const obCamera = [
-//				'view01'
-				'view03'
+				'view01'
+//				'view03'
 				];
 
 	const obLoading = [];
