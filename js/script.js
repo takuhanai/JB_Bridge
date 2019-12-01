@@ -46,45 +46,45 @@ window.onload = function(){
 	}
 	console.log(browser);
 
-    // canvasエレメントを取得
-    let c = document.getElementById('canvas');
-    //c.width = 900;
-    //c.height = 540;
+  // canvasエレメントを取得
+  let c = document.getElementById('canvas');
+  //c.width = 900;
+  //c.height = 540;
 
 	let camMode = 0;
     // webglコンテキストを取得
 	let gl = c.getContext('webgl');
 
-    // 頂点シェーダとフラグメントシェーダの生成
-    let v_shader = create_shader('vs');
-    let f_shader = create_shader('fs');
-    let prg = create_program(v_shader, f_shader);
-    let attLocation = new Array();
-    attLocation[0] = gl.getAttribLocation(prg, 'position');
-    attLocation[1] = gl.getAttribLocation(prg, 'textureCoord');
-    let attStride = new Array();
-    attStride[0] = 3;
-    attStride[1] = 2;
-    let uniLocation = new Array();
-    uniLocation[0] = gl.getUniformLocation(prg, 'color');
-    uniLocation[1] = gl.getUniformLocation(prg, 'mvpMatrix');
-    uniLocation[2] = gl.getUniformLocation(prg, 'invMatrix');
-    uniLocation[3] = gl.getUniformLocation(prg, 'texture');
-    uniLocation[4] = gl.getUniformLocation(prg, 'alpha');
-    uniLocation[5] = gl.getUniformLocation(prg, 'tex_shift');
-    uniLocation[6] = gl.getUniformLocation(prg, 'texMatrix');
-    uniLocation[7] = gl.getUniformLocation(prg, 'textureShade');
-    uniLocation[8] = gl.getUniformLocation(prg, 'mMatrix');
+  // 頂点シェーダとフラグメントシェーダの生成
+  let v_shader = create_shader('vs');
+  let f_shader = create_shader('fs');
+  let prg = create_program(v_shader, f_shader);
+  let attLocation = new Array();
+  attLocation[0] = gl.getAttribLocation(prg, 'position');
+  attLocation[1] = gl.getAttribLocation(prg, 'textureCoord');
+  let attStride = new Array();
+  attStride[0] = 3;
+  attStride[1] = 2;
+  let uniLocation = new Array();
+  uniLocation[0] = gl.getUniformLocation(prg, 'color');
+  uniLocation[1] = gl.getUniformLocation(prg, 'mvpMatrix');
+  uniLocation[2] = gl.getUniformLocation(prg, 'invMatrix');
+  uniLocation[3] = gl.getUniformLocation(prg, 'texture');
+  uniLocation[4] = gl.getUniformLocation(prg, 'alpha');
+  uniLocation[5] = gl.getUniformLocation(prg, 'tex_shift');
+  uniLocation[6] = gl.getUniformLocation(prg, 'texMatrix');
+  uniLocation[7] = gl.getUniformLocation(prg, 'textureShade');
+  uniLocation[8] = gl.getUniformLocation(prg, 'mMatrix');
 
-    gl.useProgram(prg);
+  gl.useProgram(prg);
 
 	// 各種行列の生成と初期化
-    let m = new matIV();
-    let vMatrix = m.identity(m.create());
+  let m = new matIV();
+  let vMatrix = m.identity(m.create());
 	let pMatrix = m.identity(m.create());
-    let p1Matrix = m.identity(m.create());
+  let p1Matrix = m.identity(m.create());
 	let vpoMatrix = m.identity(m.create());//For HUD
-    let vpMatrix = m.identity(m.create());
+  let vpMatrix = m.identity(m.create());
 	let mvpMatrix = m.identity(m.create());
 	let invMatrix = m.identity(m.create());
 	let tMatrix = m.identity(m.create());
@@ -96,6 +96,8 @@ window.onload = function(){
 	m.translate(vpoMatrix, [0, 0, -20], vpoMatrix);
 
   const obNames = [
+		'camera_whole',
+		'camera_whole_origin',
 		'view01',
 		'view02',
 		'view03',
@@ -125,25 +127,10 @@ window.onload = function(){
 
 		'sea_surface_GL',
 		'terrain_GL'
-	/*
-					 'camera_origin',
-					 'camera',
-
-					 'geo',
-					 '1P',
-					 '2P',
-					 '3P',
-					 '4P',
-					 '5P',
-					 '6P',
-					 'PC_girder',
-					 'steel_girder',
-					 'rail',
-					 'cable'
-*/
 					 ];
 
 	const obCamera = [
+				'camera_whole',
 				'view01',
 				'view02',
 				'view03',
@@ -396,14 +383,16 @@ window.onload = function(){
 	}
 
 	function cameraInteractionUpdate(dX, dY) {
-		m.rotate(objects['camera_origin'].mMatrix0, -0.005 * dX, [0, 0, 1], objects['camera_origin'].mMatrix0);
+		if (camMode == 0) {
+			m.rotate(objects['camera_whole_origin'].mMatrix0, -0.005 * dX, [0, 0, 1], objects['camera_whole_origin'].mMatrix0);
 
-		let deltaRotY = -0.005 * dY;
-		if (cameraVertAngle + deltaRotY < cameraVertAngleMax && cameraVertAngle + deltaRotY > cameraVertAngleMin) {
-			let rMatrix = m.identity(m.create());
-			m.rotate(rMatrix, deltaRotY, [1, 0, 0], rMatrix);
-			m.multiply(rMatrix, objects['camera'].mMatrix0, objects['camera'].mMatrix0);
-			cameraVertAngle += deltaRotY;
+			let deltaRotY = -0.005 * dY;
+			if (cameraVertAngle + deltaRotY < cameraVertAngleMax && cameraVertAngle + deltaRotY > cameraVertAngleMin) {
+				let rMatrix = m.identity(m.create());
+				m.rotate(rMatrix, deltaRotY, [1, 0, 0], rMatrix);
+				m.multiply(rMatrix, objects['camera_whole'].mMatrix0, objects['camera_whole'].mMatrix0);
+				cameraVertAngle += deltaRotY;
+			}
 		}
 	}
 
@@ -463,18 +452,18 @@ window.onload = function(){
 
     // action update
     function actionUpdate(){
-        // 全てのリソースを処理する
-        for (var i = 0 in objects) {
+      // 全てのリソースを処理する
+      for (var i = 0 in objects) {
 			// アクションの更新
-            if (objects[i].hasOwnProperty('objectAction') && objects[i].objectAction.play != 0) {
-                objects[i].mMatrix0 = evaluateAction(actions[objects[i].objectAction.name], objects[i].objectAction.animation_count, objects[i].location, objects[i].rotation, objects[i].scale, objects[i].rotation_mode);
+        if (objects[i].hasOwnProperty('objectAction') && objects[i].objectAction.play != 0) {
+            objects[i].mMatrix0 = evaluateAction(actions[objects[i].objectAction.name], objects[i].objectAction.animation_count, objects[i].location, objects[i].rotation, objects[i].scale, objects[i].rotation_mode);
 
-				actionIncrement(objects[i].objectAction, actions[objects[i].objectAction.name]);
-            }
+						actionIncrement(objects[i].objectAction, actions[objects[i].objectAction.name]);
+					}
 
-			if (objects[i].hasOwnProperty('materialAction') && objects[i].materialAction.play != 0) {
-				objects[i].alpha = evaluateMaterialAction(actions[i].materialAction, actions[i].materialAction.animation_count).alpha;
-			}
+				if (objects[i].hasOwnProperty('materialAction') && objects[i].materialAction.play != 0) {
+					objects[i].alpha = evaluateMaterialAction(actions[i].materialAction, actions[i].materialAction.animation_count).alpha;
+				}
 			// 特例のあるオブジェクト（drone_body or parent=none）
             var mMatrixLocal = m.identity(m.create());
             if (i == 'mambo_body') {
@@ -1205,20 +1194,23 @@ window.onload = function(){
 			drawUpdate();
 		}
 		switch (e.keyCode) {
-			case 49: //1 key
-				camMode = 0;
+			case 48:
+				camMode = 0; //0 key
 				break;
-			case 50: //2 key
+			case 49: //1 key
 				camMode = 1;
 				break;
-			case 51: //3 key
+			case 50: //2 key
 				camMode = 2;
 				break;
-			case 52: //4 key
+			case 51: //3 key
 				camMode = 3;
 				break;
-			case 53: //5 key
+			case 52: //4 key
 				camMode = 4;
+				break;
+			case 53: //5 key
+				camMode = 5;
 				break;
 			default:
 				return;
