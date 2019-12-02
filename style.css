@@ -37,6 +37,11 @@ body {margin:0;
 	width: 100%;
 	height: auto;
 }
+.text {
+	width: 100%;
+	height: auto;
+	pointer-events: none;
+}
 
 /* お知らせ */
 .news {
@@ -107,7 +112,10 @@ body {
 	grid-column-start: main;
 	grid-row-start: img
 }
-
+.text {
+	grid-column-start: main;
+	grid-row-start: img
+}
 .news {
 	grid-column-start: main;
 	grid-row-start: news

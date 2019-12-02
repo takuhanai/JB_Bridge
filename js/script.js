@@ -47,7 +47,7 @@ window.onload = function(){
 	console.log(browser);
 
   // canvasエレメントを取得
-  let c = document.getElementById('canvas');
+  let c = document.getElementById('canvas1');
   //c.width = 900;
   //c.height = 540;
 
@@ -232,6 +232,15 @@ window.onload = function(){
 	}
 
 	render();
+
+	let canvas2 = document.getElementById('canvas2');
+	let ctx = canvas2.getContext('2d');  // CanvasRenderingContext2D
+
+	ctx.font = '20pt Arial';
+
+	ctx.fillText('Oshima Bridge', 360, 260);
+
+//	ctx.fillText('Taku Hanai', 20, 50);
 
     function render(){
 		//gl.clearColor(0.6, 0.8, 1.0, 1.0);
