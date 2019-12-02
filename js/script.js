@@ -15,6 +15,7 @@ window.onload = function(){
 	let eText = document.getElementById('text');
 
 	let mousePressed = false;
+	let shiftKeyPressed = false;
 	let prevMouseLocation;
 	let currentMouseLocation;
 	let wheelDelta = 0.00005;
@@ -217,6 +218,7 @@ window.onload = function(){
 	}
 	//objects['camera_origin'].objectAction.play = 2;
 
+	window.addEventListener('keydown', keyDown, false);
 	window.addEventListener('keyup', keyUp, false);
 
 	let supportTouch = 'ontouchend' in document;
@@ -393,14 +395,19 @@ window.onload = function(){
 
 	function cameraInteractionUpdate(dX, dY) {
 		if (camMode == 0) {
-			m.rotate(objects['camera_whole_origin'].mMatrix0, -0.005 * dX, [0, 0, 1], objects['camera_whole_origin'].mMatrix0);
+			if (shiftKeyPressed) {
+				m.translate(objects['camera_whole_origin'].mMatrix0, [-1.0 * dX, 0, 1.0 * dY], objects['camera_whole_origin'].mMatrix0);
+				console.log(objects['camera_whole_origin'].mMatrix0)
+			} else {
+				m.rotate(objects['camera_whole_origin'].mMatrix0, -0.005 * dX, [0, 0, 1], objects['camera_whole_origin'].mMatrix0);
 
-			let deltaRotY = -0.005 * dY;
-			if (cameraVertAngle + deltaRotY < cameraVertAngleMax && cameraVertAngle + deltaRotY > cameraVertAngleMin) {
-				let rMatrix = m.identity(m.create());
-				m.rotate(rMatrix, deltaRotY, [1, 0, 0], rMatrix);
-				m.multiply(rMatrix, objects['camera_whole'].mMatrix0, objects['camera_whole'].mMatrix0);
-				cameraVertAngle += deltaRotY;
+				let deltaRotY = -0.005 * dY;
+				if (cameraVertAngle + deltaRotY < cameraVertAngleMax && cameraVertAngle + deltaRotY > cameraVertAngleMin) {
+					let rMatrix = m.identity(m.create());
+					m.rotate(rMatrix, deltaRotY, [1, 0, 0], rMatrix);
+					m.multiply(rMatrix, objects['camera_whole'].mMatrix0, objects['camera_whole'].mMatrix0);
+					cameraVertAngle += deltaRotY;
+				}
 			}
 		}
 	}
@@ -1195,6 +1202,16 @@ window.onload = function(){
 		}
 	}
 
+	function keyDown(e) {
+		switch (e.keyCode) {
+			case 16: //shift key
+				shiftKeyPressed = true;
+				break;
+			default:
+				return;
+		}
+	}
+
 	function keyUp(e) {
 		console.log(e.keyCode);
 		if (e.keyCode === 87 && opening_count >= OPENING_LENGTH) {//w key
@@ -1203,8 +1220,11 @@ window.onload = function(){
 			drawUpdate();
 		}
 		switch (e.keyCode) {
-			case 48:
-				camMode = 0; //0 key
+			case 16: //shift key
+				shiftKeyPressed = false;
+				break;
+			case 48: //0 key
+				camMode = 0;
 				break;
 			case 49: //1 key
 				camMode = 1;
