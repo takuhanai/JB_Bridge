@@ -1211,7 +1211,7 @@ window.onload = function(){
 					//drawUpdate();
 				}
 			}
-			if (prevTouchLocations.lengt === 3) {
+			if (prevTouchLocations.length === 3) {
 				shiftKeyPressed = true;
 			}
 			e.preventDefault();
@@ -1230,7 +1230,7 @@ window.onload = function(){
 	function touchEnd(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			touched = false;
-			if (prevTouchLocations.lengt === 3) {
+			if (prevTouchLocations.length === 3) {
 				shiftKeyPressed = false;
 			}
 			e.preventDefault();
