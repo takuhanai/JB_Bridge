@@ -389,6 +389,17 @@ window.onload = function(){
 					objects[obCamera[camMode]].angle_y = ay;
 				}
 				prevTouchLocations = currentTouchLocations;
+			} else if (currentTouchLocations.length === 3) {//pan
+				let ct0 = currentTouchLocations[0];
+				let ct1 = currentTouchLocations[1];
+				let ct2 = currentTouchLocations[2];
+				let pt0 = prevTouchLocations[0];
+				let pt1 = prevTouchLocations[1];
+				let pt2 = prevTouchLocations[2];
+				let deltaX = (ct0.x + ct1.x + ct2.x - pt0.x - pt1.x - pt2.x) / 3.0;
+				let deltaY = (ct0.y + ct1.y + ct2.y - pt0.y - pt1.y - pt2.y) / 3.0;
+				ameraInteractionUpdate(deltaX, deltaY);
+				prevTouchLocations = currentTouchLocations;
 			}
 		}
 	}
@@ -398,10 +409,28 @@ window.onload = function(){
 			if (shiftKeyPressed) {
 				m.translate(objects['camera_whole_origin'].mMatrix0, [-1.0 * dX, 0, 1.0 * dY], objects['camera_whole_origin'].mMatrix0);
 				console.log(objects['camera_whole_origin'].mMatrix0)
+				if (objects['camera_whole_origin'].mMatrix0[12] > 420.0) {
+					objects['camera_whole_origin'].mMatrix0[12] = 420.0;
+				}
+				if (objects['camera_whole_origin'].mMatrix0[12] < -420.0) {
+					objects['camera_whole_origin'].mMatrix0[12] = -420.0;
+				}
+				if (objects['camera_whole_origin'].mMatrix0[13] > 420.0) {
+					objects['camera_whole_origin'].mMatrix0[13] = 420.0;
+				}
+				if (objects['camera_whole_origin'].mMatrix0[13] < -420.0) {
+					objects['camera_whole_origin'].mMatrix0[13] = -420.0;
+				}
+				if (objects['camera_whole_origin'].mMatrix0[14] > 150.0) {
+					objects['camera_whole_origin'].mMatrix0[14] = 150.0;
+				}
+				if (objects['camera_whole_origin'].mMatrix0[14] < 0.0) {
+					objects['camera_whole_origin'].mMatrix0[14] = 0.0;
+				}
 			} else {
-				m.rotate(objects['camera_whole_origin'].mMatrix0, -0.005 * dX, [0, 0, 1], objects['camera_whole_origin'].mMatrix0);
+				m.rotate(objects['camera_whole_origin'].mMatrix0, -0.003 * dX, [0, 0, 1], objects['camera_whole_origin'].mMatrix0);
 
-				let deltaRotY = -0.005 * dY;
+				let deltaRotY = -0.003 * dY;
 				if (cameraVertAngle + deltaRotY < cameraVertAngleMax && cameraVertAngle + deltaRotY > cameraVertAngleMin) {
 					let rMatrix = m.identity(m.create());
 					m.rotate(rMatrix, deltaRotY, [1, 0, 0], rMatrix);
@@ -1182,6 +1211,9 @@ window.onload = function(){
 					//drawUpdate();
 				}
 			}
+			if (prevTouchLocations.lengt === 3) {
+				shiftKeyPressed = true;
+			}
 			e.preventDefault();
 		}
 	}
@@ -1198,6 +1230,9 @@ window.onload = function(){
 	function touchEnd(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			touched = false;
+			if (prevTouchLocations.lengt === 3) {
+				shiftKeyPressed = false;
+			}
 			e.preventDefault();
 		}
 	}
