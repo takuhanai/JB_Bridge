@@ -398,7 +398,7 @@ window.onload = function(){
 				let pt2 = prevTouchLocations[2];
 				let deltaX = (ct0.x + ct1.x + ct2.x - pt0.x - pt1.x - pt2.x) / 3.0;
 				let deltaY = (ct0.y + ct1.y + ct2.y - pt0.y - pt1.y - pt2.y) / 3.0;
-				ameraInteractionUpdate(deltaX, deltaY);
+				cameraInteractionUpdate(deltaX, deltaY);
 				prevTouchLocations = currentTouchLocations;
 			}
 		}
