@@ -14,6 +14,8 @@ window.onload = function(){
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
 
+	let drawMap = false;
+
 	let mousePressed = false;
 	let shiftKeyPressed = false;
 	let prevMouseLocation;
@@ -76,6 +78,8 @@ window.onload = function(){
   uniLocation[6] = gl.getUniformLocation(prg, 'texMatrix');
   uniLocation[7] = gl.getUniformLocation(prg, 'textureShade');
   uniLocation[8] = gl.getUniformLocation(prg, 'mMatrix');
+	uniLocation[9] = gl.getUniformLocation(prg, 'texture2');
+	uniLocation[10] = gl.getUniformLocation(prg, 'drawMap');
 
   gl.useProgram(prg);
 
@@ -574,8 +578,10 @@ window.onload = function(){
     // objects rendering
     function objectRender(){
 		// uniform変数にテクスチャを登録
-        gl.uniform1i(uniLocation[3], 0);
+        gl.uniform1i(uniLocation[3], 0); //texture
         gl.uniform1i(uniLocation[7], 6);
+				gl.uniform1i(uniLocation[9], 1); //texture2
+				gl.uniform1i(uniLocation[10], drawMap);
         for (var i = 0 in objects) {
             if (
                 objects[i].type === 0 &&
@@ -584,12 +590,26 @@ window.onload = function(){
                 obLoading.indexOf(i) === -1
             ) {
 				set_attribute(objects[i].VBOList, attLocation, attStride);
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[i].iIndex);
+								gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[i].iIndex);
 
+								gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[i]);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+
+								gl.activeTexture(gl.TEXTURE1);
+								if (i === '2P_tower_GL') {
+									gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[i + '_map']);
+	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+								} else {
+									gl.bindTexture(gl.TEXTURE_2D, objects[i].texture['transparent']);
+	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+								}
                 //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
                 //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
 
@@ -807,18 +827,31 @@ window.onload = function(){
 
 	function create_texture(source, i_source){
 		var img = new Image();
+		img.src = './resource/textures/' + i_source + '.png';
 		img.onload = function(){
+			/*
 			var tex = gl.createTexture();
 			gl.bindTexture(gl.TEXTURE_2D, tex);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
 			gl.generateMipmap(gl.TEXTURE_2D);
 			gl.bindTexture(gl.TEXTURE_2D, null);
 			objects[source].texture[i_source] = tex;
+			*/
+			objects[source].texture[i_source] = create_texture_gl(img);
 			numDataReady += 1;
 			allDataReady = checkAllDataReady();
 		};
-		img.src = './resource/textures/' + i_source + '.png';
+		//img.src = './resource/textures/' + i_source + '.png';
 		console.log(i_source);
+	}
+
+	function create_texture_gl(img) {
+		var tex = gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, tex);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+		gl.generateMipmap(gl.TEXTURE_2D);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		return tex;
 	}
 
 	function readObjectData(filePath) { //csvﾌｧｲﾙﾉ相対ﾊﾟｽor絶対ﾊﾟｽ
@@ -898,6 +931,11 @@ window.onload = function(){
 				ob.iIndex        = create_ibo(ind);
 
 				create_texture(filePath, filePath);
+				if (filePath === '2P_tower_GL') {
+					create_texture(filePath, filePath + '_map');
+				} else {
+					create_texture(filePath, 'transparent')
+				}
 			} else if (ob.type == 8) {//object type 'CAMERA'
 				console.log(filePath);
 				var _pMatrix = m.identity(m.create());
@@ -1276,6 +1314,8 @@ window.onload = function(){
 			case 53: //5 key
 				camMode = 5;
 				break;
+			case 77: //m key
+				drawMap = !drawMap;
 			default:
 				return;
 		}
