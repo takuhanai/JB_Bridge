@@ -1307,6 +1307,7 @@ window.onload = function(){
 		if (opening_count >= OPENING_LENGTH) {
 			touched = false;
 			currentTouchLocations = getTouchLocations(e);
+			eText.textContent = currentTouchLocations[0].x
 			checkButtons(currentTouchLocations[0]);
 			if (currentTouchLocations.length === 3) {
 				shiftKeyPressed = false;
