@@ -135,6 +135,7 @@ window.onload = function(){
 		'terrain_GL',
 
 		//'UI_back',
+		'UI_revert_button',
 		'UI_map_button'
 					 ];
 
@@ -152,6 +153,7 @@ window.onload = function(){
 	const obResp = [];
 	const obHUD = [
 		//'UI_back',
+		'UI_revert_button',
 		'UI_map_button'
 	];
 	let objects = new Array();
@@ -968,6 +970,7 @@ window.onload = function(){
 				switch (ob.camera_type) {// 0: PERSP, 1: ORTHO
 					case 0: //PERSP
 						ob.angle_y = dv.getFloat32(off, true);
+						ob.angle_y0 = ob.angle_y; //initial value. Do not change!
 						m.perspective(ob.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, ob.clip_start, ob.clip_end, _pMatrix);
 						break;
 					case 1: //ORTHO
@@ -1231,6 +1234,13 @@ window.onload = function(){
 	function checkButtons(_location) {
 		if (buttonPressed('UI_map_button', _location)) {
 			drawMap = !drawMap;
+		}
+		if (buttonPressed('UI_revert_button', _location)) {
+			let obc = objects['camera_whole'];
+			let obco = objects['camera_whole_origin'];
+			obc.angle_y = obc.angle_y0;
+			obc.mMatrix0 = transformationMatrix(obc.location, obc.rotation, obc.scale, obc.rotation_mode);
+			obco.mMatrix0 = transformationMatrix(obco.location, obco.rotation, obco.scale, obco.rotation_mode);
 		}
 	}
 
