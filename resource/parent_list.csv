@@ -30,4 +30,5 @@ sea_surface_GL,none
 terrain_GL,none
 UI_back,none
 UI_revert_button,none
+UI_terrain_button,none
 UI_map_button,none

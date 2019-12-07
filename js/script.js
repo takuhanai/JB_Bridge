@@ -136,6 +136,7 @@ window.onload = function(){
 
 		//'UI_back',
 		'UI_revert_button',
+		'UI_terrain_button',
 		'UI_map_button'
 					 ];
 
@@ -154,6 +155,7 @@ window.onload = function(){
 	const obHUD = [
 		//'UI_back',
 		'UI_revert_button',
+		'UI_terrain_button',
 		'UI_map_button'
 	];
 	let objects = new Array();
@@ -1241,6 +1243,10 @@ window.onload = function(){
 			obc.angle_y = obc.angle_y0;
 			obc.mMatrix0 = transformationMatrix(obc.location, obc.rotation, obc.scale, obc.rotation_mode);
 			obco.mMatrix0 = transformationMatrix(obco.location, obco.rotation, obco.scale, obco.rotation_mode);
+		}
+		if (buttonPressed('UI_terrain_button', _location)) {
+			objects['sea_surface_GL'].draw = !objects['sea_surface_GL'].draw;
+			objects['terrain_GL'].draw = !objects['terrain_GL'].draw;
 		}
 	}
 
