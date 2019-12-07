@@ -1310,7 +1310,7 @@ window.onload = function(){
 			if (currentTouchLocations.length === 3) {
 				shiftKeyPressed = false;
 			}
-			checkButtons(currentTouchLocations);
+			checkButtons(currentTouchLocations[0]);
 			e.preventDefault();
 		}
 	}
