@@ -97,7 +97,8 @@ window.onload = function(){
 
 	let q = new qtnIV();
 
-	m.ortho(0.0, 0.02 * c.width, 0.02 * c.height, 0.0, 0.1, 300, vpoMatrix);
+	//m.ortho(0.0, 0.02 * c.width, 0.02 * c.height, 0.0, 0.1, 300, vpoMatrix);
+	m.ortho(0.0, c.width, c.height, 0.0, 0.1, 300, vpoMatrix);
 	m.translate(vpoMatrix, [0, 0, -20], vpoMatrix);
 
   const obNames = [
@@ -131,22 +132,28 @@ window.onload = function(){
 		'suspender_GL',
 
 		'sea_surface_GL',
-		'terrain_GL'
+		'terrain_GL',
+
+		//'UI_back',
+		'UI_map_button'
 					 ];
 
 	const obCamera = [
-				'camera_whole',
-				'view01',
-				'view02',
-				'view03',
-				'view04',
-				'view05'
+		'camera_whole',
+		'view01',
+		'view02',
+		'view03',
+		'view04',
+		'view05'
 				];
 
 	const obLoading = [];
 
 	const obResp = [];
-	const obHUD = [];
+	const obHUD = [
+		//'UI_back',
+		'UI_map_button'
+	];
 	let objects = new Array();
 	let Object = function (name) {
 		this.name = name;
@@ -285,7 +292,8 @@ window.onload = function(){
 			gl.enable(gl.DEPTH_TEST);
 			gl.enable(gl.CULL_FACE);
 			gl.enable(gl.BLEND);
-			gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+			//gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+			gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
 
 			cameraUpdate();
 
@@ -581,8 +589,8 @@ window.onload = function(){
         gl.uniform1i(uniLocation[3], 0); //texture
         gl.uniform1i(uniLocation[7], 6);
 				gl.uniform1i(uniLocation[9], 1); //texture2
-				gl.uniform1i(uniLocation[10], drawMap);
-        for (var i = 0 in objects) {
+
+				for (var i = 0 in objects) {
             if (
                 objects[i].type === 0 &&
                 objects[i].draw === true &&
@@ -598,20 +606,16 @@ window.onload = function(){
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 
-								gl.activeTexture(gl.TEXTURE1);
-								if (i === '2P_tower_GL') {
+								if (drawMap && i === '2P_tower_GL') {
+									gl.uniform1i(uniLocation[10], drawMap);
+									gl.activeTexture(gl.TEXTURE1);
 									gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[i + '_map']);
 	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 								} else {
-									gl.bindTexture(gl.TEXTURE_2D, objects[i].texture['transparent']);
-	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+									gl.uniform1i(uniLocation[10], false);
 								}
-                //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
-                //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
 
                 gl.uniform1f(uniLocation[4], objects[i].alpha);
                 gl.uniform2fv(uniLocation[5], objects[i].texture_shift);
@@ -638,17 +642,26 @@ window.onload = function(){
 				//console.log(i, obHUD[i]);
 				set_attribute(objects[obHUD[i]].VBOList, attLocation, attStride);
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[obHUD[i]].iIndex);
+				gl.uniform1i(uniLocation[10], false);
+				gl.activeTexture(gl.TEXTURE0);
+				gl.bindTexture(gl.TEXTURE_2D, objects[obHUD[i]].texture[obHUD[i]]);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 
+				/*
 				if (objects[obHUD[i]].down) {
 					gl.bindTexture(gl.TEXTURE_2D, objects[obHUD[i]].texture[obHUD[i] + '_down']);
 				} else {
 					gl.bindTexture(gl.TEXTURE_2D, objects[obHUD[i]].texture[obHUD[i]]);
 				}
+
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
 				//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+				*/
 
 				// uniform変数にテクスチャを登録
 				//gl.uniform1f(uniLocation[7], 1.0);
@@ -660,6 +673,7 @@ window.onload = function(){
 				gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
 				//gl.uniform1f(uniLocation[4], 1.0);
 				gl.uniform1f(uniLocation[4], objects[obHUD[i]].alpha);
+				//gl.uniform1f(uniLocation[4], 0.5);
 
 				gl.drawElements(gl.TRIANGLES, objects[obHUD[i]].numLoop, gl.UNSIGNED_SHORT, 0);
 			}
@@ -869,6 +883,7 @@ window.onload = function(){
 			var location = [];
 			var rotation = [];
 			var scale = [];
+			var dimensions = [];
 			var off = 0;
 			var ob = objects[filePath];
 
@@ -899,6 +914,13 @@ window.onload = function(){
 				off += 4;
 			}
 			ob.scale = scale;
+
+			for (var i = 0; i < 3; i++) {
+				dimensions.push(dv.getFloat32(off, true));
+				off += 4;
+			}
+			ob.dimensions = dimensions;
+
 			ob.mMatrix0 = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Local coordinate
 			ob.mMatrix = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Global coordinate
 
@@ -933,8 +955,6 @@ window.onload = function(){
 				create_texture(filePath, filePath);
 				if (filePath === '2P_tower_GL') {
 					create_texture(filePath, filePath + '_map');
-				} else {
-					create_texture(filePath, 'transparent')
 				}
 			} else if (ob.type == 8) {//object type 'CAMERA'
 				console.log(filePath);
@@ -1198,6 +1218,22 @@ window.onload = function(){
 	function HUDUpdate(){
 	}
 
+	function buttonPressed(_button, _location) {
+		let loc = objects[_button].location;
+		let dim = objects[_button].dimensions;
+		if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	function checkButtons(_location) {
+		if (buttonPressed('UI_map_button', _location)) {
+			drawMap = !drawMap;
+		}
+	}
+
 	function mouseDown(e) {
 		if (opening_count >= OPENING_LENGTH ) {
 			mousePressed = true;
@@ -1221,6 +1257,8 @@ window.onload = function(){
 	function mouseUp(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			mousePressed = false;
+			currentMouseLocation = getMouseLocation(e);
+			checkButtons(currentMouseLocation);
 		}
 	}
 
@@ -1268,9 +1306,11 @@ window.onload = function(){
 	function touchEnd(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			touched = false;
-			if (prevTouchLocations.length === 3) {
+			currentTouchLocations = getTouchLocations(e);
+			if (currentTouchLocations.length === 3) {
 				shiftKeyPressed = false;
 			}
+			checkButtons(currentTouchLocations);
 			e.preventDefault();
 		}
 	}
