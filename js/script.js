@@ -298,6 +298,7 @@ window.onload = function(){
 			gl.enable(gl.BLEND);
 			//gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+			//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 			cameraUpdate();
 
@@ -1234,19 +1235,22 @@ window.onload = function(){
 	}
 
 	function checkButtons(_location) {
-		if (buttonPressed('UI_map_button', _location)) {
-			drawMap = !drawMap;
-		}
 		if (buttonPressed('UI_revert_button', _location)) {
 			let obc = objects['camera_whole'];
 			let obco = objects['camera_whole_origin'];
 			obc.angle_y = obc.angle_y0;
 			obc.mMatrix0 = transformationMatrix(obc.location, obc.rotation, obc.scale, obc.rotation_mode);
 			obco.mMatrix0 = transformationMatrix(obco.location, obco.rotation, obco.scale, obco.rotation_mode);
+			objects['sea_surface_GL'].draw = true;
+			objects['terrain_GL'].draw = true;
+			drawMap = false;
 		}
 		if (buttonPressed('UI_terrain_button', _location)) {
 			objects['sea_surface_GL'].draw = !objects['sea_surface_GL'].draw;
 			objects['terrain_GL'].draw = !objects['terrain_GL'].draw;
+		}
+		if (buttonPressed('UI_map_button', _location)) {
+			drawMap = !drawMap;
 		}
 	}
 

@@ -51,6 +51,7 @@
               gl_FragColor = vec4(smpColor2.rgb * smpColor2.a + smpColor.rgb * (1.0 - smpColor2.a), alpha);
             } else {
               //gl_FragColor = vec4(smpColor.rgb, alpha);
+              //gl_FragColor = vec4(smpColor.rgb * smpColor.a, smpColor.a);
               gl_FragColor = vec4(smpColor);
             }
             /*
