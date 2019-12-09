@@ -29,8 +29,10 @@ window.onload = function(){
 	let opening_count = 0;
 
 	let cameraVertAngle = 0.0;
-	const cameraVertAngleMax = 12.0 * Math.PI / 180.0;
-	const cameraVertAngleMin = -78.0 * Math.PI / 180.0;
+	//const cameraVertAngleMax = 12.0 * Math.PI / 180.0;
+	//const cameraVertAngleMin = -78.0 * Math.PI / 180.0;
+	const cameraVertAngleMax = 10.0 * Math.PI / 180.0;
+	const cameraVertAngleMin = -80.0 * Math.PI / 180.0;
 	const cameraViewAngleMax = 1.2;
 	const cameraViewAngleMin = 0.1;
 
@@ -151,7 +153,12 @@ window.onload = function(){
 
 	const obLoading = [];
 
-	const obResp = [];
+	const obResp = [
+		'2P_caisson_GL',
+		'2P_tower_GL',
+		'3P_caisson_GL',
+		'3P_tower_GL'
+	];
 	const obHUD = [
 		//'UI_back',
 		'UI_revert_button',
@@ -1221,6 +1228,55 @@ window.onload = function(){
 
 	}
 
+	function selection_3D(_location) {
+
+		var x = (2.0 * _location.x) / c.width -1.0;
+		var y = 1.0 - (2.0 * _location.y) /c.height;
+		var z = 1.0;
+
+		let _obCamera = objects[obCamera[camMode]];
+		var invPMatrix = m.identity(m.create());
+		//m.transpose(pMatrix, invPMatrix);
+		m.transpose(_obCamera.pMatrix, invPMatrix);
+		m.inverse(invPMatrix, invPMatrix);
+		var invVMatrix = m.identity(m.create());
+
+		m.inverse(_obCamera.mMatrix, vTempMatrix);
+		m.transpose(vTempMatrix, invVMatrix);
+		m.inverse(invVMatrix, invVMatrix);
+		var ray_eye =[0, 0, 0, 0];
+		var ray_wldt = [0, 0, 0, 0];
+		m.multiplyV(invPMatrix, [x, y, -1.0, 1.0], ray_eye);
+		m.multiplyV(invVMatrix, [ray_eye[0], ray_eye[1], -1.0, 0.0], ray_wldt);
+		var len = Math.sqrt(ray_wldt[0] * ray_wldt[0] + ray_wldt[1] * ray_wldt[1] + ray_wldt[2] * ray_wldt[2]);
+		var ray_wld = [ray_wldt[0] / len, ray_wldt[1] / len, ray_wldt[2] / len];
+
+		var testV = [0.0, 0.0, 0.0, 1.0];
+		m.multiplyV(invVMatrix, testV, testV);
+
+		var t = 1000000;
+		var sel = null;
+		for (var i = 0 in obResp) {
+			var A = [testV[0] - objects[obResp[i]].location[0], testV[1] - objects[obResp[i]].location[1], testV[2] - objects[obResp[i]].location[2]];
+			var b = ray_wld[0] * A[0] + ray_wld[1] * A[1] + ray_wld[2] * A[2];
+			var cc = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] - 10.0;
+			var det = b * b - cc;
+			console.log(-b, det);
+			if (det >= 0.0) {
+				if (- b + Math.sqrt(det) < t) {
+					t = - b + Math.sqrt(det);
+					sel = objects[obResp[i]].name;
+				}
+				if (- b - Math.sqrt(det) < t) {
+					t = - b - Math.sqrt(det);
+					sel = objects[obResp[i]].name;
+				}
+			}
+		}
+
+		return sel;
+	}
+
 	function HUDUpdate(){
 	}
 
@@ -1241,6 +1297,7 @@ window.onload = function(){
 			obc.angle_y = obc.angle_y0;
 			obc.mMatrix0 = transformationMatrix(obc.location, obc.rotation, obc.scale, obc.rotation_mode);
 			obco.mMatrix0 = transformationMatrix(obco.location, obco.rotation, obco.scale, obco.rotation_mode);
+			cameraVertAngle = 0.0;
 			objects['sea_surface_GL'].draw = true;
 			objects['terrain_GL'].draw = true;
 			drawMap = false;
@@ -1279,6 +1336,7 @@ window.onload = function(){
 			mousePressed = false;
 			currentMouseLocation = getMouseLocation(e);
 			checkButtons(currentMouseLocation);
+			eText.textContent = selection_3D(currentMouseLocation);
 		}
 	}
 
@@ -1327,7 +1385,7 @@ window.onload = function(){
 		if (opening_count >= OPENING_LENGTH) {
 			touched = false;
 			//currentTouchLocations = getTouchLocations(e);
-			eText.textContent = currentTouchLocations[0].x
+			//eText.textContent = currentTouchLocations[0].x
 			checkButtons(currentTouchLocations[0]);
 			if (currentTouchLocations.length === 3) {
 				shiftKeyPressed = false;
