@@ -157,7 +157,8 @@ window.onload = function(){
 		'2P_caisson_GL',
 		'2P_tower_GL',
 		'3P_caisson_GL',
-		'3P_tower_GL'
+		'3P_tower_GL',
+		'P3_GL'
 	];
 	const obHUD = [
 		//'UI_back',
@@ -509,14 +510,14 @@ window.onload = function(){
 
     // camera update
     function cameraUpdate(){
-		let _obCamera = objects[obCamera[camMode]];
-		switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
-			case 0: //PERSP
-				m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
-				break;
-		}
-		m.inverse(_obCamera.mMatrix, vMatrix);
-        m.multiply(_obCamera.pMatrix, vMatrix, vpMatrix);
+			let _obCamera = objects[obCamera[camMode]];
+			switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
+				case 0: //PERSP
+					m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
+					break;
+			}
+			m.inverse(_obCamera.mMatrix, vMatrix);
+	        m.multiply(_obCamera.pMatrix, vMatrix, vpMatrix);
     }
 
     // action update
@@ -1241,6 +1242,7 @@ window.onload = function(){
 		m.inverse(invPMatrix, invPMatrix);
 		var invVMatrix = m.identity(m.create());
 
+		//m.transpose(_obCamera.mMatrix, invVMatrix);
 		m.inverse(_obCamera.mMatrix, vTempMatrix);
 		m.transpose(vTempMatrix, invVMatrix);
 		m.inverse(invVMatrix, invVMatrix);
@@ -1261,7 +1263,7 @@ window.onload = function(){
 			var b = ray_wld[0] * A[0] + ray_wld[1] * A[1] + ray_wld[2] * A[2];
 			var cc = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] - 10.0;
 			var det = b * b - cc;
-			console.log(-b, det);
+			console.log(obResp[i], -b, det);
 			if (det >= 0.0) {
 				if (- b + Math.sqrt(det) < t) {
 					t = - b + Math.sqrt(det);
@@ -1273,7 +1275,7 @@ window.onload = function(){
 				}
 			}
 		}
-
+		//eText.textContent = sel;
 		return sel;
 	}
 
