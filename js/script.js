@@ -15,6 +15,7 @@ window.onload = function(){
 	let eText = document.getElementById('text');
 
 	let drawMap = false;
+	let selectedObject = null;
 
 	let mousePressed = false;
 	let shiftKeyPressed = false;
@@ -82,6 +83,7 @@ window.onload = function(){
   uniLocation[8] = gl.getUniformLocation(prg, 'mMatrix');
 	uniLocation[9] = gl.getUniformLocation(prg, 'texture2');
 	uniLocation[10] = gl.getUniformLocation(prg, 'drawMap');
+	uniLocation[11] = gl.getUniformLocation(prg, 'selected');
 
   gl.useProgram(prg);
 
@@ -140,6 +142,8 @@ window.onload = function(){
 		'UI_revert_button',
 		'UI_terrain_button',
 		'UI_map_button'
+
+		//'test'
 					 ];
 
 	const obCamera = [
@@ -158,7 +162,24 @@ window.onload = function(){
 		'2P_tower_GL',
 		'3P_caisson_GL',
 		'3P_tower_GL',
-		'P3_GL'
+		'4A_GL',
+		'4A_road_girder_GL',
+		'4A_shed_GL',
+		'7A_GL',
+		'7A_road_girder_GL',
+		'7A_shed_GL',
+		'P1_GL',
+		'P2_GL',
+		'P3_GL',
+		'P4_GL',
+		'P5_GL',
+		'P6_GL',
+		'cable_GL',
+		'girder_GL',
+		'north_side_span_GL',
+		'south_side_span_GL',
+		'suspender_GL'
+
 	];
 	const obHUD = [
 		//'UI_back',
@@ -191,11 +212,13 @@ window.onload = function(){
 
 		ob.alpha = 1.0;
 
-        ob.isHit = false;
+    ob.isHit = false;
 
-        ob.shadow = 0.0;
+    ob.shadow = 0.0;
 
-        objects[ob.name] = ob;
+		ob.depth = 1000000; // Z Depth from Camera
+
+    objects[ob.name] = ob;
 	}
 
 	for (let i in objects) {
@@ -433,7 +456,7 @@ window.onload = function(){
 		if (camMode == 0) {
 			if (shiftKeyPressed) {
 				m.translate(objects['camera_whole_origin'].mMatrix0, [-1.0 * dX, 0, 1.0 * dY], objects['camera_whole_origin'].mMatrix0);
-				console.log(objects['camera_whole_origin'].mMatrix0)
+				//console.log(objects['camera_whole_origin'].mMatrix0)
 				if (objects['camera_whole_origin'].mMatrix0[12] > 420.0) {
 					objects['camera_whole_origin'].mMatrix0[12] = 420.0;
 				}
@@ -628,6 +651,11 @@ window.onload = function(){
 	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 								} else {
 									gl.uniform1i(uniLocation[10], false);
+								}
+								if (i === selectedObject) {
+									gl.uniform1i(uniLocation[11], true);
+								} else {
+									gl.uniform1i(uniLocation[11], false);
 								}
 
                 gl.uniform1f(uniLocation[4], objects[i].alpha);
@@ -947,6 +975,23 @@ window.onload = function(){
 						off += 4;
 					}
 				}
+				if (obResp.indexOf(filePath) != -1) {
+					//console.log('response object: ' + filePath);
+					console.log(ob.mMatrix);
+					let im = m.identity(m.create());
+					m.transpose(ob.mMatrix, im);
+					tc = [];
+					for (i = 0; i < ob.numLoop * 3; i += 3) {
+						_v = coord.slice(i, i + 3).concat(1);
+						//console.log('before translation' + _v);
+						m.multiplyV(im, _v, _v);
+						//console.log('after translation' + _v);
+						tc.push(_v[0]);
+						tc.push(_v[1]);
+						tc.push(_v[2]);
+					}
+					ob.coord = tc;
+				}
 
 				for	(var i = 0; i < ob.numLoop; ++i) {
 					for (var j = 0; j < 2; ++ j) {
@@ -1229,6 +1274,18 @@ window.onload = function(){
 
 	}
 
+	function cross(a, b) {
+		return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+	}
+
+	function dot(a, b) {
+		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+	}
+
+	function vecSub(a, b) {
+		return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+	}
+
 	function selection_3D(_location) {
 
 		var x = (2.0 * _location.x) / c.width -1.0;
@@ -1253,6 +1310,45 @@ window.onload = function(){
 		var len = Math.sqrt(ray_wldt[0] * ray_wldt[0] + ray_wldt[1] * ray_wldt[1] + ray_wldt[2] * ray_wldt[2]);
 		var ray_wld = [ray_wldt[0] / len, ray_wldt[1] / len, ray_wldt[2] / len];
 
+		let sel = null;
+		//let sel = selectedObject;
+		for (var i = 0 in obResp) {
+			let _oR = objects[obResp[i]];
+			_oR.depth = 1000000;
+			//console.log(obResp[i], objects[obResp[i]].numLoop, objects[obResp[i]].coord.length);
+			for (let l = 0; l < _oR.numLoop * 3; l += 9) {
+				_p0 = _oR.coord.slice(l, l + 3);
+				_p1 = _oR.coord.slice(l + 3, l + 6);
+				_p2 = _oR.coord.slice(l + 6, l + 9);
+				_o = _obCamera.mMatrix.slice(12, 15);
+				//_o = _obCamera.location;
+				_d = ray_wld;
+				_e = vecSub(_o, _p0);
+				_e1 = vecSub(_p1, _p0);
+				_e2 = vecSub(_p2, _p0);
+				_q = cross(_d, _e2);
+				_r = cross(_e, _e1);
+				_t = dot(_r, _e2) / dot(_q, _e1);
+				_u = dot(_q, _e) / dot(_q, _e1);
+				_v = dot(_r, _d) / dot(_q, _e1);
+				//console.log(_t, _u, _v, 1 - _u - _v);
+				if (_u > 0 && _v > 0 && 1 - _u - _v > 0 && _t < _oR.depth) {
+					_oR.depth = _t;
+					//console.log(_t, _u, _v, 1 - _u - _v);
+				}
+			}
+			if (sel === null) {
+				if (_oR.depth < 10000) {
+					sel = obResp[i];
+				}
+			} else {
+				if (_oR.depth < objects[sel].depth) {
+					sel = obResp[i];
+				}
+			}
+		}
+
+		/*
 		var testV = [0.0, 0.0, 0.0, 1.0];
 		m.multiplyV(invVMatrix, testV, testV);
 
@@ -1275,7 +1371,8 @@ window.onload = function(){
 				}
 			}
 		}
-		//eText.textContent = sel;
+		*/
+		eText.textContent = sel;
 		return sel;
 	}
 
@@ -1338,7 +1435,8 @@ window.onload = function(){
 			mousePressed = false;
 			currentMouseLocation = getMouseLocation(e);
 			checkButtons(currentMouseLocation);
-			eText.textContent = selection_3D(currentMouseLocation);
+			selectedObject = selection_3D(currentMouseLocation);
+			eText.textContent = selectedObject;
 		}
 	}
 
@@ -1389,6 +1487,8 @@ window.onload = function(){
 			//currentTouchLocations = getTouchLocations(e);
 			//eText.textContent = currentTouchLocations[0].x
 			checkButtons(currentTouchLocations[0]);
+			selectedObject = selection_3D(currentTouchLocations[0]);
+			eText.textContent = selectedObject;
 			if (currentTouchLocations.length === 3) {
 				shiftKeyPressed = false;
 			}

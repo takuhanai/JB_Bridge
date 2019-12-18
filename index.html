@@ -41,18 +41,28 @@
     			uniform float     alpha;
     			uniform float     shadow;
           uniform bool      drawMap;
+          uniform bool      selected;
     			varying vec2      vTextureCoord;
     			varying vec4      vTexProjCoord;
     			varying float     vShadow;
     			void main(void){
             vec4 smpColor = texture2D(texture, vTextureCoord);
             vec4 smpColor2 = texture2D(texture2, vTextureCoord);
+            vec4 intColor;
             if (drawMap) {
-              gl_FragColor = vec4(smpColor2.rgb * smpColor2.a + smpColor.rgb * (1.0 - smpColor2.a), alpha);
+              //gl_FragColor = vec4(smpColor2.rgb * smpColor2.a + smpColor.rgb * (1.0 - smpColor2.a), alpha);
+              intColor = vec4(smpColor2.rgb * smpColor2.a + smpColor.rgb * (1.0 - smpColor2.a), alpha);
             } else {
               //gl_FragColor = vec4(smpColor.rgb, alpha);
               //gl_FragColor = vec4(smpColor.rgb * smpColor.a, smpColor.a);
-              gl_FragColor = vec4(smpColor);
+              //gl_FragColor = vec4(smpColor);
+              intColor = vec4(smpColor);
+            }
+            if (selected) {
+              vec4 highColor = vec4(1.0, 0.0, 0.0, 1.0);
+              gl_FragColor = vec4(highColor.rgb * 0.3 + intColor.rgb * 0.7, alpha);
+            } else {
+              gl_FragColor = intColor;
             }
             /*
     				vec4 smpColor = texture2D(texture, vTextureCoord);
