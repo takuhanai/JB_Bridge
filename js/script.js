@@ -17,6 +17,8 @@ window.onload = function(){
 	let drawMap = false;
 	let selectedObject = null;
 
+	let text01 = '';
+
 	let mousePressed = false;
 	let shiftKeyPressed = false;
 	let prevMouseLocation;
@@ -286,9 +288,9 @@ window.onload = function(){
 
 	ctx.font = '20pt Arial';
 
-	ctx.fillText('Oshima Bridge', 360, 260);
+	//ctx.fillText('Oshima Bridge', 360, 260);
 
-//	ctx.fillText('Taku Hanai', 20, 50);
+	ctx.fillText(text01, 20, 50);
 
     function render(){
 		//gl.clearColor(0.6, 0.8, 1.0, 1.0);
@@ -1373,7 +1375,23 @@ window.onload = function(){
 		}
 		*/
 		eText.textContent = sel;
-		return sel;
+		if (sel != null) {
+			text01 = sel.substring(0, sel.length - 3);
+		}
+
+		if (sel === selectedObject) {
+			selectedObject = null;
+		} else if (sel != null) {
+			selectedObject = sel;
+		}
+		/*
+		if (sel === selectedObject) {
+			selectedObject = null;
+		} elseif (sel != null) {
+			selectedObject = sel;
+		}*/
+		//selectedObject = sel;
+		//return sel;
 	}
 
 	function HUDUpdate(){
@@ -1435,7 +1453,7 @@ window.onload = function(){
 			mousePressed = false;
 			currentMouseLocation = getMouseLocation(e);
 			checkButtons(currentMouseLocation);
-			selectedObject = selection_3D(currentMouseLocation);
+			selection_3D(currentMouseLocation);
 			eText.textContent = selectedObject;
 		}
 	}
@@ -1487,7 +1505,7 @@ window.onload = function(){
 			//currentTouchLocations = getTouchLocations(e);
 			//eText.textContent = currentTouchLocations[0].x
 			checkButtons(currentTouchLocations[0]);
-			selectedObject = selection_3D(currentTouchLocations[0]);
+			selection_3D(currentTouchLocations[0]);
 			eText.textContent = selectedObject;
 			if (currentTouchLocations.length === 3) {
 				shiftKeyPressed = false;
