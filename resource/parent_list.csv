@@ -5,10 +5,10 @@ view02,none
 view03,none
 view04,none
 view05,none
-2P_caisson_GL,none
-2P_tower_GL,none
-3P_caisson_GL,none
-3P_tower_GL,none
+5P_caisson_GL,none
+5P_tower_GL,none
+6P_caisson_GL,none
+6P_tower_GL,none
 4A_GL,none
 4A_road_girder_GL,none
 4A_shed_GL,none

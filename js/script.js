@@ -17,7 +17,9 @@ window.onload = function(){
 	let drawMap = false;
 	let selectedObject = null;
 
-	let text01 = '';
+	let text01 = 'Oshima Bridge';
+	let text01location = [20.0, 50.0, 0.0, 0.0];
+	let selObLoc3D = [0.0, 0.0, 0.0, 1.0];
 
 	let mousePressed = false;
 	let shiftKeyPressed = false;
@@ -101,6 +103,8 @@ window.onload = function(){
 	let tMatrix = m.identity(m.create());
 	let vTempMatrix = m.identity(m.create());
 
+	let tmvpMatrix = m.identity(m.create());
+
 	let q = new qtnIV();
 
 	//m.ortho(0.0, 0.02 * c.width, 0.02 * c.height, 0.0, 0.1, 300, vpoMatrix);
@@ -115,10 +119,10 @@ window.onload = function(){
 		'view03',
 		'view04',
 		'view05',
-		'2P_caisson_GL',
-		'2P_tower_GL',
-		'3P_caisson_GL',
-		'3P_tower_GL',
+		'5P_caisson_GL',
+		'5P_tower_GL',
+		'6P_caisson_GL',
+		'6P_tower_GL',
 		'4A_GL',
 		'4A_road_girder_GL',
 		'4A_shed_GL',
@@ -160,10 +164,10 @@ window.onload = function(){
 	const obLoading = [];
 
 	const obResp = [
-		'2P_caisson_GL',
-		'2P_tower_GL',
-		'3P_caisson_GL',
-		'3P_tower_GL',
+		'5P_caisson_GL',
+		'5P_tower_GL',
+		'6P_caisson_GL',
+		'6P_tower_GL',
 		'4A_GL',
 		'4A_road_girder_GL',
 		'4A_shed_GL',
@@ -181,6 +185,8 @@ window.onload = function(){
 		'north_side_span_GL',
 		'south_side_span_GL',
 		'suspender_GL'
+
+		//'test'
 
 	];
 	const obHUD = [
@@ -281,16 +287,10 @@ window.onload = function(){
 		c.addEventListener('wheel', wheel, false);
 	}
 
-	render();
-
 	let canvas2 = document.getElementById('canvas2');
 	let ctx = canvas2.getContext('2d');  // CanvasRenderingContext2D
 
-	ctx.font = '20pt Arial';
-
-	//ctx.fillText('Oshima Bridge', 360, 260);
-
-	ctx.fillText(text01, 20, 50);
+	render();
 
     function render(){
 		//gl.clearColor(0.6, 0.8, 1.0, 1.0);
@@ -355,6 +355,13 @@ window.onload = function(){
         }
 
         gl.flush();
+
+				textRender();
+				/*
+				ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+				ctx.font = '20pt Arial';
+				ctx.fillText(text01, text01location[0], text01location[1]);
+				*/
     }
 
 	function openingUpdate() {
@@ -644,7 +651,7 @@ window.onload = function(){
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 
-								if (drawMap && i === '2P_tower_GL') {
+								if (drawMap && i === '5P_tower_GL') {
 									gl.uniform1i(uniLocation[10], drawMap);
 									gl.activeTexture(gl.TEXTURE1);
 									gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[i + '_map']);
@@ -756,6 +763,31 @@ window.onload = function(){
             }
         }
     }
+
+		function textRender() {
+			if (selectedObject != null) {
+				//let selObLoc3D = objects[selectedObject].location.concat([1.0]);
+				selObLoc3D = objects[selectedObject].location.concat([1.0]);
+				//selObLoc3D.push(1.0);
+				//console.log(selObLoc3D);
+				//let selObLoc2D = [0.0, 0.0, 0.0, 0.0];
+				//let tmvpMatrix = m.identity(m.create());
+				m.multiply(vpMatrix, objects[selectedObject].mMatrix, tmvpMatrix);
+				//m.multiplyV(tmvpMatrix, selObLoc3D, text01location);
+				//m.multiplyV(tmvpMatrix, [0.0, 0.0, 0.0, 1.0], text01location);
+				text01location = tmvpMatrix.slice(12);
+				//text01location[0] /= text01location[3];
+				//text01location[1] /= text01location[3];
+				//text01location[2] /= text01location[3];
+				text01location[0] = (text01location[0] / text01location[3] + 1.0) * c.width * 0.5;
+				text01location[1] = (1.0 - text01location[1] / text01location[3]) * c.height * 0.5;
+				//console.log(selObLoc2D);
+			}
+
+			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+			ctx.font = '12pt Arial';
+			ctx.fillText(text01, text01location[0], text01location[1]);
+		}
 
     // シェーダを生成する関数
     function create_shader(id){
@@ -1013,7 +1045,7 @@ window.onload = function(){
 				ob.iIndex        = create_ibo(ind);
 
 				create_texture(filePath, filePath);
-				if (filePath === '2P_tower_GL') {
+				if (filePath === '5P_tower_GL') {
 					create_texture(filePath, filePath + '_map');
 				}
 			} else if (ob.type == 8) {//object type 'CAMERA'
@@ -1375,21 +1407,18 @@ window.onload = function(){
 		}
 		*/
 		eText.textContent = sel;
-		if (sel != null) {
-			text01 = sel.substring(0, sel.length - 3);
-		}
+
 
 		if (sel === selectedObject) {
 			selectedObject = null;
 		} else if (sel != null) {
 			selectedObject = sel;
 		}
-		/*
-		if (sel === selectedObject) {
-			selectedObject = null;
-		} elseif (sel != null) {
-			selectedObject = sel;
-		}*/
+		if (selectedObject != null) {
+			text01 = selectedObject.substring(0, selectedObject.length - 3);
+		} else {
+			text01 = '';
+		}
 		//selectedObject = sel;
 		//return sel;
 	}
@@ -1455,6 +1484,7 @@ window.onload = function(){
 			checkButtons(currentMouseLocation);
 			selection_3D(currentMouseLocation);
 			eText.textContent = selectedObject;
+			console.log(text01location, tmvpMatrix);
 		}
 	}
 
