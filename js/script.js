@@ -1447,6 +1447,7 @@ window.onload = function(){
 			objects['sea_surface_GL'].draw = true;
 			objects['terrain_GL'].draw = true;
 			drawMap = false;
+			selectedObject = null;
 		}
 		if (buttonPressed('UI_terrain_button', _location)) {
 			objects['sea_surface_GL'].draw = !objects['sea_surface_GL'].draw;
