@@ -300,6 +300,7 @@ window.onload = function(){
 	div.appendChild(textNode);
 	// add it to the divcontainer
 	divContainerElement.appendChild(div);
+	div.style.visibility = 'hidden';
 /*
 	let overlayElement = document.getElementById('overlay');
 	let textElement = document.getElementById('text');
