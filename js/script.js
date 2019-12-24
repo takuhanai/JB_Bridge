@@ -289,11 +289,27 @@ window.onload = function(){
 
 	let canvas2 = document.getElementById('canvas2');
 	let ctx = canvas2.getContext('2d');  // CanvasRenderingContext2D
-
+	// look up the divcontainer
+	let divContainerElement = document.getElementById("divcontainer");
+	// make the div
+	let div = document.createElement("div");
+	// assign it a CSS class
+	div.className = "floating-div";
+	// make a text node for its content
+	let textNode = document.createTextNode("");
+	div.appendChild(textNode);
+	// add it to the divcontainer
+	divContainerElement.appendChild(div);
+/*
+	let overlayElement = document.getElementById('overlay');
+	let textElement = document.getElementById('text');
+	let textNode = document.createTextNode('');
+	textElement.appendChild(textNode);
+*/
 	render();
 
     function render(){
-		//gl.clearColor(0.6, 0.8, 1.0, 1.0);
+		//gl.clearColor(0.4, 0.6, 1.0, 1.0);
 		/*
         // is load ready
         if ((allDataReady === true) && (isInitialize === false)){
@@ -787,6 +803,9 @@ window.onload = function(){
 			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 			ctx.font = '12pt Arial';
 			ctx.fillText(text01, text01location[0], text01location[1]);
+
+			div.style.left = Math.floor(text01location[0]) + "px";
+			div.style.top  = Math.floor(text01location[1]) + "px";
 		}
 
     // シェーダを生成する関数
@@ -1416,9 +1435,12 @@ window.onload = function(){
 		}
 		if (selectedObject != null) {
 			text01 = selectedObject.substring(0, selectedObject.length - 3);
+			div.style.visibility = 'visible';
 		} else {
 			text01 = '';
+			div.style.visibility = 'hidden';
 		}
+		textNode.nodeValue = text01;
 		//selectedObject = sel;
 		//return sel;
 	}

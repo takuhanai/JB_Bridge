@@ -42,7 +42,35 @@ body {margin:0;
 	height: auto;
 	pointer-events: none;
 }
+#divcontainer {
+	width: 200px;
+	height: 100px;
+	background-color: rgba(255, 255, 255, 1.0);
+	padding: 1em;
+	border-radius: 1em;
+	border-width: 10px;
+	border-color: rgba(0, 0, 0, 1.0);
+	pointer-events: none;
+}
 
+.floating-div {
+	width: 200px;
+	height: 100px;
+	background-color: rgba(255, 255, 255, 1.0);
+	padding: 1em;
+	border-radius: 1em;
+}
+/*
+#overlay {
+	width: 200px;
+	height: 100px;
+	background-color: rgba(255, 255, 255, 1.0);
+	padding: 1em;
+	border-radius: 1em;
+	border-width: 10px;
+	border-color: rgba(0, 0, 0, 1.0);
+}
+*/
 /* お知らせ */
 .news {
 	padding: 20px;
@@ -104,6 +132,7 @@ body {
     -ms-justify-self: end;
     -ms-align-self: center
 }
+
 .webgl {
     -ms-grid-column: 2;
     -ms-grid-row: 2
@@ -163,6 +192,24 @@ body {
 	justify-self: end;
 	align-self: center
 }
+/*
+.container {
+	grid-column-start: main;
+	grid-row-start: img
+}
+.webgl {
+	position: relative;
+}
+.text {
+	position: relative;
+	top: -540px;
+}
+#overlay {
+	position: relative;
+	top: -800px;
+	left: 500px;
+}
+*/
 .webgl {
 	grid-column-start: main;
 	grid-row-start: img
@@ -171,6 +218,23 @@ body {
 	grid-column-start: main;
 	grid-row-start: img
 }
+#divcontainer {
+	grid-column-start: main;
+	grid-row-start: img;
+}
+
+.floating-div {
+	position:relative;
+}
+/*
+#overlay {
+	position:relative;
+	left: 500px;
+	top: 300px;
+	grid-column-start: main;
+	grid-row-start: img;
+}
+*/
 .news {
 	grid-column-start: main;
 	grid-row-start: news
