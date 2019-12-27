@@ -1441,7 +1441,9 @@ window.onload = function(){
 			text01 = '';
 			div.style.visibility = 'hidden';
 		}
-		textNode.nodeValue = text01;
+		textNode.nodeValue = `大島
+大橋`;
+		//textNode.nodeValue = text01;
 		//selectedObject = sel;
 		//return sel;
 	}
