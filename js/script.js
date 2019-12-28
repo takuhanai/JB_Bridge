@@ -1544,6 +1544,7 @@ window.onload = function(){
 			objects['terrain_GL'].draw = true;
 			drawMap = false;
 			selectedObject = null;
+			div.style.visibility = 'hidden';
 		}
 		if (buttonPressed('UI_terrain_button', _location)) {
 			objects['sea_surface_GL'].draw = !objects['sea_surface_GL'].draw;
@@ -1560,11 +1561,6 @@ window.onload = function(){
 					div.style.visibility = 'visible';
 				}
 			}
-			/*
-			} else {
-				div.style.visibility = 'hidden';
-			}
-			*/
 		}
 	}
 
