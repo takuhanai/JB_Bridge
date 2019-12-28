@@ -28,6 +28,8 @@ south_side_span_GL,none
 suspender_GL,none
 sea_surface_GL,none
 terrain_GL,none
+cable_selection,none
+suspender_selection,none
 UI_back,none
 UI_revert_button,none
 UI_terrain_button,none

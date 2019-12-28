@@ -727,6 +727,7 @@ window.onload = function(){
 				set_attribute(objects[obHUD[i]].VBOList, attLocation, attStride);
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[obHUD[i]].iIndex);
 				gl.uniform1i(uniLocation[10], false);
+				gl.uniform1i(uniLocation[11], false);
 				gl.activeTexture(gl.TEXTURE0);
 				gl.bindTexture(gl.TEXTURE_2D, objects[obHUD[i]].texture[obHUD[i]]);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
