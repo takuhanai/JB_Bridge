@@ -32,4 +32,5 @@ UI_back,none
 UI_revert_button,none
 UI_terrain_button,none
 UI_map_button,none
+UI_info_button,none
 test,none

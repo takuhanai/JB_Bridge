@@ -21,6 +21,8 @@ window.onload = function(){
 	let text01location = [20.0, 50.0, 0.0, 0.0];
 	let selObLoc3D = [0.0, 0.0, 0.0, 1.0];
 
+	let textBoxWidth = 200;//px
+
 	let mousePressed = false;
 	let shiftKeyPressed = false;
 	let prevMouseLocation;
@@ -147,7 +149,8 @@ window.onload = function(){
 		//'UI_back',
 		'UI_revert_button',
 		'UI_terrain_button',
-		'UI_map_button'
+		'UI_map_button',
+		'UI_info_button'
 
 		//'test'
 					 ];
@@ -193,7 +196,8 @@ window.onload = function(){
 		//'UI_back',
 		'UI_revert_button',
 		'UI_terrain_button',
-		'UI_map_button'
+		'UI_map_button',
+		'UI_info_button'
 	];
 	let objects = new Array();
 	let Object = function (name) {
@@ -205,6 +209,8 @@ window.onload = function(){
 
 	const parentList = readParentList();
 
+	const descriptionList = readDescriptionList();
+
 	for (let i = 0; i < obNames.length; i++) {
 		const ob = new Object(obNames[i]);
 
@@ -213,6 +219,15 @@ window.onload = function(){
 		ob.dataReady = false;
 
 		ob.parent = parentList[ob.name];
+
+		//console.log(ob.name, descriptionList.indexOf(ob.name));
+		//if (descriptionList.indexOf(ob.name) != -1) {
+		if (descriptionList[ob.name]) {
+			ob.description = descriptionList[ob.name];
+			//console.log(descriptionList[ob.name]);
+		} else {
+			ob.description = '';
+		}
 
 		ob.draw = true;
 
@@ -287,8 +302,9 @@ window.onload = function(){
 		c.addEventListener('wheel', wheel, false);
 	}
 
-	let canvas2 = document.getElementById('canvas2');
-	let ctx = canvas2.getContext('2d');  // CanvasRenderingContext2D
+	//let canvas2 = document.getElementById('canvas2');
+	//let ctx = canvas2.getContext('2d');  // CanvasRenderingContext2D
+
 	// look up the divcontainer
 	let divContainerElement = document.getElementById("divcontainer");
 	// make the div
@@ -296,11 +312,12 @@ window.onload = function(){
 	// assign it a CSS class
 	div.className = "floating-div";
 	// make a text node for its content
-	let textNode = document.createTextNode("");
-	div.appendChild(textNode);
+	//let textNode = document.createTextNode("");
+	//div.appendChild(textNode);
 	// add it to the divcontainer
 	divContainerElement.appendChild(div);
 	div.style.visibility = 'hidden';
+	div.style.width = textBoxWidth.toString() + "px";
 /*
 	let overlayElement = document.getElementById('overlay');
 	let textElement = document.getElementById('text');
@@ -800,11 +817,22 @@ window.onload = function(){
 				text01location[1] = (1.0 - text01location[1] / text01location[3]) * c.height * 0.5;
 				//console.log(selObLoc2D);
 			}
-
+			/*
 			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 			ctx.font = '12pt Arial';
 			ctx.fillText(text01, text01location[0], text01location[1]);
-
+			*/
+			eText.textContent = text01location[0] + ', ' + text01location[1];
+			if (text01location[0] < 0.0) {
+				text01location[0] = 0.0;
+			} else if (text01location[0] > c.width - textBoxWidth) {
+				text01location[0] = c.width - textBoxWidth;
+			}
+			if (text01location[1] < 0.0) {
+				text01location[1] = 0.0;
+			} else if (text01location[1] > c.height - 160) {
+				text01location[1] = c.height - 160.0;
+			}
 			div.style.left = Math.floor(text01location[0]) + "px";
 			div.style.top  = Math.floor(text01location[1]) + "px";
 		}
@@ -1031,7 +1059,7 @@ window.onload = function(){
 				}
 				if (obResp.indexOf(filePath) != -1) {
 					//console.log('response object: ' + filePath);
-					console.log(ob.mMatrix);
+					//console.log(ob.mMatrix);
 					let im = m.identity(m.create());
 					m.transpose(ob.mMatrix, im);
 					tc = [];
@@ -1190,6 +1218,27 @@ window.onload = function(){
 		}
 
 		return pList;
+	}
+
+	function readDescriptionList() {
+		var data = new XMLHttpRequest();
+		data.open("GET", './resource/object_description.csv', false); //true:非同期,false:同期
+		data.send(null);
+
+		let LF = String.fromCharCode(10); //改行ｺｰﾄﾞ
+		let lines = data.responseText.split(LF);
+		let dList = new Array();
+		for (var i = 0 in lines) {
+			let a = lines[i].split(',');
+			//let b = a[1].split('¥');
+			//b.join('a');
+			//console.log(a[0], b);
+			//let st = "大島\n大橋";
+			dList[a[0]] = a[1];
+			//console.log(st);
+		}
+
+		return dList;
 	}
 
 	function evaluateAction(_action, _x, _loc, _rot, _scale, _rotation_mode) {
@@ -1428,7 +1477,26 @@ window.onload = function(){
 		*/
 		eText.textContent = sel;
 
+		if (sel != null) {
+			while (div.firstChild) div.removeChild(div.firstChild);
+			if (sel === selectedObject) {
+				selectedObject = null;
+				text01 = '';
+			} else {
+				selectedObject = sel;
+				let _strArray = objects[selectedObject].description.split('¥');
+				for (var i = 0 in _strArray) {
+					div.appendChild(document.createTextNode(_strArray[i]));
+					div.appendChild(document.createElement('br'));
+				}
+				//let tHeight = _strArray.length * 20;
+				//div.style.height = tHeight.toString() + 'px';
+				text01 = selectedObject.substring(0, selectedObject.length - 3);
+			}
+			div.style.visibility = 'hidden';
+		}
 
+		/*
 		if (sel === selectedObject) {
 			selectedObject = null;
 		} else if (sel != null) {
@@ -1436,12 +1504,17 @@ window.onload = function(){
 		}
 		if (selectedObject != null) {
 			text01 = selectedObject.substring(0, selectedObject.length - 3);
-			div.style.visibility = 'visible';
+			let _strArray = objects[selectedObject].description.split('¥');
+			for (var i = 0 in _strArray) {
+				div.appendChild(document.createTextNode(_strArray[i]));
+				div.appendChild(document.createElement('br'));
+			}
 		} else {
 			text01 = '';
-			div.style.visibility = 'hidden';
+			textNode.nodeValue = '';
 		}
-		textNode.nodeValue = text01;
+		*/
+		//textNode.nodeValue = text01;
 		//selectedObject = sel;
 		//return sel;
 	}
@@ -1479,6 +1552,20 @@ window.onload = function(){
 		if (buttonPressed('UI_map_button', _location)) {
 			drawMap = !drawMap;
 		}
+		if (buttonPressed('UI_info_button', _location)) {
+			if (selectedObject != null) {
+				if (div.style.visibility === 'visible') {
+					div.style.visibility = 'hidden';
+				} else if (div.style.visibility === 'hidden') {
+					div.style.visibility = 'visible';
+				}
+			}
+			/*
+			} else {
+				div.style.visibility = 'hidden';
+			}
+			*/
+		}
 	}
 
 	function mouseDown(e) {
@@ -1508,7 +1595,7 @@ window.onload = function(){
 			checkButtons(currentMouseLocation);
 			selection_3D(currentMouseLocation);
 			eText.textContent = selectedObject;
-			console.log(text01location, tmvpMatrix);
+			//console.log(text01location, tmvpMatrix);
 		}
 	}
 
