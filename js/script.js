@@ -1513,11 +1513,7 @@ window.onload = function(){
 			text01 = '';
 			textNode.nodeValue = '';
 		}
-<<<<<<< HEAD
 		*/
-=======
-		textNode.nodeValue = '花井\r\n拓';
->>>>>>> 773488337f57f3b02026addeb32d447ab556642b
 		//textNode.nodeValue = text01;
 		//selectedObject = sel;
 		//return sel;
