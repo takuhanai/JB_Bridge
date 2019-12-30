@@ -21,7 +21,7 @@ window.onload = function(){
 	let text01location = [20.0, 50.0, 0.0, 0.0];
 	let selObLoc3D = [0.0, 0.0, 0.0, 1.0];
 
-	let textBoxWidth = 200;//px
+	let textBoxWidth = 280;//px
 
 	let mousePressed = false;
 	let shiftKeyPressed = false;
@@ -155,6 +155,8 @@ window.onload = function(){
 		//'test'
 					 ];
 
+	let obCamera = [];
+/*
 	const obCamera = [
 		'camera_whole',
 		'view01',
@@ -163,9 +165,11 @@ window.onload = function(){
 		'view04',
 		'view05'
 				];
-
+*/
 	const obLoading = [];
 
+	let obResp = [];
+/*
 	const obResp = [
 		'5P_caisson_GL',
 		'5P_tower_GL',
@@ -192,6 +196,10 @@ window.onload = function(){
 		//'test'
 
 	];
+*/
+
+	let obHUD = [];
+/*
 	const obHUD = [
 		//'UI_back',
 		'UI_revert_button',
@@ -199,6 +207,7 @@ window.onload = function(){
 		'UI_map_button',
 		'UI_info_button'
 	];
+*/
 	let objects = new Array();
 	let Object = function (name) {
 		this.name = name;
@@ -209,43 +218,31 @@ window.onload = function(){
 
 	const parentList = readParentList();
 
+	readObjectData();
+/*
 	const descriptionList = readDescriptionList();
 
 	for (let i = 0; i < obNames.length; i++) {
 		const ob = new Object(obNames[i]);
-
 		ob.texture = new Array();
-
 		ob.dataReady = false;
-
 		ob.parent = parentList[ob.name];
-
-		//console.log(ob.name, descriptionList.indexOf(ob.name));
-		//if (descriptionList.indexOf(ob.name) != -1) {
 		if (descriptionList[ob.name]) {
 			ob.description = descriptionList[ob.name];
-			//console.log(descriptionList[ob.name]);
 		} else {
 			ob.description = '';
 		}
-
 		ob.draw = true;
-
 		ob.texture_shift = [0.0, 0.0];
-
 		ob.alpha = 1.0;
-
     ob.isHit = false;
-
     ob.shadow = 0.0;
-
 		ob.depth = 1000000; // Z Depth from Camera
-
     objects[ob.name] = ob;
 	}
-
+*/
 	for (let i in objects) {
-		readObjectData(objects[i].name);
+		read3DModelData(objects[i].name);
 	}
 
 	const objectActions = [
@@ -324,6 +321,7 @@ window.onload = function(){
 	let textNode = document.createTextNode('');
 	textElement.appendChild(textNode);
 */
+
 	render();
 
     function render(){
@@ -337,6 +335,8 @@ window.onload = function(){
 		*/
         // アニメーション
         requestAnimationFrame(render);
+
+				//console.log('allDataReady:', allDataReady);
 
         if (allDataReady === true) {
 			// 全てのリソースのロードが完了している
@@ -575,7 +575,7 @@ window.onload = function(){
 	}
 
     // camera update
-    function cameraUpdate(){
+  function cameraUpdate(){
 			let _obCamera = objects[obCamera[camMode]];
 			switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
 				case 0: //PERSP
@@ -584,10 +584,10 @@ window.onload = function(){
 			}
 			m.inverse(_obCamera.mMatrix, vMatrix);
 	        m.multiply(_obCamera.pMatrix, vMatrix, vpMatrix);
-    }
+  }
 
     // action update
-    function actionUpdate(){
+		function actionUpdate(){
       // 全てのリソースを処理する
       for (var i = 0 in objects) {
 			// アクションの更新
@@ -611,9 +611,10 @@ window.onload = function(){
             } else {
                 m.multiply(objects[i].mMatrix0, mMatrixLocal, mMatrixLocal);
             }
-            if (objects[i].parent != 'none') {
+            //if (objects[i].parent != 'none') {
+						if (objects[i].parent != '') {
                 var po = objects[objects[i].parent];
-				if (po.dataReady) {
+								if (po.dataReady) {
                     m.multiply(po.mMatrix, mMatrixLocal, objects[i].mMatrix);
                 }
             } else {
@@ -662,25 +663,29 @@ window.onload = function(){
 		}
 	}
 
-    // objects rendering
-    function objectRender(){
+  // objects rendering
+  function objectRender(){
 		// uniform変数にテクスチャを登録
         gl.uniform1i(uniLocation[3], 0); //texture
         gl.uniform1i(uniLocation[7], 6);
 				gl.uniform1i(uniLocation[9], 1); //texture2
 
 				for (var i = 0 in objects) {
+					//console.log('objectRender:', objects[i].name);
             if (
                 objects[i].type === 0 &&
+								objects[i].kind === 'mesh' &&
                 objects[i].draw === true &&
                 obHUD.indexOf(i) === -1 &&
                 obLoading.indexOf(i) === -1
             ) {
-				set_attribute(objects[i].VBOList, attLocation, attStride);
+								//console.log('objectRender:', objects[i].name);
+								set_attribute(objects[i].VBOList, attLocation, attStride);
 								gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[i].iIndex);
 
 								gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[i]);
+								//gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[0]);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -688,6 +693,7 @@ window.onload = function(){
 								if (drawMap && i === '5P_tower_GL') {
 									gl.uniform1i(uniLocation[10], drawMap);
 									gl.activeTexture(gl.TEXTURE1);
+									//gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[1]);
 									gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[i + '_map']);
 	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -976,11 +982,12 @@ window.onload = function(){
 			objects[source].texture[i_source] = tex;
 			*/
 			objects[source].texture[i_source] = create_texture_gl(img);
+			//objects[source].texture.push(create_texture_gl(img));
 			numDataReady += 1;
 			allDataReady = checkAllDataReady();
 		};
 		//img.src = './resource/textures/' + i_source + '.png';
-		console.log(i_source);
+		//console.log(i_source);
 	}
 
 	function create_texture_gl(img) {
@@ -992,6 +999,195 @@ window.onload = function(){
 		return tex;
 	}
 
+	function readObjectData() {
+		var data = new XMLHttpRequest();
+		data.open("GET", './resource/object.csv', false); //true:非同期,false:同期
+		data.send(null);
+
+		let LF = String.fromCharCode(10); //改行ｺｰﾄﾞ
+		let lines = data.responseText.split(LF);
+		let dList = new Array();
+		for (var i = 1; i < lines.length; i++) {
+			let _line = lines[i].split(',');
+			let _name = _line[0];
+			let _kind = _line[1];
+			let _texture = _line.slice(2, 4);
+			let _parent = _line[4];
+			let _camera = _line[5] === 'yes' ? true : false;
+			let _selectMesh = _line[6];
+			let _UI = _line[7] === 'yes' ? true : false;
+			let _description = _line[8];
+			const ob = new Object(_name);
+			ob.texture = new Array();
+			ob.dataReady = false;
+			ob.parent = _parent;
+			ob.kind = _kind;
+			ob.textureList = [];
+
+			for (var j = 0 in _texture) {
+				if (_texture[j] != '') {
+					//ob.texture[_texture] = null;
+					ob.textureList.push(_texture[j]);
+				}
+			}
+
+			//console.log('readObjectData:', _name, ob.texture);
+			ob.selectMesh = _selectMesh;
+			ob.description = _description;
+			ob.draw = true;
+			ob.texture_shift = [0.0, 0.0];
+			ob.alpha = 1.0;
+	    ob.isHit = false;
+	    ob.shadow = 0.0;
+			ob.depth = 1000000; // Z Depth from Camera
+	    objects[_name] = ob;
+
+			if (_camera) {
+				obCamera.push(_name);
+			}
+			if (_selectMesh != '') {
+				obResp.push(_name);
+				//console.log('obResp:', _name, _selectMesh);
+			}
+			if (_UI) {
+				obHUD.push(_name);
+			}
+
+			//read3DModelData(_name);
+		}
+		//console.log('obResp:', obResp);
+	}
+
+	function read3DModelData(filePath) { //csvﾌｧｲﾙﾉ相対ﾊﾟｽor絶対ﾊﾟｽ
+		var coord = new Array();
+		var norm = new Array();
+		var uv_coord = new Array();
+		var data = new XMLHttpRequest();
+		data.open("GET", './resource/objects/' + filePath + '.dat', true); //true:非同期,false:同期
+		data.responseType = 'arraybuffer';
+		data.send(null);
+
+		data.onload = function(e) {
+			var arrayBuffer = data.response;
+			var dv = new DataView(arrayBuffer);
+			var location = [];
+			var rotation = [];
+			var scale = [];
+			var dimensions = [];
+			var off = 0;
+			var ob = objects[filePath];
+
+			ob.type = dv.getInt32(off, true); //0:MESH, 7:EMPTY, 8:CAMERA
+			off += 4;
+			ob.rotation_mode = dv.getInt32(off, true);
+			off += 4;
+
+			for (var i = 0; i < 3; i++) {
+				location.push(dv.getFloat32(off, true));
+				off += 4;
+			}
+			ob.location = location;
+
+			var rotation_comp = 4;
+			if (ob.rotation_mode != 0) {
+				rotation_comp = 3;
+			}
+			for (var i = 0; i < rotation_comp; i++) {
+				rotation.push(dv.getFloat32(off, true));
+				off += 4;
+			}
+			ob.rotation = rotation;
+
+			for (var i = 0; i < 3; i++) {
+				scale.push(dv.getFloat32(off, true));
+				off += 4;
+			}
+			ob.scale = scale;
+
+			for (var i = 0; i < 3; i++) {
+				dimensions.push(dv.getFloat32(off, true));
+				off += 4;
+			}
+			ob.dimensions = dimensions;
+
+			ob.mMatrix0 = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Local coordinate
+			ob.mMatrix = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Global coordinate
+
+			if (ob.type == 0) {//object type 'MESH'
+				ob.numLoop = dv.getInt32(off, true);
+				off += 4;
+
+				for	(var i = 0; i < ob.numLoop; ++i) {
+					for (var j = 0; j < 3; ++ j) {
+						coord.push(dv.getFloat32(off, true));
+						off += 4;
+					}
+				}
+				if (ob.kind === 'selection_mesh' || ob.name === ob.selectMesh) {
+					let im = m.identity(m.create());
+					m.transpose(ob.mMatrix, im);
+					tc = [];
+					for (i = 0; i < ob.numLoop * 3; i += 3) {
+						_v = coord.slice(i, i + 3).concat(1);
+						m.multiplyV(im, _v, _v);
+						tc.push(_v[0]);
+						tc.push(_v[1]);
+						tc.push(_v[2]);
+					}
+					ob.coord = tc;
+				}
+
+				for	(var i = 0; i < ob.numLoop; ++i) {
+					for (var j = 0; j < 2; ++ j) {
+						uv_coord.push(dv.getFloat32(off, true));
+						off += 4;
+					}
+				}
+
+				var ind = new Array();
+				for (var ii = 0; ii < ob.numLoop;++ii) {
+					ind.push(ii);
+				}
+
+				var vPosition     = create_vbo(coord);
+				var vTextureCoord = create_vbo(uv_coord);
+				ob.VBOList       = [vPosition, vTextureCoord];
+				ob.iIndex        = create_ibo(ind);
+
+				//console.log('read3DModelData:', ob.name, obList);
+				for (var i = 0 in ob.textureList) {
+					//console.log('read3DModelData:', i, ob.textureList[i]);
+					create_texture(ob.name, ob.textureList[i]);
+				}
+			} else if (ob.type == 8) {//object type 'CAMERA'
+				var _pMatrix = m.identity(m.create());
+				ob.camera_type = dv.getInt32(off, true);
+				off += 4;
+				ob.clip_start = dv.getFloat32(off, true);
+				off += 4;
+				ob.clip_end = dv.getFloat32(off, true);
+				off += 4;
+				switch (ob.camera_type) {// 0: PERSP, 1: ORTHO
+					case 0: //PERSP
+						ob.angle_y = dv.getFloat32(off, true);
+						ob.angle_y0 = ob.angle_y; //initial value. Do not change!
+						m.perspective(ob.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, ob.clip_start, ob.clip_end, _pMatrix);
+						break;
+					case 1: //ORTHO
+						ob.ortho_scale = dv.getFloat32(off, true);
+						m.ortho(-ob.ortho_scale * c.width, ob.ortho_scale * c.width, ob.ortho_scale * c.height, -ob.ortho_scale * c.height, ob.clip_start, ob.clip_end, _pMatrix);
+						break;
+				}
+				ob.pMatrix = _pMatrix;
+			}
+
+			objects[filePath].dataReady = true;
+			numDataReady += 1;
+			allDataReady = checkAllDataReady();
+			//console.log('read3DModelData:', objects[filePath].name);
+		}
+	}
+/*
 	function readObjectData(filePath) { //csvﾌｧｲﾙﾉ相対ﾊﾟｽor絶対ﾊﾟｽ
 		var coord = new Array();
 		var norm = new Array();
@@ -1128,14 +1324,16 @@ window.onload = function(){
 
 		}
 	}
-
+*/
 	function checkAllDataReady() {
 		var ready = true;
 		for (var i = 0 in objects) {
 			if (!objects[i].dataReady) {
 				ready = false;
+				//console.log('checkAllDataReady:', objects[i].name);
 			}
-			if (objects[i].type == 0 && !objects[i].texture[i]) {
+			if (objects[i].type == 0 && objects[i].kind === 'mesh' && !objects[i].texture[i]) {
+				//console.log('checkAllDataReady:', objects[i].name);
 				ready = false;
 			}
 		}
@@ -1416,8 +1614,12 @@ window.onload = function(){
 
 		let sel = null;
 		//let sel = selectedObject;
+		//console.log('selection_3D:', obResp);
 		for (var i = 0 in obResp) {
-			let _oR = objects[obResp[i]];
+			//console.log('selection_3D:', obResp[i], objects[obResp[i]].selectMesh);
+			let _oR = objects[objects[obResp[i]].selectMesh];
+			//console.log('selection_3D:', _oR);
+			//let _oR = objects[obResp[i]];
 			_oR.depth = 1000000;
 			//console.log(obResp[i], objects[obResp[i]].numLoop, objects[obResp[i]].coord.length);
 			for (let l = 0; l < _oR.numLoop * 3; l += 9) {
@@ -1451,6 +1653,7 @@ window.onload = function(){
 				}
 			}
 		}
+		//console.log('selection_3D:sel', sel);
 
 		/*
 		var testV = [0.0, 0.0, 0.0, 1.0];
