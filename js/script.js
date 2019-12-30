@@ -1773,6 +1773,7 @@ window.onload = function(){
 			mousePressed = true;
 			prevMouseLocation = getMouseLocation(e);
 			currentMouseLocation = prevMouseLocation;
+			selection_3D(currentMouseLocation);
 			if (prevMouseLocation.x > c.width * 0.9 && prevMouseLocation.y > c.height * 0.9) {
 				//toggleCameraAction();
 				//drawMode += 1;
@@ -1793,7 +1794,7 @@ window.onload = function(){
 			mousePressed = false;
 			currentMouseLocation = getMouseLocation(e);
 			checkButtons(currentMouseLocation);
-			selection_3D(currentMouseLocation);
+			//selection_3D(currentMouseLocation);
 			eText.textContent = selectedObject;
 			//console.log(text01location, tmvpMatrix);
 		}
@@ -1816,6 +1817,7 @@ window.onload = function(){
 			touched = true;
 			prevTouchLocations = getTouchLocations(e);
 			currentTouchLocations = prevTouchLocations;
+			selection_3D(currentTouchLocations[0]);
 			if (prevTouchLocations.length === 1) {
 				if (prevTouchLocations[0].x > c.width * 0.9 && prevTouchLocations[0].y > c.height * 0.9) {
 					//toggleCameraAction();
@@ -1846,7 +1848,7 @@ window.onload = function(){
 			//currentTouchLocations = getTouchLocations(e);
 			//eText.textContent = currentTouchLocations[0].x
 			checkButtons(currentTouchLocations[0]);
-			selection_3D(currentTouchLocations[0]);
+			//selection_3D(currentTouchLocations[0]);
 			eText.textContent = selectedObject;
 			if (currentTouchLocations.length === 3) {
 				shiftKeyPressed = false;
