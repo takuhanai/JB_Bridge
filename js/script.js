@@ -1686,6 +1686,7 @@ window.onload = function(){
 			if (sel === selectedObject) {
 				selectedObject = null;
 				text01 = '';
+				div.style.visibility = 'hidden';
 			} else {
 				selectedObject = sel;
 				let _strArray = objects[selectedObject].description.split('¥');
@@ -1697,7 +1698,7 @@ window.onload = function(){
 				//div.style.height = tHeight.toString() + 'px';
 				text01 = selectedObject.substring(0, selectedObject.length - 3);
 			}
-			div.style.visibility = 'hidden';
+			//div.style.visibility = 'hidden';
 		}
 
 		/*
