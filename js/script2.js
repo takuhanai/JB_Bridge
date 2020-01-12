@@ -12,8 +12,8 @@ window.onload = function(){
     // variables
 	let resourcePath = './resource/';
 	let title = 'oshima_bridge';
-	let scene = 'oshima_bridge';
-	//let scene = 'tower_01';
+	//let scene = 'oshima_bridge';
+	let scene = 'tower_01';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
