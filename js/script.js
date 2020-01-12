@@ -1802,9 +1802,12 @@ window.onload = function(){
 			checkButtons(currentTouchLocations[0]);
 
 			eText.textContent = selectedObject;
+			shiftKeyPressed = false;
+			/*
 			if (currentTouchLocations.length === 3) {
 				shiftKeyPressed = false;
 			}
+			*/
 
 			e.preventDefault();
 		}
