@@ -1799,7 +1799,7 @@ window.onload = function(){
 			touched = false;
 			//currentTouchLocations = getTouchLocations(e);
 			//eText.textContent = currentTouchLocations[0].x
-			checkButtons(currentTouchLocations[0]);
+			//checkButtons(currentTouchLocations[0]);
 
 			eText.textContent = selectedObject;
 			shiftKeyPressed = false;
