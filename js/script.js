@@ -954,7 +954,6 @@ window.onload = function(){
 			let _UI = _line[7] === 'yes' ? true : false;
 			let _oneSide = _line[8] === 'yes' ? true : false;
 			let _normal = _line.slice(9, 12).map(Number);
-			console.log('normal', _normal);
 			let _description = _line[12];
 			const ob = new Object(_name);
 			ob.texture = new Array();
@@ -970,7 +969,6 @@ window.onload = function(){
 				}
 			}
 
-			//console.log('readObjectData:', _name, ob.texture);
 			ob.selectMesh = _selectMesh;
 			ob.one_sided = _oneSide;
 			ob.normal = _normal;
@@ -993,8 +991,6 @@ window.onload = function(){
 			if (_UI) {
 				obHUD.push(_name);
 			}
-
-			//read3DModelData(_name);
 		}
 
 	}
@@ -1095,9 +1091,7 @@ window.onload = function(){
 				ob.VBOList       = [vPosition, vTextureCoord];
 				ob.iIndex        = create_ibo(ind);
 
-				//console.log('read3DModelData:', ob.name, obList);
 				for (var i = 0 in ob.textureList) {
-					//console.log('read3DModelData:', i, ob.textureList[i]);
 					create_texture(ob.name, ob.textureList[i]);
 				}
 			} else if (ob.type == 8) {//object type 'CAMERA'
@@ -1125,7 +1119,6 @@ window.onload = function(){
 			objects[_objectName].dataReady = true;
 			numDataReady += 1;
 			allDataReady = checkAllDataReady();
-			//console.log('read3DModelData:', objects[filePath].name);
 		}
 	}
 /*
@@ -1666,10 +1659,15 @@ window.onload = function(){
 	}
 
 	function buttonPressed(_button, _location) {
-		let loc = objects[_button].location;
-		let dim = objects[_button].dimensions;
-		if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
-			return true;
+		console.log(_button, objects[_button]);
+		if (objects[_button] != null) {
+			let loc = objects[_button].location;
+			let dim = objects[_button].dimensions;
+			if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
+				return true;
+			} else {
+				return false;
+			}
 		} else {
 			return false;
 		}
