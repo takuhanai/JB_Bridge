@@ -12,8 +12,8 @@ window.onload = function(){
     // variables
 	let resourcePath = './resource/';
 	let title = 'oshima_bridge';
-	//let scene = 'oshima_bridge';
-	let scene = 'tower_01';
+	//let scene_name = 'oshima_bridge';
+	let scene_name = 'tower_01';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -42,12 +42,14 @@ window.onload = function(){
 	let cameraVertAngle = 0.0;
 	//const cameraVertAngleMax = 12.0 * Math.PI / 180.0;
 	//const cameraVertAngleMin = -78.0 * Math.PI / 180.0;
+	/*
 	let cameraTranslationDelta = 1.0;
 	let cameraTranslationRange = [420.0, -420.0, 420.0, -420.0, 150.0, 0.0]; //X max, X min, Y max, Y min, Z max, Z min
 	let cameraVertAngleMax = 10.0 * Math.PI / 180.0;
 	let cameraVertAngleMin = -80.0 * Math.PI / 180.0;
 	let cameraViewAngleMax = 1.2;
 	let cameraViewAngleMin = 0.1;
+	*/
 
 	let cameraOriginZSpeed;
 	let cameraOriginZDest;
@@ -106,7 +108,7 @@ window.onload = function(){
   let vMatrix = m.identity(m.create());
 	let pMatrix = m.identity(m.create());
   let p1Matrix = m.identity(m.create());
-	let vpoMatrix = m.identity(m.create());//For HUD
+	let vpoMatrix = m.identity(m.create());//For UI
   let vpMatrix = m.identity(m.create());
 	let mvpMatrix = m.identity(m.create());
 	let invMatrix = m.identity(m.create());
@@ -129,7 +131,19 @@ window.onload = function(){
 
 	let obResp = []; // List of objects responding to mouse (touch) action
 
-	let obHUD = []; // List of UI objects
+	//let obUI = []; // List of UI objects
+	let obUI = new Array(); // List of UI objects
+
+	let Scene = function (name) {
+		this.name = name;
+		this.cameraTranslationDelta = 1.0;
+		this.cameraTranslationRange = [420.0, -420.0, 420.0, -420.0, 150.0, 0.0]; //X max, X min, Y max, Y min, Z max, Z min
+		this.cameraVertAngleMax = 10.0 * Math.PI / 180.0;
+		this.cameraVertAngleMin = -80.0 * Math.PI / 180.0;
+		this.cameraViewAngleMax = 1.2;
+		this.cameraViewAngleMin = 0.1;
+	}
+	let scene = new Scene(scene_name);
 
 	let objects = new Array();
 	let Object = function (name) {
@@ -142,8 +156,10 @@ window.onload = function(){
 	readSceneData();
 
 	for (let i in objects) {
-		read3DModelData(objects[i].name);
+		read3DModelData(resourcePath + scene.name, objects[i].name, 'object');
 	}
+
+	readUIData();
 
 	const objectActions = [
 /*
@@ -258,8 +274,8 @@ window.onload = function(){
 
 			//manualUpdate();
 
-			// HUD の更新
-			HUDUpdate();
+			// UI の更新
+			UIUpdate();
 
 			gl.enable(gl.DEPTH_TEST);
 			gl.enable(gl.CULL_FACE);
@@ -277,7 +293,7 @@ window.onload = function(){
             // objects の描画
             objectRender();
             // hud 関連
-            HUDRender();
+            UIRender();
 
         }else{
             // canvasを初期化
@@ -380,7 +396,7 @@ window.onload = function(){
 
 				let ay = objects[obCamera[camMode]].angle_y;
 				ay -= 0.001 * (currentDist - prevDist);
-				if (ay < cameraViewAngleMax && ay > cameraViewAngleMin) {
+				if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
 					objects[obCamera[camMode]].angle_y = ay;
 				}
 				prevTouchLocations = currentTouchLocations;
@@ -403,41 +419,21 @@ window.onload = function(){
 		if (camMode == 0) {
 			if (shiftKeyPressed) {
 				//m.translate(objects['camera_whole_origin'].mMatrix0, [-1.0 * dX, 0, 1.0 * dY],
-				m.translate(objects['camera_whole_origin'].mMatrix0, [-cameraTranslationDelta * dX, 0, cameraTranslationDelta * dY], objects['camera_whole_origin'].mMatrix0);
+				m.translate(objects['camera_whole_origin'].mMatrix0, [-scene.cameraTranslationDelta * dX, 0, scene.cameraTranslationDelta * dY], objects['camera_whole_origin'].mMatrix0);
 				//console.log(objects['camera_whole_origin'].mMatrix0)
 				for (var i = 0; i < 3; i++) {
-					if (objects['camera_whole_origin'].mMatrix0[i + 12] > cameraTranslationRange[i * 2]) {
-						objects['camera_whole_origin'].mMatrix0[i + 12] = cameraTranslationRange[i * 2];
+					if (objects['camera_whole_origin'].mMatrix0[i + 12] > scene.cameraTranslationRange[i * 2]) {
+						objects['camera_whole_origin'].mMatrix0[i + 12] = scene.cameraTranslationRange[i * 2];
 					}
-					if (objects['camera_whole_origin'].mMatrix0[i + 12] < cameraTranslationRange[i * 2 + 1]) {
-						objects['camera_whole_origin'].mMatrix0[i + 12] = cameraTranslationRange[i * 2 + 1];
+					if (objects['camera_whole_origin'].mMatrix0[i + 12] < scene.cameraTranslationRange[i * 2 + 1]) {
+						objects['camera_whole_origin'].mMatrix0[i + 12] = scene.cameraTranslationRange[i * 2 + 1];
 					}
 				}
-				/*
-				if (objects['camera_whole_origin'].mMatrix0[12] > cameraTranslationRange[0]) {
-					objects['camera_whole_origin'].mMatrix0[12] = cameraTranslationRange[0];
-				}
-				if (objects['camera_whole_origin'].mMatrix0[12] < cameraTranslationRange[1]) {
-					objects['camera_whole_origin'].mMatrix0[12] = cameraTranslationRange[1];
-				}
-				if (objects['camera_whole_origin'].mMatrix0[13] > cameraTranslationRange[2]) {
-					objects['camera_whole_origin'].mMatrix0[13] = cameraTranslationRange[2];
-				}
-				if (objects['camera_whole_origin'].mMatrix0[13] < cameraTranslationRange[3]) {
-					objects['camera_whole_origin'].mMatrix0[13] = cameraTranslationRange[3];
-				}
-				if (objects['camera_whole_origin'].mMatrix0[14] > cameraTranslationRange[4]) {
-					objects['camera_whole_origin'].mMatrix0[14] = cameraTranslationRange[4];
-				}
-				if (objects['camera_whole_origin'].mMatrix0[14] < cameraTranslationRange[5]) {
-					objects['camera_whole_origin'].mMatrix0[14] = cameraTranslationRange[5];
-				}
-				*/
 			} else {
 				m.rotate(objects['camera_whole_origin'].mMatrix0, -0.003 * dX, [0, 0, 1], objects['camera_whole_origin'].mMatrix0);
 
 				let deltaRotY = -0.003 * dY;
-				if (cameraVertAngle + deltaRotY < cameraVertAngleMax && cameraVertAngle + deltaRotY > cameraVertAngleMin) {
+				if (cameraVertAngle + deltaRotY < scene.cameraVertAngleMax && cameraVertAngle + deltaRotY > scene.cameraVertAngleMin) {
 					let rMatrix = m.identity(m.create());
 					m.rotate(rMatrix, deltaRotY, [1, 0, 0], rMatrix);
 					m.multiply(rMatrix, objects['camera_whole'].mMatrix0, objects['camera_whole'].mMatrix0);
@@ -604,7 +600,7 @@ window.onload = function(){
 								objects[i].kind === 'mesh' &&
                 objects[i].draw === true &&
 								objects[i].facing === true &&
-                obHUD.indexOf(i) === -1 &&
+                //obUI.indexOf(i) === -1 &&
                 obLoading.indexOf(i) === -1
             ) {
 								//console.log('objectRender:', objects[i].name);
@@ -653,25 +649,29 @@ window.onload = function(){
         gl.uniform1f(uniLocation[9], 0.0);
     }
 
-    // HUD
-    function HUDRender(){
-		for (var i = 0 in obHUD) {
-			if (objects[obHUD[i]].draw) {
-				set_attribute(objects[obHUD[i]].VBOList, attLocation, attStride);
-				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[obHUD[i]].iIndex);
+    // UI
+    function UIRender(){
+		for (var i = 0 in obUI) {
+			if (obUI[i].draw) {
+			//if (objects[obUI[i]].draw) {
+				//set_attribute(objects[obUI[i]].VBOList, attLocation, attStride);
+				//gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[obUI[i]].iIndex);
+				set_attribute(obUI[i].VBOList, attLocation, attStride);
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, obUI[i].iIndex);
 				gl.uniform1i(uniLocation[10], false);
 				gl.uniform1i(uniLocation[11], false);
 				gl.activeTexture(gl.TEXTURE0);
-				gl.bindTexture(gl.TEXTURE_2D, objects[obHUD[i]].texture[obHUD[i]]);
+				//gl.bindTexture(gl.TEXTURE_2D, objects[obUI[i]].texture[obUI[i]]);
+				gl.bindTexture(gl.TEXTURE_2D, obUI[i].texture[obUI[i].name]);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 
 				/*
-				if (objects[obHUD[i]].down) {
-					gl.bindTexture(gl.TEXTURE_2D, objects[obHUD[i]].texture[obHUD[i] + '_down']);
+				if (objects[obUI[i]].down) {
+					gl.bindTexture(gl.TEXTURE_2D, objects[obUI[i]].texture[obUI[i] + '_down']);
 				} else {
-					gl.bindTexture(gl.TEXTURE_2D, objects[obHUD[i]].texture[obHUD[i]]);
+					gl.bindTexture(gl.TEXTURE_2D, objects[obUI[i]].texture[obUI[i]]);
 				}
 
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -683,17 +683,18 @@ window.onload = function(){
 
 				// uniform変数にテクスチャを登録
 				//gl.uniform1f(uniLocation[7], 1.0);
-				//gl.uniform1f(uniLocation[5], objects[obHUD[i]].texture_shift);
-				gl.uniform2fv(uniLocation[5], objects[obHUD[i]].texture_shift);
+				//gl.uniform1f(uniLocation[5], objects[obUI[i]].texture_shift);
+				//gl.uniform2fv(uniLocation[5], objects[obUI[i]].texture_shift);
+				//gl.uniform2fv(uniLocation[5], obUI[i].texture_shift);
 
-				m.multiply(vpoMatrix, objects[obHUD[i]].mMatrix, mvpMatrix);
+				m.multiply(vpoMatrix, obUI[i].mMatrix, mvpMatrix);
 				gl.uniformMatrix4fv(uniLocation[1], false, mvpMatrix);
 				gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
 				//gl.uniform1f(uniLocation[4], 1.0);
-				gl.uniform1f(uniLocation[4], objects[obHUD[i]].alpha);
+				gl.uniform1f(uniLocation[4], obUI[i].alpha);
 				//gl.uniform1f(uniLocation[4], 0.5);
 
-				gl.drawElements(gl.TRIANGLES, objects[obHUD[i]].numLoop, gl.UNSIGNED_SHORT, 0);
+				gl.drawElements(gl.TRIANGLES, obUI[i].numLoop, gl.UNSIGNED_SHORT, 0);
 			}
         }
     }
@@ -896,10 +897,11 @@ window.onload = function(){
         return ibo;
     }
 
-	function create_texture(source, i_source){
+	function create_texture(_path, source, i_source, _type){
 		var img = new Image();
 		//img.src = './resource/textures/' + i_source + '.png';
-		img.src = resourcePath + scene + '/textures/' + i_source + '.png';
+		//img.src = resourcePath + scene.name + '/textures/' + i_source + '.png';
+		img.src = _path + '/textures/' + i_source + '.png';
 		img.onload = function(){
 			/*
 			var tex = gl.createTexture();
@@ -909,8 +911,13 @@ window.onload = function(){
 			gl.bindTexture(gl.TEXTURE_2D, null);
 			objects[source].texture[i_source] = tex;
 			*/
-			objects[source].texture[i_source] = create_texture_gl(img);
-			//objects[source].texture.push(create_texture_gl(img));
+			if (_type === 'object') {
+				var ob = objects[source];
+			} else if (_type === 'UI') {
+				var ob = obUI[source];
+			}
+			//objects[source].texture[i_source] = create_texture_gl(img);
+			ob.texture[i_source] = create_texture_gl(img);
 			numDataReady += 1;
 			allDataReady = checkAllDataReady();
 		};
@@ -929,38 +936,44 @@ window.onload = function(){
 
 	function readSceneData() {
 		var data = new XMLHttpRequest();
-		data.open("GET", resourcePath + 'scenes/' + title + '-' + scene + '.csv', false); //true:非同期,false:同期
+		data.open("GET", resourcePath + 'scenes/' + title + '-' + scene.name + '.csv', false); //true:非同期,false:同期
 		data.send(null);
 
 		let LF = String.fromCharCode(10); //改行ｺｰﾄﾞ
 		let lines = data.responseText.split(LF);
 		let _sceneData = lines[1].split(',');
-		let num_object = Number(_sceneData[0]);
-		cameraTranslationDelta = Number(_sceneData[1]);
-		cameraTranslationRange = _sceneData.slice(2, 8).map(Number);
-		cameraVertAngleMax = Number(_sceneData[8]) * Math.PI / 180.0;
-		cameraVertAngleMin = Number(_sceneData[9]) * Math.PI / 180.0;
-		cameraViewAngleMax = Number(_sceneData[10]);
-		cameraViewAngleMin = Number(_sceneData[11]);
+		let sdIndex = 0;
+		scene.num_object = Number(_sceneData[sdIndex++]);
+		scene.UI = _sceneData[sdIndex++];
+		scene.cameraTranslationDelta = Number(_sceneData[sdIndex++]);
+		scene.cameraTranslationRange = _sceneData.slice(sdIndex, sdIndex + 6).map(Number);
+		sdIndex += 6;
+		scene.cameraVertAngleMax = Number(_sceneData[sdIndex++]) * Math.PI / 180.0;
+		scene.cameraVertAngleMin = Number(_sceneData[sdIndex++]) * Math.PI / 180.0;
+		scene.cameraViewAngleMax = Number(_sceneData[sdIndex++]);
+		scene.cameraViewAngleMin = Number(_sceneData[sdIndex++]);
 		let dList = new Array();
-		for (var i = 3; i < num_object + 3; i++) {
+		for (var i = 3; i < scene.num_object + 3; i++) {
 			let _line = lines[i].split(',');
-			let _name = _line[0];
-			let _kind = _line[1];
-			let _texture = _line.slice(2, 4);
-			let _parent = _line[4];
-			let _camera = _line[5] === 'yes' ? true : false;
-			let _selectMesh = _line[6];
-			let _UI = _line[7] === 'yes' ? true : false;
-			let _oneSide = _line[8] === 'yes' ? true : false;
-			let _normal = _line.slice(9, 12).map(Number);
-			let _description = _line[12];
+			let lIndex = 0;
+			let _name = _line[lIndex++];
+			let _kind = _line[lIndex++];
+			let _texture = _line.slice(lIndex, lIndex + 2);
+			lIndex += 2;
+			let _parent = _line[lIndex++];
+			let _camera = _line[lIndex++] === 'yes' ? true : false;
+			let _selectMesh = _line[lIndex++];
+			let _UI = _line[lIndex++] === 'yes' ? true : false;
+			let _oneSide = _line[lIndex++] === 'yes' ? true : false;
+			let _normal = _line.slice(lIndex, lIndex + 3).map(Number);
+			lIndex += 3;
+			let _description = _line[lIndex++];
 			const ob = new Object(_name);
-			ob.texture = new Array();
+			ob.texture = new Array(); // WebGL texture
 			ob.dataReady = false;
 			ob.parent = _parent;
 			ob.kind = _kind;
-			ob.textureList = [];
+			ob.textureList = []; // List of textures (string)
 
 			for (var j = 0 in _texture) {
 				if (_texture[j] != '') {
@@ -988,21 +1001,25 @@ window.onload = function(){
 			if (_selectMesh != '') {
 				obResp.push(_name);
 			}
+			/*
 			if (_UI) {
-				obHUD.push(_name);
+				obUI.push(_name);
 			}
+			*/
 		}
 
 	}
 
-	function read3DModelData(_objectName) { //csvﾌｧｲﾙﾉ相対ﾊﾟｽor絶対ﾊﾟｽ
+	function read3DModelData(_path, _objectName, _type) { //csvﾌｧｲﾙﾉ相対ﾊﾟｽor絶対ﾊﾟｽ
 		var coord = new Array();
 		var norm = new Array();
 		var uv_coord = new Array();
 		var data = new XMLHttpRequest();
-		data.open("GET", resourcePath + scene + '/objects/' + _objectName + '.dat', true); //true:非同期,false:同期
+		//data.open("GET", resourcePath + scene.name + '/objects/' + _objectName + '.dat', true); //true:非同期,false:同期
+		data.open("GET", _path + '/objects/' + _objectName + '.dat', true); //true:非同期,false:同期
 		data.responseType = 'arraybuffer';
 		data.send(null);
+		//console.log(_path + '/objects/' + _objectName + '.dat');
 
 		data.onload = function(e) {
 			var arrayBuffer = data.response;
@@ -1012,7 +1029,11 @@ window.onload = function(){
 			var scale = [];
 			var dimensions = [];
 			var off = 0;
-			var ob = objects[_objectName];
+			if (_type === 'object') {
+				var ob = objects[_objectName];
+			} else if (_type === 'UI') {
+				var ob = obUI[_objectName];
+			}
 
 			ob.type = dv.getInt32(off, true); //0:MESH, 7:EMPTY, 8:CAMERA
 			off += 4;
@@ -1092,7 +1113,7 @@ window.onload = function(){
 				ob.iIndex        = create_ibo(ind);
 
 				for (var i = 0 in ob.textureList) {
-					create_texture(ob.name, ob.textureList[i]);
+					create_texture(_path, ob.name, ob.textureList[i], _type);
 				}
 			} else if (ob.type == 8) {//object type 'CAMERA'
 				var _pMatrix = m.identity(m.create());
@@ -1116,149 +1137,51 @@ window.onload = function(){
 				ob.pMatrix = _pMatrix;
 			}
 
-			objects[_objectName].dataReady = true;
+			//objects[_objectName].dataReady = true;
+			ob.dataReady = true;
 			numDataReady += 1;
 			allDataReady = checkAllDataReady();
 		}
 	}
-/*
-	function readObjectData(filePath) { //csvﾌｧｲﾙﾉ相対ﾊﾟｽor絶対ﾊﾟｽ
-		var coord = new Array();
-		var norm = new Array();
-		var uv_coord = new Array();
+
+	function readUIData() {
 		var data = new XMLHttpRequest();
-		data.open("GET", './resource/objects/' + filePath + '.dat', true); //true:非同期,false:同期
-		data.responseType = 'arraybuffer';
+		data.open("GET", resourcePath + 'UI/UI/UI-' + scene.UI + '.csv', false); //true:非同期,false:同期
 		data.send(null);
 
-		data.onload = function(e) {
-			var arrayBuffer = data.response;
-			var dv = new DataView(arrayBuffer);
-			var location = [];
-			var rotation = [];
-			var scale = [];
-			var dimensions = [];
-			var off = 0;
-			var ob = objects[filePath];
+		let LF = String.fromCharCode(10); //改行ｺｰﾄﾞ
+		let lines = data.responseText.split(LF);
+		let _UIData = lines[1].split(',');
+		let UIIndex = 0;
+		let num_object = Number(_UIData[0]);
 
-			ob.type = dv.getInt32(off, true); //0:MESH, 8:CAMERA
-			off += 4;
-			ob.rotation_mode = dv.getInt32(off, true);
-			//console.log(filePath, ob.rotation_mode);
-			off += 4;
+		for (var i = 3; i < num_object + 3; i++) {
+			let _line = lines[i].split(',');
+			let lIndex = 0;
+			let _name = _line[lIndex++];
+			let _texture = [_line[lIndex++]];
+			//let _texture = _line.slice(lIndex, lIndex + 2);
+			//console.log('[readUIData] name: ' + _name + ', texture: ' + _texture);
+			let ob = new Object(_name);
+			ob.texture = new Array(); // WebGL texture
+			ob.dataReady = false;
+			ob.textureList = []; // List of textures (string)
 
-			for (var i = 0; i < 3; i++) {
-				location.push(dv.getFloat32(off, true));
-				off += 4;
-			}
-			ob.location = location;
-
-			var rotation_comp = 4;
-			if (ob.rotation_mode != 0) {
-				rotation_comp = 3;
-			}
-			for (var i = 0; i < rotation_comp; i++) {
-				rotation.push(dv.getFloat32(off, true));
-				off += 4;
-			}
-			ob.rotation = rotation;
-
-			for (var i = 0; i < 3; i++) {
-				scale.push(dv.getFloat32(off, true));
-				off += 4;
-			}
-			ob.scale = scale;
-
-			for (var i = 0; i < 3; i++) {
-				dimensions.push(dv.getFloat32(off, true));
-				off += 4;
-			}
-			ob.dimensions = dimensions;
-
-			ob.mMatrix0 = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Local coordinate
-			ob.mMatrix = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Global coordinate
-
-			if (ob.type == 0) {//object type 'MESH'
-				ob.numLoop = dv.getInt32(off, true);
-				off += 4;
-
-				for	(var i = 0; i < ob.numLoop; ++i) {
-					for (var j = 0; j < 3; ++ j) {
-						coord.push(dv.getFloat32(off, true));
-						off += 4;
-					}
+			for (var j = 0 in _texture) {
+				if (_texture[j] != '') {
+					ob.textureList.push(_texture[j]);
 				}
-				if (obResp.indexOf(filePath) != -1) {
-					//console.log('response object: ' + filePath);
-					//console.log(ob.mMatrix);
-					let im = m.identity(m.create());
-					m.transpose(ob.mMatrix, im);
-					tc = [];
-					for (i = 0; i < ob.numLoop * 3; i += 3) {
-						_v = coord.slice(i, i + 3).concat(1);
-						//console.log('before translation' + _v);
-						m.multiplyV(im, _v, _v);
-						//console.log('after translation' + _v);
-						tc.push(_v[0]);
-						tc.push(_v[1]);
-						tc.push(_v[2]);
-					}
-					ob.coord = tc;
-				}
-
-				for	(var i = 0; i < ob.numLoop; ++i) {
-					for (var j = 0; j < 2; ++ j) {
-						uv_coord.push(dv.getFloat32(off, true));
-						off += 4;
-					}
-				}
-
-				var ind = new Array();
-				for (var ii = 0; ii < ob.numLoop;++ii) {
-					ind.push(ii);
-				}
-
-				var vPosition     = create_vbo(coord);
-				var vTextureCoord = create_vbo(uv_coord);
-				ob.VBOList       = [vPosition, vTextureCoord];
-				ob.iIndex        = create_ibo(ind);
-
-				create_texture(filePath, filePath);
-				if (filePath === '5P_tower_GL') {
-					create_texture(filePath, filePath + '_map');
-				}
-			} else if (ob.type == 8) {//object type 'CAMERA'
-				console.log(filePath);
-				var _pMatrix = m.identity(m.create());
-				ob.camera_type = dv.getInt32(off, true);
-				off += 4;
-				ob.clip_start = dv.getFloat32(off, true);
-				off += 4;
-				ob.clip_end = dv.getFloat32(off, true);
-				off += 4;
-				switch (ob.camera_type) {// 0: PERSP, 1: ORTHO
-					case 0: //PERSP
-						ob.angle_y = dv.getFloat32(off, true);
-						ob.angle_y0 = ob.angle_y; //initial value. Do not change!
-						m.perspective(ob.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, ob.clip_start, ob.clip_end, _pMatrix);
-						break;
-					case 1: //ORTHO
-						ob.ortho_scale = dv.getFloat32(off, true);
-						m.ortho(-ob.ortho_scale * c.width, ob.ortho_scale * c.width, ob.ortho_scale * c.height, -ob.ortho_scale * c.height, ob.clip_start, ob.clip_end, _pMatrix);
-						break;
-				}
-				ob.pMatrix = _pMatrix;
-
-				//console.log(objects[filePath]);
 			}
 
-			objects[filePath].dataReady = true;
-			numDataReady += 1;
-			allDataReady = checkAllDataReady();
+			ob.draw = true;
+			ob.alpha = 1.0;
 
+			console.log(_name, _texture);
+			obUI[_name] = ob;
+			read3DModelData(resourcePath + 'UI/' + scene.UI, _name, 'UI');
 		}
 	}
-*/
+
 	function checkAllDataReady() {
 		var ready = true;
 		for (var i = 0 in objects) {
@@ -1655,14 +1578,14 @@ window.onload = function(){
 		//return sel;
 	}
 
-	function HUDUpdate(){
+	function UIUpdate(){
 	}
 
 	function buttonPressed(_button, _location) {
-		console.log(_button, objects[_button]);
-		if (objects[_button] != null) {
-			let loc = objects[_button].location;
-			let dim = objects[_button].dimensions;
+		console.log(_button, obUI[_button]);
+		if (obUI[_button] != null) {
+			let loc = obUI[_button].location;
+			let dim = obUI[_button].dimensions;
 			if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
 				return true;
 			} else {
@@ -1749,7 +1672,7 @@ window.onload = function(){
 			//wheelDelta = e.deltaY;
 			let ay = objects[obCamera[camMode]].angle_y;
 			ay += wheelDelta * e.deltaY;
-			if (ay < cameraViewAngleMax && ay > cameraViewAngleMin) {
+			if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
 				objects[obCamera[camMode]].angle_y = ay;
 			}
 			//eText.textContent = ay;

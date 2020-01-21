@@ -1,5 +1,5 @@
-number of objects,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,,
-36,1.0,420.0,-420.0,420.0,-420.0,150.0,0,10.0,-80.0,1.2,0.1,,
+number of objects,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,
+32,second_layer,1.0,420.0,-420.0,420.0,-420.0,150.0,0,10.0,-80.0,1.2,0.1,
 object,kind,texture01,texture02,parent,camera,select mesh,UI,one side,normal x,normal y,normal z,description,number of polygons
 camera_whole,camera,,,camera_whole_origin,yes,,,,,,,,
 camera_whole_origin,empty,,,,,,,,,,,,
@@ -31,10 +31,10 @@ south_side_span_GL,mesh,south_side_span_GL,,,,south_side_span_GL,,,,,,7A側側�
 suspender_GL,mesh,suspender_GL,,,,suspender_selection,,,,,,ハンガーロープ¥　CFRCハンガーロープ¥　4本/格点、直径：48mm/50mm,"2,944"
 sea_surface_GL,mesh,sea_surface_GL,,,,,,,,,,,2
 terrain_GL,mesh,terrain_GL,,,,,,,,,,,"3,260"
+cable_selection,selection_mesh,,,,,,,,,,,,
+suspender_selection,selection_mesh,,,,,,,,,,,,
 UI_revert_button,mesh,UI_revert_button,,,,,yes,,,,,,
 UI_terrain_button,mesh,UI_terrain_button,,,,,yes,,,,,,
 UI_map_button,mesh,UI_map_button,,,,,yes,,,,,,
 UI_info_button,mesh,UI_info_button,,,,,yes,,,,,,
-cable_selection,selection_mesh,,,,,,,,,,,,
-suspender_selection,selection_mesh,,,,,,,,,,,,
 ,,,,,,,,,,,,,"17,878"
