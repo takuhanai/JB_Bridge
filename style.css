@@ -42,7 +42,7 @@ body {margin:0;
 	height: auto;
 	pointer-events: none;
 }
-#divcontainer {
+#commentContainer {
 	/*
 	width: 200px;
 	height: 100px;
@@ -56,7 +56,7 @@ body {margin:0;
 
 }
 
-.floating-div {
+.floating-comment {
 	font-size: 14px;
 	/*width: 200px;*/
 	height: auto;
@@ -64,6 +64,19 @@ body {margin:0;
 	border: 1px solid;
 	padding: 0.5em;
 	border-radius: 0.5em;
+}
+
+#memoContainer {
+	/*pointer-events: none;*/
+}
+
+.floating-memo {
+	font-size: 14px;
+	/*height: auto;*/
+	background-color: rgba(255, 255, 255, 1.0);
+	border: 1px solid;
+	/*padding: 0.5em;*/
+	/*border-radius: 0.5em;*/
 }
 /*
 #overlay {
@@ -223,12 +236,21 @@ body {
 	grid-column-start: main;
 	grid-row-start: img
 }
-#divcontainer {
+#commentContainer {
 	grid-column-start: main;
 	grid-row-start: img;
 }
 
-.floating-div {
+.floating-comment {
+	position:relative;
+}
+
+#memoContainer {
+	grid-column-start: main;
+	grid-row-start: img;
+}
+
+.floating-memo {
 	position:relative;
 }
 /*

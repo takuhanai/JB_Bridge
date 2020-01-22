@@ -25,7 +25,9 @@ window.onload = function(){
 	let text01location = [20.0, 50.0, 0.0, 0.0];
 	let selObLoc3D = [0.0, 0.0, 0.0, 1.0];
 
-	let textBoxWidth = 280;//px
+	let commentBoxWidth = 280;//px
+	let memoCols = 20;
+	let memoRows = 5;
 
 	let mousePressed = false;
 	let shiftKeyPressed = false;
@@ -218,19 +220,27 @@ window.onload = function(){
 	//let canvas2 = document.getElementById('canvas2');
 	//let ctx = canvas2.getContext('2d');  // CanvasRenderingContext2D
 
-	// look up the divcontainer
-	let divContainerElement = document.getElementById("divcontainer");
+	// look up the commentContainer
+	let commentContainerElement = document.getElementById("commentContainer");
 	// make the div
-	let div = document.createElement("div");
+	let comment = document.createElement("div");
 	// assign it a CSS class
-	div.className = "floating-div";
-	// make a text node for its content
-	//let textNode = document.createTextNode("");
-	//div.appendChild(textNode);
-	// add it to the divcontainer
-	divContainerElement.appendChild(div);
-	div.style.visibility = 'hidden';
-	div.style.width = textBoxWidth.toString() + "px";
+	comment.className = "floating-comment";
+	// add it to the commentContainer
+	commentContainerElement.appendChild(comment);
+	comment.style.visibility = 'hidden';
+	comment.style.width = commentBoxWidth.toString() + "px";
+
+	let memoContainerElement = document.getElementById("memoContainer");
+	let memo = document.createElement("textarea");
+	memo.className = "floating-memo";
+	memoContainerElement.appendChild(memo);
+	//memo.style.visibility = 'hidden';
+	memo.cols = memoCols.toString();
+	memo.rows = memoRows.toString();
+	memo.style.visibility = 'hidden'
+	memo.style.resize = 'none';
+
 /*
 	let overlayElement = document.getElementById('overlay');
 	let textElement = document.getElementById('text');
@@ -282,6 +292,7 @@ window.onload = function(){
 			gl.enable(gl.BLEND);
 			//gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+			//gl.blendFuncSeparate(gl.ONE, gl.ZERO, gl.ONE, gl.ONE);
 			//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 			cameraUpdate();
@@ -664,6 +675,7 @@ window.onload = function(){
 				//gl.bindTexture(gl.TEXTURE_2D, objects[obUI[i]].texture[obUI[i]]);
 				gl.bindTexture(gl.TEXTURE_2D, obUI[i].texture[obUI[i].name]);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 
@@ -760,16 +772,16 @@ window.onload = function(){
 			//eText.textContent = text01location[0] + ', ' + text01location[1];
 			if (text01location[0] < 0.0) {
 				text01location[0] = 0.0;
-			} else if (text01location[0] > c.width - textBoxWidth) {
-				text01location[0] = c.width - textBoxWidth;
+			} else if (text01location[0] > c.width - commentBoxWidth) {
+				text01location[0] = c.width - commentBoxWidth;
 			}
 			if (text01location[1] < 0.0) {
 				text01location[1] = 0.0;
 			} else if (text01location[1] > c.height - 160) {
 				text01location[1] = c.height - 160.0;
 			}
-			div.style.left = Math.floor(text01location[0]) + "px";
-			div.style.top  = Math.floor(text01location[1]) + "px";
+			comment.style.left = Math.floor(text01location[0]) + "px";
+			comment.style.top  = Math.floor(text01location[1]) + "px";
 		}
 
     // シェーダを生成する関数
@@ -1491,10 +1503,8 @@ window.onload = function(){
 				_t = dot(_r, _e2) / dot(_q, _e1);
 				_u = dot(_q, _e) / dot(_q, _e1);
 				_v = dot(_r, _d) / dot(_q, _e1);
-				//console.log(_t, _u, _v, 1 - _u - _v);
 				if (_u > 0 && _v > 0 && 1 - _u - _v > 0 && _t < _oR.depth) {
 					_oR.depth = _t;
-					//console.log(_t, _u, _v, 1 - _u - _v);
 				}
 			}
 			if (sel === null) {
@@ -1507,75 +1517,25 @@ window.onload = function(){
 				}
 			}
 		}
-		//console.log('selection_3D:sel', sel);
 
-		/*
-		var testV = [0.0, 0.0, 0.0, 1.0];
-		m.multiplyV(invVMatrix, testV, testV);
-
-		var t = 1000000;
-		var sel = null;
-		for (var i = 0 in obResp) {
-			var A = [testV[0] - objects[obResp[i]].location[0], testV[1] - objects[obResp[i]].location[1], testV[2] - objects[obResp[i]].location[2]];
-			var b = ray_wld[0] * A[0] + ray_wld[1] * A[1] + ray_wld[2] * A[2];
-			var cc = A[0] * A[0] + A[1] * A[1] + A[2] * A[2] - 10.0;
-			var det = b * b - cc;
-			console.log(obResp[i], -b, det);
-			if (det >= 0.0) {
-				if (- b + Math.sqrt(det) < t) {
-					t = - b + Math.sqrt(det);
-					sel = objects[obResp[i]].name;
-				}
-				if (- b - Math.sqrt(det) < t) {
-					t = - b - Math.sqrt(det);
-					sel = objects[obResp[i]].name;
-				}
-			}
-		}
-		*/
 		eText.textContent = sel;
 
 		if (sel != null) {
-			while (div.firstChild) div.removeChild(div.firstChild);
+			while (comment.firstChild) comment.removeChild(comment.firstChild);
 			if (sel === selectedObject) {
 				selectedObject = null;
 				text01 = '';
-				div.style.visibility = 'hidden';
+				comment.style.visibility = 'hidden';
 			} else {
 				selectedObject = sel;
 				let _strArray = objects[selectedObject].description.split('¥');
 				for (var i = 0 in _strArray) {
-					div.appendChild(document.createTextNode(_strArray[i]));
-					div.appendChild(document.createElement('br'));
+					comment.appendChild(document.createTextNode(_strArray[i]));
+					comment.appendChild(document.createElement('br'));
 				}
-				//let tHeight = _strArray.length * 20;
-				//div.style.height = tHeight.toString() + 'px';
 				text01 = selectedObject.substring(0, selectedObject.length - 3);
 			}
-			//div.style.visibility = 'hidden';
 		}
-
-		/*
-		if (sel === selectedObject) {
-			selectedObject = null;
-		} else if (sel != null) {
-			selectedObject = sel;
-		}
-		if (selectedObject != null) {
-			text01 = selectedObject.substring(0, selectedObject.length - 3);
-			let _strArray = objects[selectedObject].description.split('¥');
-			for (var i = 0 in _strArray) {
-				div.appendChild(document.createTextNode(_strArray[i]));
-				div.appendChild(document.createElement('br'));
-			}
-		} else {
-			text01 = '';
-			textNode.nodeValue = '';
-		}
-		*/
-		//textNode.nodeValue = text01;
-		//selectedObject = sel;
-		//return sel;
 	}
 
 	function UIUpdate(){
@@ -1608,7 +1568,7 @@ window.onload = function(){
 			objects['terrain_GL'].draw = true;
 			drawMap = false;
 			selectedObject = null;
-			div.style.visibility = 'hidden';
+			comment.style.visibility = 'hidden';
 		}
 		if (buttonPressed('UI_terrain_button', _location)) {
 			objects['sea_surface_GL'].draw = !objects['sea_surface_GL'].draw;
@@ -1619,10 +1579,10 @@ window.onload = function(){
 		}
 		if (buttonPressed('UI_info_button', _location)) {
 			if (selectedObject != null) {
-				if (div.style.visibility === 'visible') {
-					div.style.visibility = 'hidden';
-				} else if (div.style.visibility === 'hidden') {
-					div.style.visibility = 'visible';
+				if (comment.style.visibility === 'visible') {
+					comment.style.visibility = 'hidden';
+				} else if (comment.style.visibility === 'hidden') {
+					comment.style.visibility = 'visible';
 					textRender();
 				}
 			}
@@ -1635,7 +1595,7 @@ window.onload = function(){
 			prevMouseLocation = getMouseLocation(e);
 			currentMouseLocation = prevMouseLocation;
 			selection_3D(currentMouseLocation);
-			if (div.style.visibility === 'visible') {
+			if (comment.style.visibility === 'visible') {
 				textRender();
 			}
 			if (prevMouseLocation.x > c.width * 0.9 && prevMouseLocation.y > c.height * 0.9) {
@@ -1650,7 +1610,7 @@ window.onload = function(){
 	function mouseMove(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			currentMouseLocation = getMouseLocation(e);
-			if (div.style.visibility === 'visible') {
+			if (comment.style.visibility === 'visible') {
 				textRender();
 			}
 		}
@@ -1685,7 +1645,7 @@ window.onload = function(){
 			prevTouchLocations = getTouchLocations(e);
 			currentTouchLocations = prevTouchLocations;
 			selection_3D(currentTouchLocations[0]);
-			if (div.style.visibility === 'visible') {
+			if (comment.style.visibility === 'visible') {
 				textRender();
 			}
 			if (prevTouchLocations.length === 1) {
@@ -1706,7 +1666,7 @@ window.onload = function(){
 	function touchMove(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			currentTouchLocations = getTouchLocations(e);
-			if (div.style.visibility === 'visible') {
+			if (comment.style.visibility === 'visible') {
 				textRender();
 			}
 			eText.textContent = currentTouchLocations.length;
