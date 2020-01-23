@@ -67,7 +67,7 @@ body {margin:0;
 }
 
 #memoContainer {
-	/*pointer-events: none;*/
+	pointer-events: none;
 }
 
 .floating-memo {
