@@ -644,7 +644,7 @@ window.onload = function(){
 
                 gl.uniform1f(uniLocation[4], objects[i].alpha);
                 gl.uniform2fv(uniLocation[5], objects[i].texture_shift);
-                gl.uniform1f(uniLocation[9], objects[i].shadow);
+                //gl.uniform1f(uniLocation[9], objects[i].shadow);
                 //m.multiply(vpMatrix, mTempMatrix, mvpMatrix);
                 m.multiply(vpMatrix, objects[i].mMatrix, mvpMatrix);
 
@@ -657,7 +657,7 @@ window.onload = function(){
                 gl.drawElements(gl.TRIANGLES, objects[i].numLoop, gl.UNSIGNED_SHORT, 0);
             }
         }
-        gl.uniform1f(uniLocation[9], 0.0);
+        //gl.uniform1f(uniLocation[9], 0.0);
     }
 
     // UI
