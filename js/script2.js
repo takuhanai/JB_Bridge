@@ -644,7 +644,7 @@ window.onload = function(){
 
                 gl.uniform1f(uniLocation[4], objects[i].alpha);
                 gl.uniform2fv(uniLocation[5], objects[i].texture_shift);
-                gl.uniform1f(uniLocation[9], objects[i].shadow);
+                //gl.uniform1f(uniLocation[9], objects[i].shadow);
                 //m.multiply(vpMatrix, mTempMatrix, mvpMatrix);
                 m.multiply(vpMatrix, objects[i].mMatrix, mvpMatrix);
 
@@ -657,7 +657,7 @@ window.onload = function(){
                 gl.drawElements(gl.TRIANGLES, objects[i].numLoop, gl.UNSIGNED_SHORT, 0);
             }
         }
-        gl.uniform1f(uniLocation[9], 0.0);
+        //gl.uniform1f(uniLocation[9], 0.0);
     }
 
     // UI
@@ -675,7 +675,7 @@ window.onload = function(){
 				//gl.bindTexture(gl.TEXTURE_2D, objects[obUI[i]].texture[obUI[i]]);
 				gl.bindTexture(gl.TEXTURE_2D, obUI[i].texture[obUI[i].name]);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 
