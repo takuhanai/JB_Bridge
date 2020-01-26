@@ -134,13 +134,14 @@ window.onload = function(){
 
 	let obResp = []; // List of objects responding to mouse (touch) action
 
-	let Annoatation = function (_loc, _desc) {
+	let Annoatation = function (_loc, _ob, _desc) {
 		this.loc = _loc; //3D vecotr
+		this.ob = _ob;
 		this.desc = _desc;
 	}
 	let annotations = [
-		new Annoatation([0.0, -1.7, 25.137], ''),
-		new Annoatation([0.0, 1.7, 25.137], '')
+		new Annoatation([0.0, -1.7, 25.137], 'lower_strat_wall_S', ''),
+		new Annoatation([0.0, 1.7, 25.137], 'lower_strat_wall_C', '')
 	];
 
 	//let obUI = []; // List of UI objects
@@ -602,16 +603,18 @@ window.onload = function(){
 				for (var i = 0 in objects) {
 					if (objects[i].one_sided) {
 						if (dot(objects[i].normal, cameraDirection) < 0.0) {
-							objects[i].facing = true;
+							objects[i].draw = true;
+							//objects[i].facing = true;
 						} else {
-							objects[i].facing = false;
+							objects[i].draw = false;
+							//objects[i].facing = false;
 						}
 					}
             if (
                 objects[i].type === 0 &&
 								objects[i].kind === 'mesh' &&
                 objects[i].draw === true &&
-								objects[i].facing === true &&
+								//objects[i].facing === true &&
                 //obUI.indexOf(i) === -1 &&
                 obLoading.indexOf(i) === -1
             ) {
@@ -671,12 +674,12 @@ window.onload = function(){
 			for (var i = 0; i < annotations.length; i++) {
 				let annoOb = obUI['UI_annotation'];
 				let _tMatrix = m.identity(m.create());
-				//console.log(annotations[i].loc.concat(1.0));
 				let _v = from3DPointTo2D(annotations[i].loc.concat(1.0));
-				//eText.textContent = _v;
 				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
 				annoOb.mMatrix = _tMatrix;
-				UIRendergl(annoOb);
+				if (objects[annotations[i].ob].draw) {
+					UIRendergl(annoOb);
+				}
 			}
     }
 
@@ -979,7 +982,7 @@ window.onload = function(){
 			ob.normal = _normal;
 			ob.description = _description;
 			ob.draw = true;
-			ob.facing = true;
+			//ob.facing = true;
 			ob.texture_shift = [0.0, 0.0];
 			ob.alpha = 1.0;
 	    ob.isHit = false;
