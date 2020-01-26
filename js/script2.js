@@ -1,6 +1,6 @@
 
 window.onload = function(){
-    // constant
+	// constant
 	const numDrawMode = 5;
 	const FPS = 60;
 	const FPS_blender = 24;
@@ -9,7 +9,7 @@ window.onload = function(){
 	const OPENING_LENGTH = 0.0;
 	// test
 
-    // variables
+  // variables
 	let resourcePath = './resource/';
 	let title = 'oshima_bridge';
 	//let scene_name = 'oshima_bridge';
@@ -20,10 +20,11 @@ window.onload = function(){
 
 	let drawMap = false;
 	let selectedObject = null;
+	let pointable = false;
 
 	let text01 = 'Oshima Bridge';
 	let text01location = [20.0, 50.0, 0.0, 0.0];
-	let selObLoc3D = [0.0, 0.0, 0.0, 1.0];
+	//let selObLoc3D = [0.0, 0.0, 0.0, 1.0];
 
 	let commentBoxWidth = 280;//px
 	let memoCols = 20;
@@ -117,7 +118,7 @@ window.onload = function(){
 	let tMatrix = m.identity(m.create());
 	let vTempMatrix = m.identity(m.create());
 
-	let tmvpMatrix = m.identity(m.create());
+	//let tmvpMatrix = m.identity(m.create());
 
 	let q = new qtnIV();
 
@@ -132,6 +133,15 @@ window.onload = function(){
 	let obLoading = []; // List of objects used for loading screen
 
 	let obResp = []; // List of objects responding to mouse (touch) action
+
+	let Annoatation = function (_loc, _desc) {
+		this.loc = _loc; //3D vecotr
+		this.desc = _desc;
+	}
+	let annotations = [
+		new Annoatation([0.0, -1.7, 25.137], ''),
+		new Annoatation([0.0, 1.7, 25.137], '')
+	];
 
 	//let obUI = []; // List of UI objects
 	let obUI = new Array(); // List of UI objects
@@ -279,19 +289,20 @@ window.onload = function(){
 				mouseUpdate();
 			}
 
-            // objects の更新
+      // objects の更新
       actionUpdate();
 
 			//manualUpdate();
 
 			// UI の更新
-			UIUpdate();
+			//UIUpdate();
 
 			gl.enable(gl.DEPTH_TEST);
 			gl.enable(gl.CULL_FACE);
 			gl.enable(gl.BLEND);
 			//gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+			//gl.blendFuncSeparate(gl.ONE, gl.ZERO, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			//gl.blendFuncSeparate(gl.ONE, gl.ZERO, gl.ONE, gl.ONE);
 			//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
@@ -317,16 +328,6 @@ window.onload = function(){
         }
 
         gl.flush();
-				/*
-				if (div.style.visibility === 'visible') {
-					textRender();
-				}
-				*/
-				/*
-				ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-				ctx.font = '20pt Arial';
-				ctx.fillText(text01, text01location[0], text01location[1]);
-				*/
     }
 
 	function openingUpdate() {
@@ -662,54 +663,44 @@ window.onload = function(){
 
     // UI
     function UIRender(){
-		for (var i = 0 in obUI) {
-			if (obUI[i].draw) {
-			//if (objects[obUI[i]].draw) {
-				//set_attribute(objects[obUI[i]].VBOList, attLocation, attStride);
-				//gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[obUI[i]].iIndex);
-				set_attribute(obUI[i].VBOList, attLocation, attStride);
-				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, obUI[i].iIndex);
-				gl.uniform1i(uniLocation[10], false);
-				gl.uniform1i(uniLocation[11], false);
-				gl.activeTexture(gl.TEXTURE0);
-				//gl.bindTexture(gl.TEXTURE_2D, objects[obUI[i]].texture[obUI[i]]);
-				gl.bindTexture(gl.TEXTURE_2D, obUI[i].texture[obUI[i].name]);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-
-				/*
-				if (objects[obUI[i]].down) {
-					gl.bindTexture(gl.TEXTURE_2D, objects[obUI[i]].texture[obUI[i] + '_down']);
-				} else {
-					gl.bindTexture(gl.TEXTURE_2D, objects[obUI[i]].texture[obUI[i]]);
+			for (var i = 0 in obUI) {
+				if (obUI[i].draw && obUI[i].fix) {
+					UIRendergl(obUI[i]);
 				}
-
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
-				//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-				*/
-
-				// uniform変数にテクスチャを登録
-				//gl.uniform1f(uniLocation[7], 1.0);
-				//gl.uniform1f(uniLocation[5], objects[obUI[i]].texture_shift);
-				//gl.uniform2fv(uniLocation[5], objects[obUI[i]].texture_shift);
-				//gl.uniform2fv(uniLocation[5], obUI[i].texture_shift);
-
-				m.multiply(vpoMatrix, obUI[i].mMatrix, mvpMatrix);
-				gl.uniformMatrix4fv(uniLocation[1], false, mvpMatrix);
-				gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
-				//gl.uniform1f(uniLocation[4], 1.0);
-				gl.uniform1f(uniLocation[4], obUI[i].alpha);
-				//gl.uniform1f(uniLocation[4], 0.5);
-
-				gl.drawElements(gl.TRIANGLES, obUI[i].numLoop, gl.UNSIGNED_SHORT, 0);
+      }
+			for (var i = 0; i < annotations.length; i++) {
+				let annoOb = obUI['UI_annotation'];
+				let _tMatrix = m.identity(m.create());
+				//console.log(annotations[i].loc.concat(1.0));
+				let _v = from3DPointTo2D(annotations[i].loc.concat(1.0));
+				//eText.textContent = _v;
+				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
+				annoOb.mMatrix = _tMatrix;
+				UIRendergl(annoOb);
 			}
-        }
     }
+
+		function UIRendergl(_ob) {
+			set_attribute(_ob.VBOList, attLocation, attStride);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, _ob.iIndex);
+			gl.uniform1i(uniLocation[10], false);
+			gl.uniform1i(uniLocation[11], false);
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_ob.name]);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+
+			gl.uniform2fv(uniLocation[5], _ob.texture_shift);
+
+			m.multiply(vpoMatrix, _ob.mMatrix, mvpMatrix);
+			gl.uniformMatrix4fv(uniLocation[1], false, mvpMatrix);
+			gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
+			gl.uniform1f(uniLocation[4], _ob.alpha);
+
+			gl.drawElements(gl.TRIANGLES, _ob.numLoop, gl.UNSIGNED_SHORT, 0);
+		}
 
     // プログレス表示
     function progressRender(){
@@ -747,22 +738,11 @@ window.onload = function(){
 
 		function textRender() {
 			if (selectedObject != null) {
-				//let selObLoc3D = objects[selectedObject].location.concat([1.0]);
-				selObLoc3D = objects[selectedObject].location.concat([1.0]);
-				//selObLoc3D.push(1.0);
-				//console.log(selObLoc3D);
-				//let selObLoc2D = [0.0, 0.0, 0.0, 0.0];
-				//let tmvpMatrix = m.identity(m.create());
-				m.multiply(vpMatrix, objects[selectedObject].mMatrix, tmvpMatrix);
-				//m.multiplyV(tmvpMatrix, selObLoc3D, text01location);
-				//m.multiplyV(tmvpMatrix, [0.0, 0.0, 0.0, 1.0], text01location);
-				text01location = tmvpMatrix.slice(12);
-				//text01location[0] /= text01location[3];
-				//text01location[1] /= text01location[3];
-				//text01location[2] /= text01location[3];
-				text01location[0] = (text01location[0] / text01location[3] + 1.0) * c.width * 0.5;
-				text01location[1] = (1.0 - text01location[1] / text01location[3]) * c.height * 0.5;
-				//console.log(selObLoc2D);
+				text01location = fromObTo2D(objects[selectedObject]);
+				//m.multiply(vpMatrix, objects[selectedObject].mMatrix, tmvpMatrix);
+				//text01location = tmvpMatrix.slice(12);
+				//text01location[0] = (text01location[0] / text01location[3] + 1.0) * c.width * 0.5;
+				//text01location[1] = (1.0 - text01location[1] / text01location[3]) * c.height * 0.5;
 			}
 			/*
 			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -1172,12 +1152,14 @@ window.onload = function(){
 			let lIndex = 0;
 			let _name = _line[lIndex++];
 			let _texture = [_line[lIndex++]];
+			let _fix = _line[lIndex++];
 			//let _texture = _line.slice(lIndex, lIndex + 2);
 			//console.log('[readUIData] name: ' + _name + ', texture: ' + _texture);
 			let ob = new Object(_name);
 			ob.texture = new Array(); // WebGL texture
 			ob.dataReady = false;
 			ob.textureList = []; // List of textures (string)
+			ob.texture_shift = [0.0, 0.0];
 
 			for (var j = 0 in _texture) {
 				if (_texture[j] != '') {
@@ -1185,6 +1167,7 @@ window.onload = function(){
 				}
 			}
 
+			ob.fix = _fix ==='yes' ? true : false;
 			ob.draw = true;
 			ob.alpha = 1.0;
 
@@ -1457,6 +1440,25 @@ window.onload = function(){
 		return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 	}
 
+	function fromObTo2D(_ob) {
+		let tmvpMatrix = m.identity(m.create());
+		m.multiply(vpMatrix, _ob.mMatrix, tmvpMatrix);
+		let _2dLocation = tmvpMatrix.slice(12);
+		_2dLocation[0] = (_2dLocation[0] / _2dLocation[3] + 1.0) * c.width * 0.5;
+		_2dLocation[1] = (1.0 - _2dLocation[1] / _2dLocation[3]) * c.height * 0.5;
+		return _2dLocation;
+	}
+
+	function from3DPointTo2D(_v) {
+		let _2dLocation = [0, 0, 0, 0];
+		let _tvpMatrix = m.identity(m.create());
+		m.transpose(vpMatrix, _tvpMatrix);
+		m.multiplyV(_tvpMatrix, _v, _2dLocation);
+		_2dLocation[0] = (_2dLocation[0] / _2dLocation[3] + 1.0) * c.width * 0.5;
+		_2dLocation[1] = (_2dLocation[1] / _2dLocation[3] + 1.0) * c.height * 0.5;
+		return _2dLocation;
+	}
+
 	function selection_3D(_location) {
 
 		var x = (2.0 * _location.x) / c.width -1.0;
@@ -1465,12 +1467,10 @@ window.onload = function(){
 
 		let _obCamera = objects[obCamera[camMode]];
 		var invPMatrix = m.identity(m.create());
-		//m.transpose(pMatrix, invPMatrix);
 		m.transpose(_obCamera.pMatrix, invPMatrix);
 		m.inverse(invPMatrix, invPMatrix);
 		var invVMatrix = m.identity(m.create());
 
-		//m.transpose(_obCamera.mMatrix, invVMatrix);
 		m.inverse(_obCamera.mMatrix, vTempMatrix);
 		m.transpose(vTempMatrix, invVMatrix);
 		m.inverse(invVMatrix, invVMatrix);
@@ -1482,18 +1482,14 @@ window.onload = function(){
 		var ray_wld = [ray_wldt[0] / len, ray_wldt[1] / len, ray_wldt[2] / len];
 
 		let sel = null;
-		//let sel = selectedObject;
 		for (var i = 0 in obResp) {
 			let _oR = objects[objects[obResp[i]].selectMesh];
-			//console.log('selection_3D:', _oR);
-			//let _oR = objects[obResp[i]];
 			_oR.depth = 1000000;
 			for (let l = 0; l < _oR.numLoop * 3; l += 9) {
 				_p0 = _oR.coord.slice(l, l + 3);
 				_p1 = _oR.coord.slice(l + 3, l + 6);
 				_p2 = _oR.coord.slice(l + 6, l + 9);
 				_o = _obCamera.mMatrix.slice(12, 15);
-				//_o = _obCamera.location;
 				_d = ray_wld;
 				_e = vecSub(_o, _p0);
 				_e1 = vecSub(_p1, _p0);
@@ -1538,7 +1534,10 @@ window.onload = function(){
 		}
 	}
 
-	function UIUpdate(){
+	function UIInteractionUpdate(){
+		if (comment.style.visibility === 'visible') {
+			textRender();
+		}
 	}
 
 	function buttonPressed(_button, _location) {
@@ -1587,6 +1586,10 @@ window.onload = function(){
 				}
 			}
 		}
+		if (buttonPressed('UI_point_button', _location)) {
+			pointable　= !pointable;
+			obUI['UI_point_button'].texture_shift[0] = pointable ? 0.5: 0.0;
+		}
 	}
 
 	function mouseDown(e) {
@@ -1595,9 +1598,12 @@ window.onload = function(){
 			prevMouseLocation = getMouseLocation(e);
 			currentMouseLocation = prevMouseLocation;
 			selection_3D(currentMouseLocation);
+			UIInteractionUpdate();
+			/*
 			if (comment.style.visibility === 'visible') {
 				textRender();
 			}
+			*/
 			if (prevMouseLocation.x > c.width * 0.9 && prevMouseLocation.y > c.height * 0.9) {
 				//toggleCameraAction();
 				//drawMode += 1;
@@ -1610,9 +1616,12 @@ window.onload = function(){
 	function mouseMove(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			currentMouseLocation = getMouseLocation(e);
+			UIInteractionUpdate();
+			/*
 			if (comment.style.visibility === 'visible') {
 				textRender();
 			}
+			*/
 		}
 	}
 
@@ -1645,9 +1654,12 @@ window.onload = function(){
 			prevTouchLocations = getTouchLocations(e);
 			currentTouchLocations = prevTouchLocations;
 			selection_3D(currentTouchLocations[0]);
+			UIInteractionUpdate();
+			/*
 			if (comment.style.visibility === 'visible') {
 				textRender();
 			}
+			*/
 			if (prevTouchLocations.length === 1) {
 				if (prevTouchLocations[0].x > c.width * 0.9 && prevTouchLocations[0].y > c.height * 0.9) {
 					//toggleCameraAction();
@@ -1666,9 +1678,12 @@ window.onload = function(){
 	function touchMove(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			currentTouchLocations = getTouchLocations(e);
+			UIInteractionUpdate();
+			/*
 			if (comment.style.visibility === 'visible') {
 				textRender();
 			}
+			*/
 			eText.textContent = currentTouchLocations.length;
 			e.preventDefault();
 		}
