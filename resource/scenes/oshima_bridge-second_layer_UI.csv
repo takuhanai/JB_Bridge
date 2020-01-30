@@ -1,7 +1,0 @@
-number of objects,,,,,
-4,,,,,
-object,kind,texture01,texture02,parent,description
-UI_revert_button,mesh,UI_revert_button,,,
-UI_terrain_button,mesh,UI_terrain_button,,,
-UI_map_button,mesh,UI_map_button,,,
-UI_info_button,mesh,UI_info_button,,,

@@ -140,8 +140,8 @@ window.onload = function(){
 		this.desc = _desc;
 	}
 	let annotations = [
-		new Annoatation([0.0, -1.7, 25.137], 'lower_strat_wall_S', ''),
-		new Annoatation([0.0, 1.7, 25.137], 'lower_strat_wall_C', '')
+		//new Annoatation([0.0, -1.7, 25.137], 'lower_strat_wall_S', ''),
+		//new Annoatation([0.0, 1.7, 25.137], 'lower_strat_wall_C', '')
 	];
 
 	//let obUI = []; // List of UI objects
@@ -677,6 +677,7 @@ window.onload = function(){
 				let _v = from3DPointTo2D(annotations[i].loc.concat(1.0));
 				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
 				annoOb.mMatrix = _tMatrix;
+				console.log(objects[annotations[i].ob].draw);
 				if (objects[annotations[i].ob].draw) {
 					UIRendergl(annoOb);
 				}
@@ -958,6 +959,7 @@ window.onload = function(){
 			let _parent = _line[lIndex++];
 			let _camera = _line[lIndex++] === 'yes' ? true : false;
 			let _selectMesh = _line[lIndex++];
+			let _pointMesh = _line[lIndex++];
 			let _UI = _line[lIndex++] === 'yes' ? true : false;
 			let _oneSide = _line[lIndex++] === 'yes' ? true : false;
 			let _normal = _line.slice(lIndex, lIndex + 3).map(Number);
@@ -978,6 +980,7 @@ window.onload = function(){
 			}
 
 			ob.selectMesh = _selectMesh;
+			ob.pointMesh = _pointMesh;
 			ob.one_sided = _oneSide;
 			ob.normal = _normal;
 			ob.description = _description;
@@ -1076,7 +1079,7 @@ window.onload = function(){
 						off += 4;
 					}
 				}
-				if (ob.kind === 'selection_mesh' || ob.name === ob.selectMesh) {
+				if (ob.kind === 'selection_mesh' || ob.name === ob.selectMesh || ob.name === ob.pointMesh) {
 					let im = m.identity(m.create());
 					m.transpose(ob.mMatrix, im);
 					tc = [];
@@ -1439,8 +1442,16 @@ window.onload = function(){
 		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 	}
 
+	function vecAdd(a, b) {
+		return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+	}
+
 	function vecSub(a, b) {
 		return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+	}
+
+	function scalarVec(s, a) {
+		return [s * a[0], s * a[1], s * a[2]];
 	}
 
 	function fromObTo2D(_ob) {
@@ -1462,7 +1473,36 @@ window.onload = function(){
 		return _2dLocation;
 	}
 
-	function selection_3D(_location) {
+	function selectPoint(_location) {
+		let _selObInfo = selection_3D(_location, 'point');
+		annotations.push(new Annoatation(_selObInfo.point, _selObInfo.object, ''));
+		pointable = false;
+		obUI['UI_point_button'].texture_shift[0] = 0.0;
+		console.log(_selObInfo);
+	}
+
+	function selectBlock(_location) {
+		let _selObInfo = selection_3D(_location, 'block');
+
+		if (_selObInfo.object != null) {
+			while (comment.firstChild) comment.removeChild(comment.firstChild);
+			if (_selObInfo.object === selectedObject) {
+				selectedObject = null;
+				text01 = '';
+				comment.style.visibility = 'hidden';
+			} else {
+				selectedObject = _selObInfo.object;
+				let _strArray = objects[selectedObject].description.split('¥');
+				for (var i = 0 in _strArray) {
+					comment.appendChild(document.createTextNode(_strArray[i]));
+					comment.appendChild(document.createElement('br'));
+				}
+				text01 = selectedObject.substring(0, selectedObject.length - 3);
+			}
+		}
+	}
+
+	function selection_3D(_location, _type) {
 
 		var x = (2.0 * _location.x) / c.width -1.0;
 		var y = 1.0 - (2.0 * _location.y) /c.height;
@@ -1484,9 +1524,35 @@ window.onload = function(){
 		var len = Math.sqrt(ray_wldt[0] * ray_wldt[0] + ray_wldt[1] * ray_wldt[1] + ray_wldt[2] * ray_wldt[2]);
 		var ray_wld = [ray_wldt[0] / len, ray_wldt[1] / len, ray_wldt[2] / len];
 
-		let sel = null;
-		for (var i = 0 in obResp) {
-			let _oR = objects[objects[obResp[i]].selectMesh];
+		let _selOb = null;
+		let _depth = 1000000;
+		let _selPoint = [0.0, 0.0, 0.0];
+
+		for (var i = 0 in objects) {
+			if (_type === 'point' && objects[i].pointMesh != '' && objects[i].draw) {
+				let _selInfo = selectObject(objects[objects[i].pointMesh], ray_wld);
+				if (_selInfo.depth < _depth) {
+					_depth = _selInfo.depth;
+					_selPoint = _selInfo.point;
+					_selOb = i;
+				}
+			}
+			if (_type === 'block' && objects[i].selectMesh != '') {
+				let _selInfo = selectObject(objects[objects[i].selectMesh], ray_wld);
+				if (_selInfo.depth < _depth) {
+					_depth = _selInfo.depth;
+					_selPoint = _selInfo.point;
+					_selOb = i;
+				}
+			}
+		}
+		let _selObInfo = new Object();
+		_selObInfo.object = _selOb;
+		_selObInfo.point = _selPoint;
+		return _selObInfo;
+		//for (var i = 0 in obResp) {
+			//let _oR = objects[objects[obResp[i]].selectMesh];
+			/*
 			_oR.depth = 1000000;
 			for (let l = 0; l < _oR.numLoop * 3; l += 9) {
 				_p0 = _oR.coord.slice(l, l + 3);
@@ -1504,8 +1570,11 @@ window.onload = function(){
 				_v = dot(_r, _d) / dot(_q, _e1);
 				if (_u > 0 && _v > 0 && 1 - _u - _v > 0 && _t < _oR.depth) {
 					_oR.depth = _t;
+					_selPoint = vecAdd(_p0, vecAdd(scalarVec(_u, _e1), scalarVec(_v, _e2)));
 				}
 			}
+			*/
+			/*
 			if (sel === null) {
 				if (_oR.depth < 10000) {
 					sel = obResp[i];
@@ -1516,25 +1585,44 @@ window.onload = function(){
 				}
 			}
 		}
+		*/
+		/*
+		if (_type === 'block') {
+			return sel;
+		} else if (_type === 'point') {
+			return _selPoint;
+		}
+		*/
+	}
 
-		eText.textContent = sel;
-
-		if (sel != null) {
-			while (comment.firstChild) comment.removeChild(comment.firstChild);
-			if (sel === selectedObject) {
-				selectedObject = null;
-				text01 = '';
-				comment.style.visibility = 'hidden';
-			} else {
-				selectedObject = sel;
-				let _strArray = objects[selectedObject].description.split('¥');
-				for (var i = 0 in _strArray) {
-					comment.appendChild(document.createTextNode(_strArray[i]));
-					comment.appendChild(document.createElement('br'));
-				}
-				text01 = selectedObject.substring(0, selectedObject.length - 3);
+	function selectObject(_ob, _ray) {
+		//_ob.depth = 1000000;
+		let _depth = 1000000;
+		let _selPoint = [0.0, 0.0, 0.0];
+		for (let l = 0; l < _ob.numLoop * 3; l += 9) {
+			_p0 = _ob.coord.slice(l, l + 3);
+			_p1 = _ob.coord.slice(l + 3, l + 6);
+			_p2 = _ob.coord.slice(l + 6, l + 9);
+			_o = objects[obCamera[camMode]].mMatrix.slice(12, 15);
+			_d = _ray;
+			_e = vecSub(_o, _p0);
+			_e1 = vecSub(_p1, _p0);
+			_e2 = vecSub(_p2, _p0);
+			_q = cross(_d, _e2);
+			_r = cross(_e, _e1);
+			_t = dot(_r, _e2) / dot(_q, _e1);
+			_u = dot(_q, _e) / dot(_q, _e1);
+			_v = dot(_r, _d) / dot(_q, _e1);
+			if (_u > 0 && _v > 0 && 1 - _u - _v > 0 && _t < _depth) {
+				_depth = _t;
+				//_tuv = [_t, _u, _v];
+				_selPoint = vecAdd(_p0, vecAdd(scalarVec(_u, _e1), scalarVec(_v, _e2)));
 			}
 		}
+		let _selInfo = new Object();
+		_selInfo.depth = _depth;
+		_selInfo.point = _selPoint;
+		return _selInfo;
 	}
 
 	function UIInteractionUpdate(){
@@ -1544,7 +1632,7 @@ window.onload = function(){
 	}
 
 	function buttonPressed(_button, _location) {
-		console.log(_button, obUI[_button]);
+		//console.log(_button, obUI[_button]);
 		if (obUI[_button] != null) {
 			let loc = obUI[_button].location;
 			let dim = obUI[_button].dimensions;
@@ -1600,7 +1688,12 @@ window.onload = function(){
 			mousePressed = true;
 			prevMouseLocation = getMouseLocation(e);
 			currentMouseLocation = prevMouseLocation;
-			selection_3D(currentMouseLocation);
+			if (pointable) {
+				selectPoint(currentMouseLocation);
+			} else {
+				selectBlock(currentMouseLocation);
+			}
+			//selection_3D(currentMouseLocation);
 			UIInteractionUpdate();
 			/*
 			if (comment.style.visibility === 'visible') {
@@ -1634,7 +1727,7 @@ window.onload = function(){
 			currentMouseLocation = getMouseLocation(e);
 			checkButtons(currentMouseLocation);
 
-			eText.textContent = selectedObject;
+			//eText.textContent = selectedObject;
 			//console.log(text01location, tmvpMatrix);
 		}
 	}
@@ -1656,7 +1749,13 @@ window.onload = function(){
 			touched = true;
 			prevTouchLocations = getTouchLocations(e);
 			currentTouchLocations = prevTouchLocations;
-			selection_3D(currentTouchLocations[0]);
+			if (pointable) {
+				selectPoint(currentTouchLocations[0]);
+			} else {
+				selectBlock(currentTouchLocations[0]);
+			}
+			//selectBlock(currentTouchLocations[0]);
+			//selection_3D(currentTouchLocations[0]);
 			UIInteractionUpdate();
 			/*
 			if (comment.style.visibility === 'visible') {
@@ -1687,7 +1786,7 @@ window.onload = function(){
 				textRender();
 			}
 			*/
-			eText.textContent = currentTouchLocations.length;
+			//eText.textContent = currentTouchLocations.length;
 			e.preventDefault();
 		}
 
@@ -1700,7 +1799,7 @@ window.onload = function(){
 			//eText.textContent = currentTouchLocations[0].x
 			checkButtons(currentTouchLocations[0]);
 
-			eText.textContent = selectedObject;
+			//eText.textContent = selectedObject;
 			shiftKeyPressed = false;
 			/*
 			if (currentTouchLocations.length === 3) {
