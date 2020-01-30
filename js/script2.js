@@ -102,7 +102,7 @@ window.onload = function(){
   uniLocation[8] = gl.getUniformLocation(prg, 'mMatrix');
 	uniLocation[9] = gl.getUniformLocation(prg, 'texture2');
 	uniLocation[10] = gl.getUniformLocation(prg, 'drawMap');
-	uniLocation[11] = gl.getUniformLocation(prg, 'selected');
+	//uniLocation[11] = gl.getUniformLocation(prg, 'selected');
 
   gl.useProgram(prg);
 
@@ -641,9 +641,11 @@ window.onload = function(){
 									gl.uniform1i(uniLocation[10], false);
 								}
 								if (i === selectedObject) {
-									gl.uniform1i(uniLocation[11], true);
+									//gl.uniform1i(uniLocation[11], true);
+									gl.uniform4fv(uniLocation[0], [1.0, 0.0, 0.0, 0.3]);
 								} else {
-									gl.uniform1i(uniLocation[11], false);
+									//gl.uniform1i(uniLocation[11], false);
+									gl.uniform4fv(uniLocation[0], [1.0, 1.0, 1.0, 0.0]);
 								}
 
                 gl.uniform1f(uniLocation[4], objects[i].alpha);
@@ -668,7 +670,7 @@ window.onload = function(){
     function UIRender(){
 			for (var i = 0 in obUI) {
 				if (obUI[i].draw && obUI[i].fix) {
-					UIRendergl(obUI[i]);
+					UIRendergl(obUI[i], [1.0, 1.0, 1.0, 0.0]);
 				}
       }
 			for (var i = 0; i < annotations.length; i++) {
@@ -677,18 +679,23 @@ window.onload = function(){
 				let _v = from3DPointTo2D(annotations[i].loc.concat(1.0));
 				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
 				annoOb.mMatrix = _tMatrix;
-				console.log(objects[annotations[i].ob].draw);
+				//console.log(objects[annotations[i].ob].draw);
+				let _color = [1.0, 1.0, 1.0, 1.0];
 				if (objects[annotations[i].ob].draw) {
-					UIRendergl(annoOb);
+					_color = [1.0, 0.0, 0.0, 1.0];
+				} else {
+					_color = [1.0, 0.6, 0.6, 1.0];
 				}
+				UIRendergl(annoOb, _color);
 			}
     }
 
-		function UIRendergl(_ob) {
+		function UIRendergl(_ob, _color) {
 			set_attribute(_ob.VBOList, attLocation, attStride);
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, _ob.iIndex);
 			gl.uniform1i(uniLocation[10], false);
-			gl.uniform1i(uniLocation[11], false);
+			//gl.uniform1i(uniLocation[11], false);
+			gl.uniform4fv(uniLocation[0], _color);
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_ob.name]);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -1475,10 +1482,12 @@ window.onload = function(){
 
 	function selectPoint(_location) {
 		let _selObInfo = selection_3D(_location, 'point');
-		annotations.push(new Annoatation(_selObInfo.point, _selObInfo.object, ''));
-		pointable = false;
-		obUI['UI_point_button'].texture_shift[0] = 0.0;
-		console.log(_selObInfo);
+		if (_selObInfo.object != null) {
+			annotations.push(new Annoatation(_selObInfo.point, _selObInfo.object, ''));
+			pointable = false;
+			obUI['UI_point_button'].texture_shift[0] = 0.0;
+			console.log(_selObInfo);
+		}
 	}
 
 	function selectBlock(_location) {

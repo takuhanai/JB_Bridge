@@ -38,6 +38,7 @@
     			uniform sampler2D texture;
           uniform sampler2D texture2;
     			uniform sampler2D textureShade;
+          uniform vec4      color;
     			uniform float     alpha;
     			uniform float     shadow;
           uniform bool      drawMap;
@@ -58,12 +59,22 @@
               //gl_FragColor = vec4(smpColor);
               intColor = vec4(smpColor);
             }
+            gl_FragColor = vec4(color.rgb * color.a + intColor.rgb * (1.0 - color.a), intColor.a);
+            /*
+            if (color == vec3(1.0, 1.0, 1.0)) {
+              gl_FragColor = intColor;
+            } else {
+              gl_FragColor = vec4(color.rgb * 0.3 + intColor.rgb * 0.7, alpha);
+            }
+            */
+            /*
             if (selected) {
               vec4 highColor = vec4(1.0, 0.0, 0.0, 1.0);
               gl_FragColor = vec4(highColor.rgb * 0.3 + intColor.rgb * 0.7, alpha);
             } else {
               gl_FragColor = intColor;
             }
+            */
             /*
     				vec4 smpColor = texture2D(texture, vTextureCoord);
     				vec4 shdColor = texture2DProj(textureShade, vTexProjCoord);
