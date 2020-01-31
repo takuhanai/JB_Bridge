@@ -134,9 +134,10 @@ window.onload = function(){
 
 	let obResp = []; // List of objects responding to mouse (touch) action
 
-	let Annoatation = function (_loc, _ob, _desc) {
+	let Annoatation = function (_loc, _ob, _norm, _desc) {
 		this.loc = _loc; //3D vecotr
 		this.ob = _ob;
+		this.normal = _norm;
 		this.desc = _desc;
 	}
 	let annotations = [
@@ -604,10 +605,8 @@ window.onload = function(){
 					if (objects[i].one_sided) {
 						if (dot(objects[i].normal, cameraDirection) < 0.0) {
 							objects[i].draw = true;
-							//objects[i].facing = true;
 						} else {
 							objects[i].draw = false;
-							//objects[i].facing = false;
 						}
 					}
             if (
@@ -682,7 +681,11 @@ window.onload = function(){
 				//console.log(objects[annotations[i].ob].draw);
 				let _color = [1.0, 1.0, 1.0, 1.0];
 				if (objects[annotations[i].ob].draw) {
-					_color = [1.0, 0.0, 0.0, 1.0];
+					if (dot(annotations[i].normal, cameraDirection) < 0.0) {
+						_color = [1.0, 0.0, 0.0, 1.0];
+					} else {
+						_color = [1.0, 0.6, 0.6, 1.0];
+					}
 				} else {
 					_color = [1.0, 0.6, 0.6, 1.0];
 				}
@@ -1449,6 +1452,11 @@ window.onload = function(){
 		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 	}
 
+	function normalize(a) {
+		let _l = Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+		return [a[0] / _l, a[1] / _l, a[2] / _l];
+	}
+
 	function vecAdd(a, b) {
 		return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 	}
@@ -1483,7 +1491,7 @@ window.onload = function(){
 	function selectPoint(_location) {
 		let _selObInfo = selection_3D(_location, 'point');
 		if (_selObInfo.object != null) {
-			annotations.push(new Annoatation(_selObInfo.point, _selObInfo.object, ''));
+			annotations.push(new Annoatation(_selObInfo.point, _selObInfo.object, _selObInfo.normal, ''));
 			pointable = false;
 			obUI['UI_point_button'].texture_shift[0] = 0.0;
 			console.log(_selObInfo);
@@ -1536,6 +1544,7 @@ window.onload = function(){
 		let _selOb = null;
 		let _depth = 1000000;
 		let _selPoint = [0.0, 0.0, 0.0];
+		let _selNormal = [0.0, 0.0, 0.0];
 
 		for (var i = 0 in objects) {
 			if (_type === 'point' && objects[i].pointMesh != '' && objects[i].draw) {
@@ -1543,6 +1552,7 @@ window.onload = function(){
 				if (_selInfo.depth < _depth) {
 					_depth = _selInfo.depth;
 					_selPoint = _selInfo.point;
+					_selNormal = _selInfo.normal;
 					_selOb = i;
 				}
 			}
@@ -1551,6 +1561,7 @@ window.onload = function(){
 				if (_selInfo.depth < _depth) {
 					_depth = _selInfo.depth;
 					_selPoint = _selInfo.point;
+					_selNormal = _selInfo.normal;
 					_selOb = i;
 				}
 			}
@@ -1558,6 +1569,7 @@ window.onload = function(){
 		let _selObInfo = new Object();
 		_selObInfo.object = _selOb;
 		_selObInfo.point = _selPoint;
+		_selObInfo.normal = _selNormal;
 		return _selObInfo;
 		//for (var i = 0 in obResp) {
 			//let _oR = objects[objects[obResp[i]].selectMesh];
@@ -1608,6 +1620,7 @@ window.onload = function(){
 		//_ob.depth = 1000000;
 		let _depth = 1000000;
 		let _selPoint = [0.0, 0.0, 0.0];
+		let _selNormal = [0.0, 0.0, 0.0];
 		for (let l = 0; l < _ob.numLoop * 3; l += 9) {
 			_p0 = _ob.coord.slice(l, l + 3);
 			_p1 = _ob.coord.slice(l + 3, l + 6);
@@ -1626,11 +1639,13 @@ window.onload = function(){
 				_depth = _t;
 				//_tuv = [_t, _u, _v];
 				_selPoint = vecAdd(_p0, vecAdd(scalarVec(_u, _e1), scalarVec(_v, _e2)));
+				_selNormal = normalize(cross(_e1, _e2));
 			}
 		}
 		let _selInfo = new Object();
 		_selInfo.depth = _depth;
 		_selInfo.point = _selPoint;
+		_selInfo.normal = _selNormal;
 		return _selInfo;
 	}
 
