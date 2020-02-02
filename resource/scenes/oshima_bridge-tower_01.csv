@@ -1,27 +1,30 @@
-number of objects,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,,
-23,third_layer,0.03,20.0,-20.0,20.0,-20.0,30.0,2.0,30.0,-30.0,1.2,0.1,,
-object,kind,texture01,texture02,parent,camera,select mesh,point mesh,UI,one side,normal x,normal y,normal z,description,number of polygons
-camera_whole,camera,,,camera_whole_origin,yes,,,,,,,,,
-camera_whole_origin,empty,,,,,,,,,,,,,
-shaftL_1st_layer,mesh,shaftL_1st_layer,,,,,shaftL_1st_layer,,,,,,,996
-shaftL_anchor_case,mesh,shaftL_anchor_case,,,,,shaftL_anchor_case,,,,,,,"1,572"
-shaftL_base_concrete,mesh,shaftL_base_concrete,,,,,shaftL_base_concrete,,,,,,,36
-shaftL_dia,mesh,shaftL_dia,,,,,shaftL_dia,,,,,,,306
-shaftL_wall_E,mesh,shaftL_wall_E,,,,,shaftL_wall_E,,yes,-0.999,0.0,0.0108,,130
-shaftL_wall_N,mesh,shaftL_wall_N,,,,,shaftL_wall_N,,yes,0,-1,0,5Pケーソン¥　コンクリートケーソン¥　L = 13m、W = 36m、H = 19m,58
-shaftL_wall_S,mesh,shaftL_wall_S,,,,,shaftL_wall_S,,yes,0,1,0,5P主塔¥　鋼製主塔¥　塔頂：TP+97m,58
-shaftL_wall_W,mesh,shaftL_wall_W,,,,,shaftL_wall_W,,yes,0.999,0,-0.0108,6Pケーソン¥　コンクリートケーソ¥　L = 13m、W = 36m、H = 13m,58
-lower_strat_dia,mesh,lower_strat_dia,,,,,lower_strat_dia,,,,,,,432
-lower_strat_wall_B,mesh,lower_strat_wall_B,,,,,lower_strat_wall_B,,yes,0,0,1,,100
-lower_strat_wall_C,mesh,lower_strat_wall_C,,,,,lower_strat_wall_C,,yes,0,-1,0,,308
-lower_strat_wall_S,mesh,lower_strat_wall_S,,,,,lower_strat_wall_S,,yes,0,1,0,,4
-lower_strat_wall_T,mesh,lower_strat_wall_T,,,,,lower_strat_wall_T,,yes,0,0,-1,,420
-shaftR_1st_layer,mesh,shaftR_1st_layer,,,,,shaftR_1st_layer,,,,,,,996
-shaftR_anchor_case,mesh,shaftR_anchor_case,,,,,shaftR_anchor_case,,,,,,,"1,572"
-shaftR_base_concrete,mesh,shaftR_base_concrete,,,,,shaftR_base_concrete,,,,,,,36
-shaftR_dia,mesh,shaftR_dia,,,,,shaftR_dia,,,,,,,306
-shaftR_wall_E,mesh,shaftR_wall_E,,,,,shaftR_wall_E,,yes,-0.999,0,-0.0108,,58
-shaftR_wall_N,mesh,shaftR_wall_N,,,,,shaftR_wall_N,,yes,0,-1,0,,58
-shaftR_wall_S,mesh,shaftR_wall_S,,,,,shaftR_wall_S,,yes,0,1,0,,58
-shaftR_wall_W,mesh,shaftR_wall_W,,,,,shaftR_wall_W,,yes,0.999,0,0.0108,,130
-,,,,,,,,,,,,,,"7,692"
+number of objects,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,,,
+26,third_layer,0.03,20.0,-20.0,20.0,-20.0,30.0,2.0,30.0,-30.0,1.2,0.1,,,
+object,kind,texture01,texture02,parent,internal,camera,select mesh,point mesh,UI,one side,normal x,normal y,normal z,description,number of polygons
+camera_whole,camera,,,camera_whole_origin,,yes,,,,,,,,,
+camera_whole_origin,empty,,,,,,,,,,,,,,
+shaftL_1st_layer,mesh,shaftL_1st_layer,,,yes,,,shaftL_1st_layer,,,,,,,996
+shaftL_anchor_case,mesh,shaftL_anchor_case,,,yes,,,shaftL_anchor_case,,,,,,,"1,572"
+shaftL_base_concrete,mesh,shaftL_base_concrete,,,yes,,,shaftL_base_concrete,,,,,,,36
+shaftL_dia,mesh,shaftL_dia,,,yes,,,shaftL_dia,,,,,,,306
+shaftL_wall_E,mesh,shaftL_wall_E,,,yes,,,shaftL_wall_E,,yes,-0.999,0.0,0.0108,,130
+shaftL_wall_N,mesh,shaftL_wall_N,,,yes,,,shaftL_wall_N,,yes,0,-1,0,5Pケーソン¥　コンクリートケーソン¥　L = 13m、W = 36m、H = 19m,58
+shaftL_wall_S,mesh,shaftL_wall_S,,,yes,,,shaftL_wall_S,,yes,0,1,0,5P主塔¥　鋼製主塔¥　塔頂：TP+97m,58
+shaftL_wall_W,mesh,shaftL_wall_W,,,yes,,,shaftL_wall_W,,yes,0.999,0,-0.0108,6Pケーソン¥　コンクリートケーソ¥　L = 13m、W = 36m、H = 13m,58
+lower_strat_dia,mesh,lower_strat_dia,,,yes,,,lower_strat_dia,,,,,,,432
+lower_strat_wall_B,mesh,lower_strat_wall_B,,,yes,,,lower_strat_wall_B,,yes,0,0,1,,100
+lower_strat_wall_C,mesh,lower_strat_wall_C,,,yes,,,lower_strat_wall_C,,yes,0,-1,0,,308
+lower_strat_wall_S,mesh,lower_strat_wall_S,,,yes,,,lower_strat_wall_S,,yes,0,1,0,,4
+lower_strat_wall_T,mesh,lower_strat_wall_T,,,yes,,,lower_strat_wall_T,,yes,0,0,-1,,420
+shaftR_1st_layer,mesh,shaftR_1st_layer,,,yes,,,shaftR_1st_layer,,,,,,,996
+shaftR_anchor_case,mesh,shaftR_anchor_case,,,yes,,,shaftR_anchor_case,,,,,,,"1,572"
+shaftR_base_concrete,mesh,shaftR_base_concrete,,,yes,,,shaftR_base_concrete,,,,,,,36
+shaftR_dia,mesh,shaftR_dia,,,yes,,,shaftR_dia,,,,,,,306
+shaftR_wall_E,mesh,shaftR_wall_E,,,yes,,,shaftR_wall_E,,yes,-0.999,0,-0.0108,,58
+shaftR_wall_N,mesh,shaftR_wall_N,,,yes,,,shaftR_wall_N,,yes,0,-1,0,,58
+shaftR_wall_S,mesh,shaftR_wall_S,,,yes,,,shaftR_wall_S,,yes,0,1,0,,58
+shaftR_wall_W,mesh,shaftR_wall_W,,,yes,,,shaftR_wall_W,,yes,0.999,0,0.0108,,130
+lower_strat_outer,mesh,lower_strat_outer,,,,,,lower_strat_outer,,,,,,,
+shaftL_outer,mesh,shaftL_outer,,,,,,shaftL_outer,,,,,,,
+shaftR_outer,mesh,shaftR_outer,,,,,,shaftR_outer,,,,,,,
+,,,,,,,,,,,,,,,"7,692"

@@ -21,6 +21,7 @@ window.onload = function(){
 	let drawMap = false;
 	let selectedObject = null;
 	let pointable = false;
+	let drawInternal = false;
 
 	let text01 = 'Oshima Bridge';
 	let text01location = [20.0, 50.0, 0.0, 0.0];
@@ -602,6 +603,7 @@ window.onload = function(){
 				gl.uniform1i(uniLocation[9], 1); //texture2
 
 				for (var i = 0 in objects) {
+
 					if (objects[i].one_sided) {
 						if (dot(objects[i].normal, cameraDirection) < 0.0) {
 							objects[i].draw = true;
@@ -613,6 +615,7 @@ window.onload = function(){
                 objects[i].type === 0 &&
 								objects[i].kind === 'mesh' &&
                 objects[i].draw === true &&
+								objects[i].internal === drawInternal &&
 								//objects[i].facing === true &&
                 //obUI.indexOf(i) === -1 &&
                 obLoading.indexOf(i) === -1
@@ -687,6 +690,9 @@ window.onload = function(){
 						_color = [1.0, 0.6, 0.6, 1.0];
 					}
 				} else {
+					_color = [1.0, 0.6, 0.6, 1.0];
+				}
+				if (objects[annotations[i].ob].internal != drawInternal) {
 					_color = [1.0, 0.6, 0.6, 1.0];
 				}
 				UIRendergl(annoOb, _color);
@@ -967,6 +973,7 @@ window.onload = function(){
 			let _texture = _line.slice(lIndex, lIndex + 2);
 			lIndex += 2;
 			let _parent = _line[lIndex++];
+			let _internal = _line[lIndex++] === 'yes' ? true : false;
 			let _camera = _line[lIndex++] === 'yes' ? true : false;
 			let _selectMesh = _line[lIndex++];
 			let _pointMesh = _line[lIndex++];
@@ -979,6 +986,7 @@ window.onload = function(){
 			ob.texture = new Array(); // WebGL texture
 			ob.dataReady = false;
 			ob.parent = _parent;
+			ob.internal = _internal;
 			ob.kind = _kind;
 			ob.textureList = []; // List of textures (string)
 
@@ -1547,7 +1555,12 @@ window.onload = function(){
 		let _selNormal = [0.0, 0.0, 0.0];
 
 		for (var i = 0 in objects) {
-			if (_type === 'point' && objects[i].pointMesh != '' && objects[i].draw) {
+			if (
+				_type === 'point' &&
+				objects[i].pointMesh != '' &&
+				objects[i].draw &&
+				objects[i].internal === drawInternal
+			) {
 				let _selInfo = selectObject(objects[objects[i].pointMesh], ray_wld);
 				if (_selInfo.depth < _depth) {
 					_depth = _selInfo.depth;
@@ -1678,11 +1691,19 @@ window.onload = function(){
 			obc.mMatrix0 = transformationMatrix(obc.location, obc.rotation, obc.scale, obc.rotation_mode);
 			obco.mMatrix0 = transformationMatrix(obco.location, obco.rotation, obco.scale, obco.rotation_mode);
 			cameraVertAngle = 0.0;
-			objects['sea_surface_GL'].draw = true;
-			objects['terrain_GL'].draw = true;
 			drawMap = false;
+			drawInternal = false;
 			selectedObject = null;
 			comment.style.visibility = 'hidden';
+			if (objects['sea_surface_GL']) {
+				objects['sea_surface_GL'].draw = true;
+			}
+			if (objects['terrain_GL']) {
+				objects['terrain_GL'].draw = true;
+			}
+			if (obUI['UI_ex-in_button']) {
+				obUI['UI_ex-in_button'].texture_shift[0] = 0.0;
+			}
 		}
 		if (buttonPressed('UI_terrain_button', _location)) {
 			objects['sea_surface_GL'].draw = !objects['sea_surface_GL'].draw;
@@ -1700,6 +1721,10 @@ window.onload = function(){
 					textRender();
 				}
 			}
+		}
+		if (buttonPressed('UI_ex-in_button', _location)) {
+			drawInternal = !drawInternal;
+			obUI['UI_ex-in_button'].texture_shift[0] = drawInternal ? 0.5: 0.0;
 		}
 		if (buttonPressed('UI_point_button', _location)) {
 			pointable　= !pointable;
