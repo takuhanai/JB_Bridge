@@ -58,8 +58,6 @@ window.onload = function(){
 	let cameraOriginZSpeed;
 	let cameraOriginZDest;
 
-	let cameraDirection = [];
-
 	console.log(navigator.userAgent);
 	let browser;
 	if (navigator.userAgent.indexOf('Chrome') != -1) {
@@ -141,10 +139,7 @@ window.onload = function(){
 		this.normal = _norm;
 		this.desc = _desc;
 	}
-	let annotations = [
-		//new Annoatation([0.0, -1.7, 25.137], 'lower_strat_wall_S', ''),
-		//new Annoatation([0.0, 1.7, 25.137], 'lower_strat_wall_C', '')
-	];
+	let annotations = [];
 
 	//let obUI = []; // List of UI objects
 	let obUI = new Array(); // List of UI objects
@@ -510,12 +505,6 @@ window.onload = function(){
 			}
 			m.inverse(_obCamera.mMatrix, vMatrix);
 	    m.multiply(_obCamera.pMatrix, vMatrix, vpMatrix);
-
-			//m.multiplyV(_obCamera.mMatrix, [0.0, 0.0, -1.0, 1.0], cameraDirection);
-			m.multiplyV(vMatrix, [0.0, 0.0, -1.0, 1.0], cameraDirection);
-			//eText.textContent = cameraDirection[0] + ', ' + cameraDirection[1] + ', ' + cameraDirection[2];
-			//eText.textContent = _obCamera.mMatrix[12] + ', ' + _obCamera.mMatrix[13] + ', ' + _obCamera.mMatrix[14];
-			//eText.textContent = vMatrix[12] + ', ' + vMatrix[13] + ', ' + vMatrix[14];
   }
 
     // action update
@@ -605,7 +594,8 @@ window.onload = function(){
 				for (var i = 0 in objects) {
 
 					if (objects[i].one_sided) {
-						if (dot(objects[i].normal, cameraDirection) < 0.0) {
+						let _ray = vecSub(objects[i].center, objects[obCamera[camMode]].mMatrix.slice(12, 15));
+						if (dot(objects[i].normal, _ray) < 0.0) {
 							objects[i].draw = true;
 						} else {
 							objects[i].draw = false;
@@ -684,7 +674,8 @@ window.onload = function(){
 				//console.log(objects[annotations[i].ob].draw);
 				let _color = [1.0, 1.0, 1.0, 1.0];
 				if (objects[annotations[i].ob].draw) {
-					if (dot(annotations[i].normal, cameraDirection) < 0.0) {
+					let _ray = vecSub(annotations[i].loc, objects[obCamera[camMode]].mMatrix.slice(12, 15));
+					if (dot(annotations[i].normal, _ray) < 0.0) {
 						_color = [1.0, 0.0, 0.0, 1.0];
 					} else {
 						_color = [1.0, 0.6, 0.6, 1.0];
@@ -1044,6 +1035,7 @@ window.onload = function(){
 			var rotation = [];
 			var scale = [];
 			var dimensions = [];
+			var bound_box = [];
 			var off = 0;
 			if (_type === 'object') {
 				var ob = objects[_objectName];
@@ -1088,6 +1080,8 @@ window.onload = function(){
 			ob.mMatrix = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Global coordinate
 
 			if (ob.type == 0) {//object type 'MESH'
+				let im = m.identity(m.create());
+				m.transpose(ob.mMatrix, im);
 				ob.numLoop = dv.getInt32(off, true);
 				off += 4;
 
@@ -1098,8 +1092,8 @@ window.onload = function(){
 					}
 				}
 				if (ob.kind === 'selection_mesh' || ob.name === ob.selectMesh || ob.name === ob.pointMesh) {
-					let im = m.identity(m.create());
-					m.transpose(ob.mMatrix, im);
+					//let im = m.identity(m.create());
+					//m.transpose(ob.mMatrix, im);
 					tc = [];
 					for (i = 0; i < ob.numLoop * 3; i += 3) {
 						_v = coord.slice(i, i + 3).concat(1);
@@ -1117,6 +1111,32 @@ window.onload = function(){
 						off += 4;
 					}
 				}
+
+				for (var i = 0; i < 8; ++i) {
+					let tb = [];
+					for (var j = 0; j < 3; ++j) {
+						tb.push(dv.getFloat32(off,true));
+						off += 4;
+					}
+					m.multiplyV(im, tb.concat(1), tb);
+					bound_box.push(tb);
+				}
+				ob.bound_box = bound_box;
+
+				let _iniVal = 1000000;
+				let _range = [[_iniVal, _iniVal, _iniVal], [-_iniVal, -_iniVal, -_iniVal]]; //[min[x, y, z], max[x, y, z]]
+				for (var i = 0 in bound_box) {
+					for (var j = 0 in bound_box[i]) {
+						if (bound_box[i][j] < _range[0][j]) {
+							_range[0][j] = bound_box[i][j];
+						}
+						if (bound_box[i][j] > _range[1][j]) {
+							_range[1][j] = bound_box[i][j];
+						}
+					}
+				}
+				ob.center = [(_range[0][0] + _range[1][0]) * 0.5, (_range[0][1] + _range[1][1]) * 0.5, (_range[0][2] + _range[1][2]) * 0.5]
+				//console.log(_objectName, ob.center);
 
 				var ind = new Array();
 				for (var ii = 0; ii < ob.numLoop;++ii) {
@@ -1584,49 +1604,6 @@ window.onload = function(){
 		_selObInfo.point = _selPoint;
 		_selObInfo.normal = _selNormal;
 		return _selObInfo;
-		//for (var i = 0 in obResp) {
-			//let _oR = objects[objects[obResp[i]].selectMesh];
-			/*
-			_oR.depth = 1000000;
-			for (let l = 0; l < _oR.numLoop * 3; l += 9) {
-				_p0 = _oR.coord.slice(l, l + 3);
-				_p1 = _oR.coord.slice(l + 3, l + 6);
-				_p2 = _oR.coord.slice(l + 6, l + 9);
-				_o = _obCamera.mMatrix.slice(12, 15);
-				_d = ray_wld;
-				_e = vecSub(_o, _p0);
-				_e1 = vecSub(_p1, _p0);
-				_e2 = vecSub(_p2, _p0);
-				_q = cross(_d, _e2);
-				_r = cross(_e, _e1);
-				_t = dot(_r, _e2) / dot(_q, _e1);
-				_u = dot(_q, _e) / dot(_q, _e1);
-				_v = dot(_r, _d) / dot(_q, _e1);
-				if (_u > 0 && _v > 0 && 1 - _u - _v > 0 && _t < _oR.depth) {
-					_oR.depth = _t;
-					_selPoint = vecAdd(_p0, vecAdd(scalarVec(_u, _e1), scalarVec(_v, _e2)));
-				}
-			}
-			*/
-			/*
-			if (sel === null) {
-				if (_oR.depth < 10000) {
-					sel = obResp[i];
-				}
-			} else {
-				if (_oR.depth < objects[sel].depth) {
-					sel = obResp[i];
-				}
-			}
-		}
-		*/
-		/*
-		if (_type === 'block') {
-			return sel;
-		} else if (_type === 'point') {
-			return _selPoint;
-		}
-		*/
 	}
 
 	function selectObject(_ob, _ray) {
