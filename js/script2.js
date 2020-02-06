@@ -20,8 +20,10 @@ window.onload = function(){
 
 	let drawMap = false;
 	let selectedObject = null;
-	let pointable = false;
+	//let pointable = false;
+	let annotationMode = 0; //0:normal 1:pointable 2:temporary
 	let drawInternal = false;
+	let navigatable = true;
 
 	let text01 = 'Oshima Bridge';
 	let text01location = [20.0, 50.0, 0.0, 0.0];
@@ -134,12 +136,13 @@ window.onload = function(){
 	let obResp = []; // List of objects responding to mouse (touch) action
 
 	let Annoatation = function (_loc, _ob, _norm, _desc) {
-		this.loc = _loc; //3D vecotr
+		this.loc = _loc; //3D vecotor
 		this.ob = _ob;
 		this.normal = _norm;
 		this.desc = _desc;
 	}
 	let annotations = [];
+	let tempAnnotation = new Annoatation([0.0, 0.0, 0.0], null, [0.0, 0.0, 0.0], '');
 
 	//let obUI = []; // List of UI objects
 	let obUI = new Array(); // List of UI objects
@@ -156,7 +159,7 @@ window.onload = function(){
 	let scene = new Scene(scene_name);
 
 	let objects = new Array();
-	let Object = function (name) {
+	let object = function (name) {
 		this.name = name;
 	}
 
@@ -243,7 +246,6 @@ window.onload = function(){
 	let memo = document.createElement("textarea");
 	memo.className = "floating-memo";
 	memoContainerElement.appendChild(memo);
-	//memo.style.visibility = 'hidden';
 	memo.cols = memoCols.toString();
 	memo.rows = memoRows.toString();
 	memo.style.visibility = 'hidden'
@@ -261,6 +263,7 @@ window.onload = function(){
     function render(){
 		//gl.clearColor(0.4, 0.6, 1.0, 1.0);
 		gl.clearColor(0.95, 0.95, 0.9, 1.0);
+		//gl.clearColor(0.98, 0.98, 1.0, 1.0);
 		/*
         // is load ready
         if ((allDataReady === true) && (isInitialize === false)){
@@ -313,6 +316,7 @@ window.onload = function(){
             // objects の描画
             objectRender();
             // hud 関連
+						gl.disable(gl.DEPTH_TEST);
             UIRender();
 
         }else{
@@ -380,7 +384,7 @@ window.onload = function(){
 	}
 
 	function mouseUpdate() {
-		if (mousePressed) {
+		if (mousePressed && navigatable) {
 			let deltaX = currentMouseLocation.x - prevMouseLocation.x;
 			let deltaY = currentMouseLocation.y - prevMouseLocation.y;
 			cameraInteractionUpdate(deltaX, deltaY);
@@ -390,7 +394,7 @@ window.onload = function(){
 	}
 
 	function touchUpdate() {
-		if (touched) {
+		if (touched && navigatable) {
 			if (currentTouchLocations.length === 1) {//rotation
 				let deltaX = currentTouchLocations[0].x - prevTouchLocations[0].x;
 				let deltaY = currentTouchLocations[0].y - prevTouchLocations[0].y;
@@ -688,6 +692,23 @@ window.onload = function(){
 				}
 				UIRendergl(annoOb, _color);
 			}
+			if (annotationMode === 2) {
+				//let annoEdOb = obUI['UI_annotation_edit'];
+				let _tMatrix = m.identity(m.create());
+				let _v = from3DPointTo2D(tempAnnotation.loc.concat(1.0));
+				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
+				obUI['UI_annotation_edit'].mMatrix = _tMatrix;
+				obUI['UI_annotation_edit'].location = _tMatrix.slice(12, 15);
+				UIRendergl(obUI['UI_annotation_edit'], [1.0, 1.0, 1.0, 0.0]);
+				m.translate(_tMatrix, [20.0, 0.0, 0.0], _tMatrix);
+				obUI['UI_annotation_check'].mMatrix = _tMatrix;
+				obUI['UI_annotation_check'].location = _tMatrix.slice(12, 15);
+				UIRendergl(obUI['UI_annotation_check'], [1.0, 1.0, 1.0, 0.0]);
+				m.translate(_tMatrix, [-40.0, 0.0, 0.0], _tMatrix);
+				obUI['UI_annotation_cancel'].mMatrix = _tMatrix;
+				obUI['UI_annotation_cancel'].location = _tMatrix.slice(12, 15);
+				UIRendergl(obUI['UI_annotation_cancel'], [1.0, 1.0, 1.0, 0.0]);
+			}
     }
 
 		function UIRendergl(_ob, _color) {
@@ -750,17 +771,7 @@ window.onload = function(){
 		function textRender() {
 			if (selectedObject != null) {
 				text01location = fromObTo2D(objects[selectedObject]);
-				//m.multiply(vpMatrix, objects[selectedObject].mMatrix, tmvpMatrix);
-				//text01location = tmvpMatrix.slice(12);
-				//text01location[0] = (text01location[0] / text01location[3] + 1.0) * c.width * 0.5;
-				//text01location[1] = (1.0 - text01location[1] / text01location[3]) * c.height * 0.5;
 			}
-			/*
-			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-			ctx.font = '12pt Arial';
-			ctx.fillText(text01, text01location[0], text01location[1]);
-			*/
-			//eText.textContent = text01location[0] + ', ' + text01location[1];
 			if (text01location[0] < 0.0) {
 				text01location[0] = 0.0;
 			} else if (text01location[0] > c.width - commentBoxWidth) {
@@ -973,7 +984,7 @@ window.onload = function(){
 			let _normal = _line.slice(lIndex, lIndex + 3).map(Number);
 			lIndex += 3;
 			let _description = _line[lIndex++];
-			const ob = new Object(_name);
+			const ob = new object(_name);
 			ob.texture = new Array(); // WebGL texture
 			ob.dataReady = false;
 			ob.parent = _parent;
@@ -1199,7 +1210,7 @@ window.onload = function(){
 			let _fix = _line[lIndex++];
 			//let _texture = _line.slice(lIndex, lIndex + 2);
 			//console.log('[readUIData] name: ' + _name + ', texture: ' + _texture);
-			let ob = new Object(_name);
+			let ob = new object(_name);
 			ob.texture = new Array(); // WebGL texture
 			ob.dataReady = false;
 			ob.textureList = []; // List of textures (string)
@@ -1519,10 +1530,25 @@ window.onload = function(){
 	function selectPoint(_location) {
 		let _selObInfo = selection_3D(_location, 'point');
 		if (_selObInfo.object != null) {
-			annotations.push(new Annoatation(_selObInfo.point, _selObInfo.object, _selObInfo.normal, ''));
-			pointable = false;
-			obUI['UI_point_button'].texture_shift[0] = 0.0;
-			console.log(_selObInfo);
+			annotationMode = 2;
+			tempAnnotation.loc = _selObInfo.point;
+			tempAnnotation.ob = _selObInfo.object;
+			tempAnnotation.normal = _selObInfo.normal;
+			memo.style.visibility = 'visible';
+			navigatable = false;
+
+			let _memo_x = _location.x;
+			let _memo_y = _location.y;
+			if (_memo_y > c.height - 180) {
+				_memo_y -= 140;
+			}
+			if (_memo_x > c.width - 200) {
+				_memo_x -= 200;
+			}
+			memo.style.left = Math.floor(_memo_x) + "px";
+			memo.style.top  = Math.floor(_memo_y + 20) + "px";
+			//eText.textContent = _location.x + ', ' + _location.y;
+			//eText.textContent = memo.value;
 		}
 	}
 
@@ -1599,7 +1625,7 @@ window.onload = function(){
 				}
 			}
 		}
-		let _selObInfo = new Object();
+		let _selObInfo = new object();
 		_selObInfo.object = _selOb;
 		_selObInfo.point = _selPoint;
 		_selObInfo.normal = _selNormal;
@@ -1632,7 +1658,7 @@ window.onload = function(){
 				_selNormal = normalize(cross(_e1, _e2));
 			}
 		}
-		let _selInfo = new Object();
+		let _selInfo = new object();
 		_selInfo.depth = _depth;
 		_selInfo.point = _selPoint;
 		_selInfo.normal = _selNormal;
@@ -1704,8 +1730,35 @@ window.onload = function(){
 			obUI['UI_ex-in_button'].texture_shift[0] = drawInternal ? 0.5: 0.0;
 		}
 		if (buttonPressed('UI_point_button', _location)) {
-			pointable　= !pointable;
-			obUI['UI_point_button'].texture_shift[0] = pointable ? 0.5: 0.0;
+			switch (annotationMode) {
+				case 0:
+					annotationMode = 1;
+					obUI['UI_point_button'].texture_shift[0] = 0.5;
+					break;
+				case 1:
+					annotationMode = 0;
+					obUI['UI_point_button'].texture_shift[0] = 0.0;
+					break;
+				default:
+					return;
+			}
+		}
+		if (buttonPressed('UI_annotation_check', _location) && annotationMode === 2) {
+			annotationMode = 0;
+			obUI['UI_point_button'].texture_shift[0] = 0.0;
+			memo.style.visibility = 'hidden';
+			navigatable = true;
+			let newAnnotation = Object.assign({}, tempAnnotation);
+			newAnnotation.desc = memo.value;
+			annotations.push(newAnnotation);
+			memo.value = '';
+			eText.textContent = newAnnotation.desc;
+		}
+		if (buttonPressed('UI_annotation_cancel', _location) && annotationMode === 2) {
+			annotationMode = 0;
+			obUI['UI_point_button'].texture_shift[0] = 0.0;
+			memo.style.visibility = 'hidden';
+			navigatable = true;
 		}
 	}
 
@@ -1714,11 +1767,23 @@ window.onload = function(){
 			mousePressed = true;
 			prevMouseLocation = getMouseLocation(e);
 			currentMouseLocation = prevMouseLocation;
+			switch (annotationMode) {
+				case 0:
+					selectBlock(currentMouseLocation);
+					break;
+				case 1:
+					selectPoint(currentMouseLocation);
+					break;
+				default:
+					return;
+			}
+			/*
 			if (pointable) {
 				selectPoint(currentMouseLocation);
 			} else {
 				selectBlock(currentMouseLocation);
 			}
+			*/
 			//selection_3D(currentMouseLocation);
 			UIInteractionUpdate();
 			/*
@@ -1759,7 +1824,7 @@ window.onload = function(){
 	}
 
 	function wheel(e) {
-		if (opening_count >= OPENING_LENGTH) {
+		if (opening_count >= OPENING_LENGTH && navigatable) {
 			//wheelDelta = e.deltaY;
 			let ay = objects[obCamera[camMode]].angle_y;
 			ay += wheelDelta * e.deltaY;
@@ -1775,11 +1840,23 @@ window.onload = function(){
 			touched = true;
 			prevTouchLocations = getTouchLocations(e);
 			currentTouchLocations = prevTouchLocations;
+			switch (annotationMode) {
+				case 0:
+					selectBlock(currentMouseLocation[0]);
+					break;
+				case 1:
+					selectPoint(currentMouseLocation[0]);
+					break;
+				default:
+					return;
+			}
+			/*
 			if (pointable) {
 				selectPoint(currentTouchLocations[0]);
 			} else {
 				selectBlock(currentTouchLocations[0]);
 			}
+			*/
 			//selectBlock(currentTouchLocations[0]);
 			//selection_3D(currentTouchLocations[0]);
 			UIInteractionUpdate();
