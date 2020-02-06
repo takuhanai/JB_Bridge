@@ -1842,10 +1842,10 @@ window.onload = function(){
 			currentTouchLocations = prevTouchLocations;
 			switch (annotationMode) {
 				case 0:
-					selectBlock(currentTouchLocation[0]);
+					selectBlock(currentTouchLocations[0]);
 					break;
 				case 1:
-					selectPoint(currentTouchLocation[0]);
+					selectPoint(currentTouchLocations[0]);
 					break;
 				default:
 					return;
