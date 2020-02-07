@@ -1547,6 +1547,7 @@ window.onload = function(){
 			}
 			memo.style.left = Math.floor(_memo_x) + "px";
 			memo.style.top  = Math.floor(_memo_y + 20) + "px";
+			memoContainerElement.style.pointerEvents = 'auto';
 			//eText.textContent = _location.x + ', ' + _location.y;
 			//eText.textContent = memo.value;
 		}
@@ -1752,6 +1753,7 @@ window.onload = function(){
 			newAnnotation.desc = memo.value;
 			annotations.push(newAnnotation);
 			memo.value = '';
+			memoContainerElement.style.pointerEvents = 'auto';
 			eText.textContent = newAnnotation.desc;
 		}
 		if (buttonPressed('UI_annotation_cancel', _location) && annotationMode === 2) {
