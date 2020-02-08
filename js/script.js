@@ -1787,6 +1787,8 @@ window.onload = function(){
 			annotations.push(newAnnotation);
 			memo.value = '';
 			memoContainerElement.style.pointerEvents = 'auto';
+			//selectedAnnotation = newAnnotation;
+			//textRender();
 			//eText.textContent = newAnnotation.desc;
 		}
 		if (buttonPressed('UI_annotation_cancel', _location) && annotationMode === 2) {
