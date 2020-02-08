@@ -242,7 +242,7 @@ window.onload = function(){
 	// add it to the commentContainer
 	commentContainerElement.appendChild(comment);
 	comment.style.visibility = 'hidden';
-	comment.style.width = commentBoxWidth.toString() + "px";
+	//comment.style.width = commentBoxWidth.toString() + "px";
 
 	let memoContainerElement = document.getElementById("memoContainer");
 	let memo = document.createElement("textarea");
@@ -776,8 +776,8 @@ window.onload = function(){
 				text01location = fromObTo2D(objects[selectedObject]);
 				if (text01location[0] < 0.0) {
 					text01location[0] = 0.0;
-				} else if (text01location[0] > c.width - commentBoxWidth) {
-					text01location[0] = c.width - commentBoxWidth;
+				} else if (text01location[0] > c.width - comment.clientWidth) {
+					text01location[0] = c.width - comment.clientWidth;
 				}
 				if (text01location[1] < 0.0) {
 					text01location[1] = 0.0;
@@ -786,14 +786,16 @@ window.onload = function(){
 				}
 				comment.style.left = Math.floor(text01location[0]) + "px";
 				comment.style.top  = Math.floor(text01location[1]) + "px";
+
+				eText.textContent = comment.clientWidth;
 			}
 			if (selectedAnnotation != null) {
 				text01location = selectedAnnotation.loc_2D.concat(0, 0);
 				text01location[1] = c.height - text01location[1] + 10.0;
 				if (text01location[0] < 0.0) {
 					text01location[0] = 0.0;
-				} else if (text01location[0] > c.width - commentBoxWidth) {
-					text01location[0] = c.width - commentBoxWidth;
+				} else if (text01location[0] > c.width - comment.clientWidth) {
+					text01location[0] = c.width - comment.clientWidth;
 				}
 				if (text01location[1] < 0.0) {
 					text01location[1] = 0.0;
@@ -1785,7 +1787,7 @@ window.onload = function(){
 			annotations.push(newAnnotation);
 			memo.value = '';
 			memoContainerElement.style.pointerEvents = 'auto';
-			eText.textContent = newAnnotation.desc;
+			//eText.textContent = newAnnotation.desc;
 		}
 		if (buttonPressed('UI_annotation_cancel', _location) && annotationMode === 2) {
 			annotationMode = 0;
@@ -1805,7 +1807,7 @@ window.onload = function(){
 			if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
 				//selectedAnnotation = annotations[i];
 				_selAnno = annotations[i];
-				eText.textContent = annotations[i].desc;
+				//eText.textContent = annotations[i].desc;
 				break;
 			}
 		}
