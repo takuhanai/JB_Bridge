@@ -22,6 +22,7 @@ window.onload = function(){
 	let selectedObject = null;
 	//let pointable = false;
 	let annotationMode = 0; //0:normal 1:pointable 2:temporary
+	let selectedAnnotation = null;
 	let drawInternal = false;
 	let navigatable = true;
 
@@ -136,7 +137,8 @@ window.onload = function(){
 	let obResp = []; // List of objects responding to mouse (touch) action
 
 	let Annoatation = function (_loc, _ob, _norm, _desc) {
-		this.loc = _loc; //3D vecotor
+		this.loc = _loc; //location in 3D space
+		this.loc_2D = [0.0, 0.0]; //location in UI space
 		this.ob = _ob;
 		this.normal = _norm;
 		this.desc = _desc;
@@ -673,6 +675,7 @@ window.onload = function(){
 				let annoOb = obUI['UI_annotation'];
 				let _tMatrix = m.identity(m.create());
 				let _v = from3DPointTo2D(annotations[i].loc.concat(1.0));
+				annotations[i].loc_2D = _v.slice(0, 2);
 				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
 				annoOb.mMatrix = _tMatrix;
 				//console.log(objects[annotations[i].ob].draw);
@@ -771,19 +774,35 @@ window.onload = function(){
 		function textRender() {
 			if (selectedObject != null) {
 				text01location = fromObTo2D(objects[selectedObject]);
+				if (text01location[0] < 0.0) {
+					text01location[0] = 0.0;
+				} else if (text01location[0] > c.width - commentBoxWidth) {
+					text01location[0] = c.width - commentBoxWidth;
+				}
+				if (text01location[1] < 0.0) {
+					text01location[1] = 0.0;
+				} else if (text01location[1] > c.height - 160) {
+					text01location[1] = c.height - 160.0;
+				}
+				comment.style.left = Math.floor(text01location[0]) + "px";
+				comment.style.top  = Math.floor(text01location[1]) + "px";
 			}
-			if (text01location[0] < 0.0) {
-				text01location[0] = 0.0;
-			} else if (text01location[0] > c.width - commentBoxWidth) {
-				text01location[0] = c.width - commentBoxWidth;
+			if (selectedAnnotation != null) {
+				text01location = selectedAnnotation.loc_2D.concat(0, 0);
+				text01location[1] = c.height - text01location[1] + 10.0;
+				if (text01location[0] < 0.0) {
+					text01location[0] = 0.0;
+				} else if (text01location[0] > c.width - commentBoxWidth) {
+					text01location[0] = c.width - commentBoxWidth;
+				}
+				if (text01location[1] < 0.0) {
+					text01location[1] = 0.0;
+				} else if (text01location[1] > c.height - 160) {
+					text01location[1] = c.height - 160.0;
+				}
+				comment.style.left = Math.floor(text01location[0]) + "px";
+				comment.style.top  = Math.floor(text01location[1]) + "px";
 			}
-			if (text01location[1] < 0.0) {
-				text01location[1] = 0.0;
-			} else if (text01location[1] > c.height - 160) {
-				text01location[1] = c.height - 160.0;
-			}
-			comment.style.left = Math.floor(text01location[0]) + "px";
-			comment.style.top  = Math.floor(text01location[1]) + "px";
 		}
 
     // シェーダを生成する関数
@@ -1557,20 +1576,33 @@ window.onload = function(){
 		let _selObInfo = selection_3D(_location, 'block');
 
 		if (_selObInfo.object != null) {
-			while (comment.firstChild) comment.removeChild(comment.firstChild);
+			//while (comment.firstChild) comment.removeChild(comment.firstChild);
 			if (_selObInfo.object === selectedObject) {
 				selectedObject = null;
-				text01 = '';
+				//text01 = '';
 				comment.style.visibility = 'hidden';
 			} else {
 				selectedObject = _selObInfo.object;
+				replaceCommentText(objects[selectedObject].description);
+				/*
 				let _strArray = objects[selectedObject].description.split('¥');
+				while (comment.firstChild) comment.removeChild(comment.firstChild);
 				for (var i = 0 in _strArray) {
 					comment.appendChild(document.createTextNode(_strArray[i]));
 					comment.appendChild(document.createElement('br'));
 				}
+				*/
 				text01 = selectedObject.substring(0, selectedObject.length - 3);
 			}
+		}
+	}
+
+	function replaceCommentText(_string) {
+		let _strArray = _string.split('¥');
+		while (comment.firstChild) comment.removeChild(comment.firstChild);
+		for (var i = 0 in _strArray) {
+			comment.appendChild(document.createTextNode(_strArray[i]));
+			comment.appendChild(document.createElement('br'));
 		}
 	}
 
@@ -1673,7 +1705,6 @@ window.onload = function(){
 	}
 
 	function buttonPressed(_button, _location) {
-		//console.log(_button, obUI[_button]);
 		if (obUI[_button] != null) {
 			let loc = obUI[_button].location;
 			let dim = obUI[_button].dimensions;
@@ -1764,6 +1795,36 @@ window.onload = function(){
 		}
 	}
 
+	function checkAnnotations(_location) {
+		let _selAnno = null;
+		//selectedAnnotation = null;
+		for (var i in annotations) {
+			console.log(annotations[i].desc);
+			let loc = annotations[i].loc_2D;
+			let dim = obUI['UI_annotation'].dimensions;
+			if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
+				//selectedAnnotation = annotations[i];
+				_selAnno = annotations[i];
+				eText.textContent = annotations[i].desc;
+				break;
+			}
+		}
+		if (_selAnno === selectedAnnotation) {
+			selectedAnnotation = null;
+		} else if (_selAnno != null){
+			selectedAnnotation = _selAnno;
+		}
+		if (selectedAnnotation) {
+			replaceCommentText(selectedAnnotation.desc);
+			comment.style.border = 'none';
+			comment.style.backgroundColor = 'transparent';
+			comment.style.visibility = 'visible';
+			textRender();
+		} else {
+			comment.style.visibility = 'hidden';
+		}
+	}
+
 	function mouseDown(e) {
 		if (opening_count >= OPENING_LENGTH ) {
 			mousePressed = true;
@@ -1819,6 +1880,9 @@ window.onload = function(){
 			mousePressed = false;
 			currentMouseLocation = getMouseLocation(e);
 			checkButtons(currentMouseLocation);
+			if (annotations.length > 0) {
+				checkAnnotations(currentMouseLocation);
+			}
 
 			//eText.textContent = selectedObject;
 			//console.log(text01location, tmvpMatrix);
@@ -1833,6 +1897,7 @@ window.onload = function(){
 			if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
 				objects[obCamera[camMode]].angle_y = ay;
 			}
+			UIInteractionUpdate();
 			//eText.textContent = ay;
 		}
 	}
@@ -1903,6 +1968,9 @@ window.onload = function(){
 			//currentTouchLocations = getTouchLocations(e);
 			//eText.textContent = currentTouchLocations[0].x
 			checkButtons(currentTouchLocations[0]);
+			if (annotations.length > 0) {
+				checkAnnotations(currentTouchLocations[0]);
+			}
 
 			//eText.textContent = selectedObject;
 			shiftKeyPressed = false;
@@ -1941,19 +2009,29 @@ window.onload = function(){
 				camMode = 0;
 				break;
 			case 49: //1 key
-				camMode = 1;
+				if (obCamera.length > 1) {
+					camMode = 1;
+				}
 				break;
 			case 50: //2 key
-				camMode = 2;
+				if (obCamera.length > 2) {
+					camMode = 2;
+				}
 				break;
 			case 51: //3 key
-				camMode = 3;
+				if (obCamera.length > 3) {
+					camMode = 3;
+				}
 				break;
 			case 52: //4 key
-				camMode = 4;
+				if (obCamera.length > 4) {
+					camMode = 4;
+				}
 				break;
 			case 53: //5 key
-				camMode = 5;
+				if (obCamera.length > 5) {
+					camMode = 5;
+				}
 				break;
 			case 77: //m key
 				drawMap = !drawMap;
