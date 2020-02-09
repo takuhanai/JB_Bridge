@@ -138,7 +138,7 @@ window.onload = function(){
 
 	let Annoatation = function (_loc, _ob, _norm, _desc) {
 		this.loc = _loc; //location in 3D space
-		this.loc_2D = [0.0, 0.0]; //location in UI space
+		this.loc_2D = [0.0, 0.0, 0.0]; //location in UI space
 		this.ob = _ob;
 		this.normal = _norm;
 		this.desc = _desc;
@@ -301,6 +301,7 @@ window.onload = function(){
 			//UIUpdate();
 
 			gl.enable(gl.DEPTH_TEST);
+			gl.depthFunc(gl.LESS);
 			gl.enable(gl.CULL_FACE);
 			gl.enable(gl.BLEND);
 			//gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -666,17 +667,16 @@ window.onload = function(){
 
     // UI
     function UIRender(){
-			for (var i = 0 in obUI) {
-				if (obUI[i].draw && obUI[i].fix) {
-					UIRendergl(obUI[i], [1.0, 1.0, 1.0, 0.0]);
-				}
-      }
+			// Draw Annoations
 			for (var i = 0; i < annotations.length; i++) {
 				let annoOb = obUI['UI_annotation'];
 				let _tMatrix = m.identity(m.create());
 				let _v = from3DPointTo2D(annotations[i].loc.concat(1.0));
-				annotations[i].loc_2D = _v.slice(0, 2);
+				annotations[i].loc_2D = _v.slice(0, 3);
 				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
+				if (annotations[i] === selectedAnnotation) {
+					m.scale(_tMatrix, [2.0, 2.0, 1.0], _tMatrix);
+				}
 				annoOb.mMatrix = _tMatrix;
 				//console.log(objects[annotations[i].ob].draw);
 				let _color = [1.0, 1.0, 1.0, 1.0];
@@ -695,6 +695,14 @@ window.onload = function(){
 				}
 				UIRendergl(annoOb, _color);
 			}
+			//gl.disable(gl.DEPTH_TEST);
+			// Draw Buttons
+			for (var i = 0 in obUI) {
+				if (obUI[i].draw && obUI[i].fix) {
+					UIRendergl(obUI[i], [1.0, 1.0, 1.0, 0.0]);
+				}
+      }
+			// Draw Temporary Annotation Buttons
 			if (annotationMode === 2) {
 				//let annoEdOb = obUI['UI_annotation_edit'];
 				let _tMatrix = m.identity(m.create());
@@ -790,18 +798,15 @@ window.onload = function(){
 				eText.textContent = comment.clientWidth;
 			}
 			if (selectedAnnotation != null) {
-				text01location = selectedAnnotation.loc_2D.concat(0, 0);
-				text01location[1] = c.height - text01location[1] + 10.0;
-				if (text01location[0] < 0.0) {
-					text01location[0] = 0.0;
-				} else if (text01location[0] > c.width - comment.clientWidth) {
-					text01location[0] = c.width - comment.clientWidth;
-				}
-				if (text01location[1] < 0.0) {
-					text01location[1] = 0.0;
-				} else if (text01location[1] > c.height - 160) {
-					text01location[1] = c.height - 160.0;
-				}
+				text01location = selectedAnnotation.loc_2D.concat(0);
+				text01location[1] = c.height - text01location[1] + 2.0;
+				comment.style.visibility = 'visible'
+				if (
+					text01location[0] < 0.0 ||
+					text01location[0] > c.width - comment.clientWidth ||
+					text01location[1] < 0.0 ||
+					text01location[1] > c.height - 20
+				) {comment.style.visibility = 'hidden'}
 				comment.style.left = Math.floor(text01location[0]) + "px";
 				comment.style.top  = Math.floor(text01location[1]) + "px";
 			}
@@ -1701,9 +1706,12 @@ window.onload = function(){
 	}
 
 	function UIInteractionUpdate(){
+		textRender();
+		/*
 		if (comment.style.visibility === 'visible') {
 			textRender();
 		}
+		*/
 	}
 
 	function buttonPressed(_button, _location) {
@@ -1731,6 +1739,7 @@ window.onload = function(){
 			drawMap = false;
 			drawInternal = false;
 			selectedObject = null;
+			selectedAnnotation = null;
 			comment.style.visibility = 'hidden';
 			if (objects['sea_surface_GL']) {
 				objects['sea_surface_GL'].draw = true;
