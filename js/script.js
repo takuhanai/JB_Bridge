@@ -12,8 +12,8 @@ window.onload = function(){
   // variables
 	let resourcePath = './resource/';
 	let title = 'oshima_bridge';
-	let scene_name = 'oshima_bridge';
-	//let scene_name = 'tower_01';
+	//let scene_name = 'oshima_bridge';
+	let scene_name = 'tower_01';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -1573,7 +1573,7 @@ window.onload = function(){
 			}
 			memo.style.left = Math.floor(_memo_x) + "px";
 			memo.style.top  = Math.floor(_memo_y + 20) + "px";
-			memoContainerElement.style.pointerEvents = 'auto';
+			//memoContainerElement.style.pointerEvents = 'auto';
 			//eText.textContent = _location.x + ', ' + _location.y;
 			//eText.textContent = memo.value;
 		}
@@ -1795,7 +1795,7 @@ window.onload = function(){
 			newAnnotation.desc = memo.value;
 			annotations.push(newAnnotation);
 			memo.value = '';
-			memoContainerElement.style.pointerEvents = 'auto';
+			//memoContainerElement.style.pointerEvents = 'auto';
 			//selectedAnnotation = newAnnotation;
 			//textRender();
 			//eText.textContent = newAnnotation.desc;
