@@ -1573,8 +1573,8 @@ window.onload = function(){
 			}
 			memo.style.left = Math.floor(_memo_x) + "px";
 			memo.style.top  = Math.floor(_memo_y + 20) + "px";
-			memo.style.pointerEvents = 'auto';
-			//memoContainerElement.style.pointerEvents = 'auto';
+			//memo.style.pointerEvents = 'auto';
+			memoContainerElement.style.pointerEvents = 'auto';
 			//eText.textContent = _location.x + ', ' + _location.y;
 			//eText.textContent = memo.value;
 		}
@@ -1796,8 +1796,8 @@ window.onload = function(){
 			newAnnotation.desc = memo.value;
 			annotations.push(newAnnotation);
 			memo.value = '';
-			memo.style.pointerEvents = 'none';
-			//memoContainerElement.style.pointerEvents = 'auto';
+			//memo.style.pointerEvents = 'none';
+			memoContainerElement.style.pointerEvents = 'none';
 			//selectedAnnotation = newAnnotation;
 			//textRender();
 			//eText.textContent = newAnnotation.desc;
