@@ -12,8 +12,8 @@ window.onload = function(){
   // variables
 	let resourcePath = './resource/';
 	let title = 'oshima_bridge';
-	//let scene_name = 'oshima_bridge';
-	let scene_name = 'tower_01';
+	let scene_name = 'oshima_bridge';
+	//let scene_name = 'tower_01';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -1811,29 +1811,6 @@ window.onload = function(){
 				default:
 					return;
 			}
-		}
-		if (buttonPressed('UI_annotation_check', _location) && annotationMode === 2) {
-			annotationMode = 0;
-			obUI['UI_point_button'].texture_shift[0] = 0.0;
-			memoContainerElement.style.visibility = 'hidden';
-			//memo.style.visibility = 'hidden';
-			navigatable = true;
-			let newAnnotation = Object.assign({}, tempAnnotation);
-			newAnnotation.desc = memo.value;
-			annotations.push(newAnnotation);
-			memo.value = '';
-			//memo.style.pointerEvents = 'none';
-			memoContainerElement.style.pointerEvents = 'none';
-			//selectedAnnotation = newAnnotation;
-			//textRender();
-			//eText.textContent = newAnnotation.desc;
-		}
-		if (buttonPressed('UI_annotation_cancel', _location) && annotationMode === 2) {
-			annotationMode = 0;
-			obUI['UI_point_button'].texture_shift[0] = 0.0;
-			memoContainerElement.style.visibility = 'hidden';
-			//memo.style.visibility = 'hidden';
-			navigatable = true;
 		}
 	}
 
