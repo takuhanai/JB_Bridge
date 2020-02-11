@@ -257,9 +257,20 @@ window.onload = function(){
 	let memoOK = document.createElement('input');
 	memoOK.className = "floating-memoOK";
 	memoOK.type = 'button';
-	memoOK.value = 'ok';
+	memoOK.style.background = "url('./resource/UI/html/UI_annotation_check.png')";
+	memoOK.style.width = '20px';
+	memoOK.style.height = '20px';
 	memoOK.onclick = memoOKPressed;
 	memoContainerElement.appendChild(memoOK);
+
+	let memoCancel = document.createElement('input');
+	memoCancel.className = "floating-memoCancel";
+	memoCancel.type = 'button';
+	memoCancel.style.background = "url('./resource/UI/html/UI_annotation_cancel.png')";
+	memoCancel.style.width = '20px';
+	memoCancel.style.height = '20px';
+	memoCancel.onclick = memoCancelPressed;
+	memoContainerElement.appendChild(memoCancel);
 
 
 /*
@@ -1585,6 +1596,8 @@ window.onload = function(){
 			memo.style.top  = Math.floor(_memo_y + 20) + "px";
 			memoOK.style.left = Math.floor(_memo_x) + "px";
 			memoOK.style.top  = Math.floor(_memo_y - 60) + "px";
+			memoCancel.style.left = Math.floor(_memo_x - 20) + "px";
+			memoCancel.style.top  = Math.floor(_memo_y - 40) + "px";
 			//memo.style.pointerEvents = 'auto';
 			memoContainerElement.style.pointerEvents = 'auto';
 			//eText.textContent = _location.x + ', ' + _location.y;
@@ -2110,6 +2123,15 @@ window.onload = function(){
 		annotations.push(newAnnotation);
 		memo.value = '';
 		memoContainerElement.style.pointerEvents = 'none';
+		mousePressed = false;
+		touched = false;
+	}
+
+	function memoCancelPressed() {
+		annotationMode = 0;
+		obUI['UI_point_button'].texture_shift[0] = 0.0;
+		memoContainerElement.style.visibility = 'hidden';
+		navigatable = true;
 		mousePressed = false;
 		touched = false;
 	}

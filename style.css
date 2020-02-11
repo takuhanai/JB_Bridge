@@ -81,6 +81,14 @@ body {margin:0;
 	/*padding: 0.5em;*/
 	/*border-radius: 0.5em;*/
 }
+
+.floating-memoOK {
+	border: none;
+}
+
+.floating-memoCancel {
+	border: none;
+}
 /*
 #overlay {
 	width: 200px;
@@ -258,6 +266,10 @@ body {
 }
 
 .floating-memoOK {
+	position:relative;
+}
+
+.floating-memoCancel {
 	position:relative;
 }
 /*
