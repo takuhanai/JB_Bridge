@@ -256,6 +256,10 @@ body {
 .floating-memo {
 	position:relative;
 }
+
+.floating-memoOK {
+	position:relative;
+}
 /*
 #overlay {
 	position:relative;

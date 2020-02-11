@@ -12,8 +12,8 @@ window.onload = function(){
   // variables
 	let resourcePath = './resource/';
 	let title = 'oshima_bridge';
-	let scene_name = 'oshima_bridge';
-	//let scene_name = 'tower_01';
+	//let scene_name = 'oshima_bridge';
+	let scene_name = 'tower_01';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -245,13 +245,22 @@ window.onload = function(){
 	//comment.style.width = commentBoxWidth.toString() + "px";
 
 	let memoContainerElement = document.getElementById("memoContainer");
+	memoContainerElement.style.visibility = 'hidden';
 	let memo = document.createElement("textarea");
 	memo.className = "floating-memo";
 	memoContainerElement.appendChild(memo);
 	memo.cols = memoCols.toString();
 	memo.rows = memoRows.toString();
-	memo.style.visibility = 'hidden'
+	//memo.style.visibility = 'hidden'
 	memo.style.resize = 'none';
+
+	let memoOK = document.createElement('input');
+	memoOK.className = "floating-memoOK";
+	memoOK.type = 'button';
+	memoOK.value = 'ok';
+	memoOK.onclick = memoOKPressed;
+	memoContainerElement.appendChild(memoOK);
+
 
 /*
 	let overlayElement = document.getElementById('overlay');
@@ -1560,7 +1569,8 @@ window.onload = function(){
 			tempAnnotation.loc = _selObInfo.point;
 			tempAnnotation.ob = _selObInfo.object;
 			tempAnnotation.normal = _selObInfo.normal;
-			memo.style.visibility = 'visible';
+			memoContainerElement.style.visibility = 'visible';
+			//memo.style.visibility = 'visible';
 			navigatable = false;
 
 			let _memo_x = _location.x;
@@ -1573,6 +1583,8 @@ window.onload = function(){
 			}
 			memo.style.left = Math.floor(_memo_x) + "px";
 			memo.style.top  = Math.floor(_memo_y + 20) + "px";
+			memoOK.style.left = Math.floor(_memo_x) + "px";
+			memoOK.style.top  = Math.floor(_memo_y - 60) + "px";
 			//memo.style.pointerEvents = 'auto';
 			memoContainerElement.style.pointerEvents = 'auto';
 			//eText.textContent = _location.x + ', ' + _location.y;
@@ -1790,7 +1802,8 @@ window.onload = function(){
 		if (buttonPressed('UI_annotation_check', _location) && annotationMode === 2) {
 			annotationMode = 0;
 			obUI['UI_point_button'].texture_shift[0] = 0.0;
-			memo.style.visibility = 'hidden';
+			memoContainerElement.style.visibility = 'hidden';
+			//memo.style.visibility = 'hidden';
 			navigatable = true;
 			let newAnnotation = Object.assign({}, tempAnnotation);
 			newAnnotation.desc = memo.value;
@@ -1805,7 +1818,8 @@ window.onload = function(){
 		if (buttonPressed('UI_annotation_cancel', _location) && annotationMode === 2) {
 			annotationMode = 0;
 			obUI['UI_point_button'].texture_shift[0] = 0.0;
-			memo.style.visibility = 'hidden';
+			memoContainerElement.style.visibility = 'hidden';
+			//memo.style.visibility = 'hidden';
 			navigatable = true;
 		}
 	}
@@ -2086,4 +2100,15 @@ window.onload = function(){
 		}
 	}
 
+	function memoOKPressed() {
+		annotationMode = 0;
+		obUI['UI_point_button'].texture_shift[0] = 0.0;
+		memoContainerElement.style.visibility = 'hidden';
+		navigatable = true;
+		let newAnnotation = Object.assign({}, tempAnnotation);
+		newAnnotation.desc = memo.value;
+		annotations.push(newAnnotation);
+		memo.value = '';
+		memoContainerElement.style.pointerEvents = 'none';
+	}
 };
