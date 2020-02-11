@@ -1584,6 +1584,8 @@ window.onload = function(){
 	function selectPoint(_location) {
 		let _selObInfo = selection_3D(_location, 'point');
 		if (_selObInfo.object != null) {
+			selectedAnnotation = null;
+			textRender();
 			annotationMode = 2;
 			tempAnnotation.loc = _selObInfo.point;
 			tempAnnotation.ob = _selObInfo.object;
