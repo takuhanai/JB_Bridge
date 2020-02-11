@@ -2110,5 +2110,7 @@ window.onload = function(){
 		annotations.push(newAnnotation);
 		memo.value = '';
 		memoContainerElement.style.pointerEvents = 'none';
+		mousePressed = false;
+		touched = false;
 	}
 };
