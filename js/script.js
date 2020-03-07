@@ -14,6 +14,7 @@ window.onload = function(){
 	let title = 'oshima_bridge';
 	let scene_name = 'oshima_bridge';
 	//let scene_name = 'tower_01';
+	//let scene_name = '5P';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -290,7 +291,7 @@ window.onload = function(){
 
     function render(){
 		//gl.clearColor(0.4, 0.6, 1.0, 1.0);
-		gl.clearColor(0.95, 0.95, 0.9, 1.0);
+		//gl.clearColor(0.95, 0.95, 0.9, 1.0);
 		//gl.clearColor(0.98, 0.98, 1.0, 1.0);
 		/*
         // is load ready
@@ -460,26 +461,31 @@ window.onload = function(){
 
 	function cameraInteractionUpdate(dX, dY) {
 		if (camMode == 0) {
+			let _cam_o = objects['camera_whole_origin'];
+			let _cam = objects['camera_whole'];
 			if (shiftKeyPressed) {
 				//m.translate(objects['camera_whole_origin'].mMatrix0, [-1.0 * dX, 0, 1.0 * dY],
-				m.translate(objects['camera_whole_origin'].mMatrix0, [-scene.cameraTranslationDelta * dX, 0, scene.cameraTranslationDelta * dY], objects['camera_whole_origin'].mMatrix0);
+				let cameraCoeff = Math.tan(_cam.angle_y / 2.0) / Math.tan(_cam.angle_y0 / 2.0);
+				//console.log(_cam.angle_y, _cam.angle_y0);
+				//console.log(cameraCoeff);
+				m.translate(_cam_o.mMatrix0, [-scene.cameraTranslationDelta * cameraCoeff * dX, 0, scene.cameraTranslationDelta * cameraCoeff * dY], _cam_o.mMatrix0);
 				//console.log(objects['camera_whole_origin'].mMatrix0)
 				for (var i = 0; i < 3; i++) {
-					if (objects['camera_whole_origin'].mMatrix0[i + 12] > scene.cameraTranslationRange[i * 2]) {
-						objects['camera_whole_origin'].mMatrix0[i + 12] = scene.cameraTranslationRange[i * 2];
+					if (_cam_o.mMatrix0[i + 12] > scene.cameraTranslationRange[i * 2]) {
+						_cam_o.mMatrix0[i + 12] = scene.cameraTranslationRange[i * 2];
 					}
-					if (objects['camera_whole_origin'].mMatrix0[i + 12] < scene.cameraTranslationRange[i * 2 + 1]) {
-						objects['camera_whole_origin'].mMatrix0[i + 12] = scene.cameraTranslationRange[i * 2 + 1];
+					if (_cam_o.mMatrix0[i + 12] < scene.cameraTranslationRange[i * 2 + 1]) {
+						_cam_o.mMatrix0[i + 12] = scene.cameraTranslationRange[i * 2 + 1];
 					}
 				}
 			} else {
-				m.rotate(objects['camera_whole_origin'].mMatrix0, -0.003 * dX, [0, 0, 1], objects['camera_whole_origin'].mMatrix0);
+				m.rotate(_cam_o.mMatrix0, -0.003 * dX, [0, 0, 1], _cam_o.mMatrix0);
 
 				let deltaRotY = -0.003 * dY;
 				if (cameraVertAngle + deltaRotY < scene.cameraVertAngleMax && cameraVertAngle + deltaRotY > scene.cameraVertAngleMin) {
 					let rMatrix = m.identity(m.create());
 					m.rotate(rMatrix, deltaRotY, [1, 0, 0], rMatrix);
-					m.multiply(rMatrix, objects['camera_whole'].mMatrix0, objects['camera_whole'].mMatrix0);
+					m.multiply(rMatrix, _cam.mMatrix0, _cam.mMatrix0);
 					cameraVertAngle += deltaRotY;
 				}
 			}
