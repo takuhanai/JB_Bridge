@@ -89,6 +89,14 @@ body {margin:0;
 .floating-memoCancel {
 	border: none;
 }
+
+#buttonContainer {
+	pointer-events: none;
+}
+
+.floating-buttonHide {
+	border: none;
+}
 /*
 #overlay {
 	width: 200px;
@@ -271,6 +279,15 @@ body {
 
 .floating-memoCancel {
 	position:relative;
+}
+
+#buttonContainer {
+	grid-column-start: main;
+	grid-row-start: img;
+}
+
+.floating-buttonHide {
+	position: relative;
 }
 /*
 #overlay {

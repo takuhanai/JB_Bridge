@@ -28,7 +28,7 @@ window.onload = function(){
 	let navigatable = true;
 
 	let text01 = 'Oshima Bridge';
-	let text01location = [20.0, 50.0, 0.0, 0.0];
+	//let text01location = [20.0, 50.0, 0.0, 0.0];
 	//let selObLoc3D = [0.0, 0.0, 0.0, 1.0];
 
 	let commentBoxWidth = 280;//px
@@ -175,6 +175,8 @@ window.onload = function(){
 		read3DModelData(resourcePath + scene.name, objects[i].name, 'object');
 	}
 
+	let hiddenObjects = [];
+
 	readUIData();
 
 	const objectActions = [
@@ -279,6 +281,15 @@ window.onload = function(){
 	memoCancel.onclick = memoCancelPressed;
 	memoContainerElement.appendChild(memoCancel);
 
+	let buttonContainerElement = document.getElementById("buttonContainer");
+	buttonContainerElement.style.visibility = 'hidden';
+	let hideButton = document.createElement('input');
+	hideButton.className = "floating-buttonHide";
+	hideButton.type = 'image';
+	hideButton.src = './resource/UI/html/UI_obButton_hide.png';
+	hideButton.onclick = buttonHidePressed;
+	buttonContainerElement.appendChild(hideButton);
+	//hideButton.style.visibility = 'hidden';
 
 /*
 	let overlayElement = document.getElementById('overlay');
@@ -291,7 +302,7 @@ window.onload = function(){
 
     function render(){
 		//gl.clearColor(0.4, 0.6, 1.0, 1.0);
-		//gl.clearColor(0.95, 0.95, 0.9, 1.0);
+		gl.clearColor(0.95, 0.95, 0.9, 1.0);
 		//gl.clearColor(0.98, 0.98, 1.0, 1.0);
 		/*
         // is load ready
@@ -467,7 +478,7 @@ window.onload = function(){
 				//m.translate(objects['camera_whole_origin'].mMatrix0, [-1.0 * dX, 0, 1.0 * dY],
 				let cameraCoeff = Math.tan(_cam.angle_y / 2.0) / Math.tan(_cam.angle_y0 / 2.0);
 				//console.log(_cam.angle_y, _cam.angle_y0);
-				//console.log(cameraCoeff);
+				//console.log(scene.cameraTranslationDelta * cameraCoeff * dX);
 				m.translate(_cam_o.mMatrix0, [-scene.cameraTranslationDelta * cameraCoeff * dX, 0, scene.cameraTranslationDelta * cameraCoeff * dY], _cam_o.mMatrix0);
 				//console.log(objects['camera_whole_origin'].mMatrix0)
 				for (var i = 0; i < 3; i++) {
@@ -815,36 +826,53 @@ window.onload = function(){
         }
     }
 
-		function textRender() {
-			if (selectedObject != null) {
-				text01location = fromObTo2D(objects[selectedObject]);
-				if (text01location[0] < 0.0) {
-					text01location[0] = 0.0;
-				} else if (text01location[0] > c.width - comment.clientWidth) {
-					text01location[0] = c.width - comment.clientWidth;
-				}
-				if (text01location[1] < 0.0) {
-					text01location[1] = 0.0;
-				} else if (text01location[1] > c.height - 160) {
-					text01location[1] = c.height - 160.0;
-				}
-				comment.style.left = Math.floor(text01location[0]) + "px";
-				comment.style.top  = Math.floor(text01location[1]) + "px";
+		function adjustUI(_loc, _xLimit, _yLimit) {
+			let adLoc = [0.0, 0.0];
+			if (_loc[0] < _xLimit[0]) {
+				adLoc[0] = _xLimit[0];
+			} else if (_loc[0] > _xLimit[1]) {
+				adLoc[0] = _xLimit[1];
+			} else {
+				adLoc[0] = _loc[0];
+			}
+			if (_loc[1] < _yLimit[0]) {
+				adLoc[1] = _yLimit[0];
+			} else if (_loc[1] > _yLimit[1]) {
+				adLoc[1] = _yLimit[1];
+			} else {
+				adLoc[1] = _loc[1];
+			}
+			return adLoc;
+		}
 
-				eText.textContent = comment.clientWidth;
+		function UIInteractionUpdate() {
+			if (selectedObject != null) {
+				if (comment.style.visibility === 'visible') {
+					let commentLoc = fromObTo2D(objects[selectedObject]);
+					let adComLoc = adjustUI(commentLoc, [0.0, c.width - comment.clientWidth], [0.0, c.height - 160.0]);
+					comment.style.left = Math.floor(adComLoc[0]) + "px";
+					comment.style.top  = Math.floor(adComLoc[1]) + "px";
+				}
+				if (buttonContainerElement.style.visibility === 'visible') {
+					let buttonLoc = fromObTo2D(objects[selectedObject]);
+					buttonLoc[0] -= hideButton.clientWidth / 2.0;
+					let adButtonLoc = adjustUI(buttonLoc, [0.0, c.width - hideButton.clientWidth], [0.0, c.height - 160.0]);
+					hideButton.style.left = Math.floor(adButtonLoc[0]) + "px";
+					hideButton.style.top  = Math.floor(adButtonLoc[1]) + "px";
+				}
 			}
 			if (selectedAnnotation != null) {
-				text01location = selectedAnnotation.loc_2D.concat(0);
-				text01location[1] = c.height - text01location[1] + 2.0;
+				let annoTexLoc = selectedAnnotation.loc_2D.concat(0);
+				annoTexLoc[1] = c.height - annoTexLoc[1] + 2.0;
 				comment.style.visibility = 'visible'
 				if (
-					text01location[0] < 0.0 ||
-					text01location[0] > c.width - comment.clientWidth ||
-					text01location[1] < 0.0 ||
-					text01location[1] > c.height - 20
+					annoTexLoc[0] < 0.0 ||
+					annoTexLoc[0] > c.width - comment.clientWidth ||
+					annoTexLoc[1] < 0.0 ||
+					annoTexLoc[1] > c.height - 20
 				) {comment.style.visibility = 'hidden'}
-				comment.style.left = Math.floor(text01location[0]) + "px";
-				comment.style.top  = Math.floor(text01location[1]) + "px";
+				comment.style.left = Math.floor(annoTexLoc[0]) + "px";
+				comment.style.top  = Math.floor(annoTexLoc[1]) + "px";
 			}
 		}
 
@@ -1593,7 +1621,7 @@ window.onload = function(){
 		let _selObInfo = selection_3D(_location, 'point');
 		if (_selObInfo.object != null) {
 			selectedAnnotation = null;
-			textRender();
+			UIInteractionUpdate();
 			annotationMode = 2;
 			tempAnnotation.loc = _selObInfo.point;
 			tempAnnotation.ob = _selObInfo.object;
@@ -1635,17 +1663,14 @@ window.onload = function(){
 				selectedObject = null;
 				//text01 = '';
 				comment.style.visibility = 'hidden';
+				buttonContainerElement.style.visibility = 'hidden';
 			} else {
 				selectedObject = _selObInfo.object;
+
+				 buttonContainerElement.style.visibility = 'visible';
+				 buttonContainerElement.style.pointerEvents = 'auto';
+
 				replaceCommentText(objects[selectedObject].description);
-				/*
-				let _strArray = objects[selectedObject].description.split('¥');
-				while (comment.firstChild) comment.removeChild(comment.firstChild);
-				for (var i = 0 in _strArray) {
-					comment.appendChild(document.createTextNode(_strArray[i]));
-					comment.appendChild(document.createElement('br'));
-				}
-				*/
 				text01 = selectedObject.substring(0, selectedObject.length - 3);
 			}
 		}
@@ -1702,7 +1727,10 @@ window.onload = function(){
 					_selOb = i;
 				}
 			}
-			if (_type === 'block' && objects[i].selectMesh != '') {
+			if (
+				_type === 'block' &&
+				objects[i].draw &&
+				objects[i].selectMesh != '') {
 				let _selInfo = selectObject(objects[objects[i].selectMesh], ray_wld);
 				if (_selInfo.depth < _depth) {
 					_depth = _selInfo.depth;
@@ -1751,15 +1779,14 @@ window.onload = function(){
 		_selInfo.normal = _selNormal;
 		return _selInfo;
 	}
-
+/*
 	function UIInteractionUpdate(){
 		textRender();
-		/*
 		if (comment.style.visibility === 'visible') {
 			textRender();
 		}
-		*/
 	}
+*/
 
 	function buttonPressed(_button, _location) {
 		if (obUI[_button] != null) {
@@ -1811,7 +1838,7 @@ window.onload = function(){
 					comment.style.visibility = 'hidden';
 				} else if (comment.style.visibility === 'hidden') {
 					comment.style.visibility = 'visible';
-					textRender();
+					UIInteractionUpdate();
 				}
 			}
 		}
@@ -1831,6 +1858,15 @@ window.onload = function(){
 					break;
 				default:
 					return;
+			}
+		}
+		if (buttonPressed('UI_show_button', _location)) {
+			if (obUI['UI_show_button'].texture_shift[0] === 0.5) {
+				for (var i = 0; i < hiddenObjects.length; i++) {
+					objects[hiddenObjects[i]].draw = true;
+				}
+				hiddenObjects = [];
+				obUI['UI_show_button'].texture_shift[0] = 0.0;
 			}
 		}
 	}
@@ -1859,7 +1895,7 @@ window.onload = function(){
 			comment.style.border = 'none';
 			comment.style.backgroundColor = 'transparent';
 			comment.style.visibility = 'visible';
-			textRender();
+			UIInteractionUpdate();
 		} else {
 			comment.style.visibility = 'hidden';
 		}
@@ -2133,5 +2169,13 @@ window.onload = function(){
 		memo.value = '';
 		mousePressed = false;
 		touched = false;
+	}
+
+	function buttonHidePressed() {
+		objects[selectedObject].draw = false;
+		buttonContainerElement.style.visibility = 'hidden';
+		hiddenObjects.push(selectedObject);
+		obUI['UI_show_button'].texture_shift[0] = 0.5;
+		selectedObject = null;
 	}
 };
