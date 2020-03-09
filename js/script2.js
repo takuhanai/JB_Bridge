@@ -1827,6 +1827,12 @@ window.onload = function(){
 			if (obUI['UI_ex-in_button']) {
 				obUI['UI_ex-in_button'].texture_shift[0] = 0.0;
 			}
+			
+			for (var i = 0; i < hiddenObjects.length; i++) {
+				objects[hiddenObjects[i]].draw = true;
+			}
+			hiddenObjects = [];
+			obUI['UI_show_button'].texture_shift[0] = 0.0;
 		}
 		if (buttonPressed('UI_terrain_button', _location)) {
 			objects['sea_surface_GL'].draw = !objects['sea_surface_GL'].draw;

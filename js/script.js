@@ -12,9 +12,9 @@ window.onload = function(){
   // variables
 	let resourcePath = './resource/';
 	let title = 'oshima_bridge';
-	//let scene_name = 'oshima_bridge';
+	let scene_name = 'oshima_bridge';
 	//let scene_name = 'tower_01';
-	let scene_name = '5P';
+	//let scene_name = '5P';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -1827,7 +1827,7 @@ window.onload = function(){
 			if (obUI['UI_ex-in_button']) {
 				obUI['UI_ex-in_button'].texture_shift[0] = 0.0;
 			}
-			
+
 			for (var i = 0; i < hiddenObjects.length; i++) {
 				objects[hiddenObjects[i]].draw = true;
 			}
