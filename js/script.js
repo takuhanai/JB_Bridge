@@ -1069,7 +1069,7 @@ window.onload = function(){
 			let _camera = _line[lIndex++] === 'yes' ? true : false;
 			let _selectMesh = _line[lIndex++];
 			let _pointMesh = _line[lIndex++];
-			let _UI = _line[lIndex++] === 'yes' ? true : false;
+			let _hidable = _line[lIndex++] === 'yes' ? true : false;
 			let _oneSide = _line[lIndex++] === 'yes' ? true : false;
 			let _normal = _line.slice(lIndex, lIndex + 3).map(Number);
 			lIndex += 3;
@@ -1091,6 +1091,7 @@ window.onload = function(){
 
 			ob.selectMesh = _selectMesh;
 			ob.pointMesh = _pointMesh;
+			ob.hidable = _hidable;
 			ob.one_sided = _oneSide;
 			ob.normal = _normal;
 			ob.description = _description;
@@ -1667,9 +1668,10 @@ window.onload = function(){
 			} else {
 				selectedObject = _selObInfo.object;
 
-				 buttonContainerElement.style.visibility = 'visible';
-				 //buttonContainerElement.style.pointerEvents = 'auto';
-				 hideButton.style.pointerEvents = 'auto';
+				if (objects[selectedObject].hidable) {
+					buttonContainerElement.style.visibility = 'visible';
+					hideButton.style.pointerEvents = 'auto';
+				}
 
 				replaceCommentText(objects[selectedObject].description);
 				text01 = selectedObject.substring(0, selectedObject.length - 3);
