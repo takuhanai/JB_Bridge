@@ -1668,7 +1668,8 @@ window.onload = function(){
 				selectedObject = _selObInfo.object;
 
 				 buttonContainerElement.style.visibility = 'visible';
-				 buttonContainerElement.style.pointerEvents = 'auto';
+				 //buttonContainerElement.style.pointerEvents = 'auto';
+				 hideButton.style.pointerEvents = 'auto';
 
 				replaceCommentText(objects[selectedObject].description);
 				text01 = selectedObject.substring(0, selectedObject.length - 3);
