@@ -8,28 +8,12 @@
 
         <script id="vs" type="x-shader/x-vertex">
     			attribute vec3  position;
-    			attribute vec3  normal;
     			attribute vec2  textureCoord;
-    			uniform   mat4  mMatrix;
     			uniform   mat4  mvpMatrix;
-    			uniform   mat4  invMatrix;
-    			uniform   mat4  texMatrix;
     			uniform   vec2  tex_shift;
-    			uniform   float bodyHeight;
     			varying   vec2  vTextureCoord;
-    			varying   vec4  vTexProjCoord;
-    			varying   float vShadow;
-    			const float pi = 3.141592;
     			void main(void){
-    				//mediump vec2 v_tex_shift = vec2(tex_shift, 0.0);
-    				//vTextureCoord = textureCoord + v_tex_shift;
-    				//vTextureCoord = textureCoord + vec2(tex_shift, 0.0);
     				vTextureCoord = textureCoord + tex_shift;
-    				vec3 vPosition = (mMatrix * vec4(position, 1.0)).xyz;
-    				vShadow = 1.0;
-    				if(vPosition.z > bodyHeight){vShadow = 0.0;}
-    				vTexProjCoord = texMatrix * vec4(vPosition, 1.0);
-    				//vTextureCoord  = textureCoord;
     				gl_Position    = mvpMatrix * vec4(position, 1.0);
     			}
         </script>
@@ -37,52 +21,20 @@
     			precision mediump float;
     			uniform sampler2D texture;
           uniform sampler2D texture2;
-    			uniform sampler2D textureShade;
-          uniform vec4      color;
+    			uniform vec4      color;
     			uniform float     alpha;
-    			uniform float     shadow;
           uniform bool      drawMap;
-          uniform bool      selected;
     			varying vec2      vTextureCoord;
-    			varying vec4      vTexProjCoord;
-    			varying float     vShadow;
     			void main(void){
             vec4 smpColor = texture2D(texture, vTextureCoord);
             vec4 smpColor2 = texture2D(texture2, vTextureCoord);
             vec4 intColor;
             if (drawMap) {
-              //gl_FragColor = vec4(smpColor2.rgb * smpColor2.a + smpColor.rgb * (1.0 - smpColor2.a), alpha);
               intColor = vec4(smpColor2.rgb * smpColor2.a + smpColor.rgb * (1.0 - smpColor2.a), alpha);
             } else {
-              //gl_FragColor = vec4(smpColor.rgb, alpha);
-              //gl_FragColor = vec4(smpColor.rgb * smpColor.a, smpColor.a);
-              //gl_FragColor = vec4(smpColor);
               intColor = vec4(smpColor);
             }
             gl_FragColor = vec4(color.rgb * color.a + intColor.rgb * (1.0 - color.a), intColor.a);
-            /*
-            if (color == vec3(1.0, 1.0, 1.0)) {
-              gl_FragColor = intColor;
-            } else {
-              gl_FragColor = vec4(color.rgb * 0.3 + intColor.rgb * 0.7, alpha);
-            }
-            */
-            /*
-            if (selected) {
-              vec4 highColor = vec4(1.0, 0.0, 0.0, 1.0);
-              gl_FragColor = vec4(highColor.rgb * 0.3 + intColor.rgb * 0.7, alpha);
-            } else {
-              gl_FragColor = intColor;
-            }
-            */
-            /*
-    				vec4 smpColor = texture2D(texture, vTextureCoord);
-    				vec4 shdColor = texture2DProj(textureShade, vTexProjCoord);
-    				//gl_FragColor = smpColor;
-    				gl_FragColor = vec4(smpColor.rgb, smpColor.a * alpha);
-    				//float s = shadow * vShadow;
-    				//gl_FragColor = vec4(smpColor.rgb * (1.0 - shdColor.rgb * s), smpColor.a * alpha);
-            */
     			}
         </script>
 		<link href="https://fonts.googleapis.com/css?family=Paytone+One|Source+Sans+Pro|Pattaya|Lakki+Reddy:300,700,400,400" rel="stylesheet">

@@ -14,7 +14,7 @@ window.onload = function(){
 	let title = 'oshima_bridge';
 	let scene_name = 'oshima_bridge';
 	//let scene_name = 'tower_01';
-	//let scene_name = '5P';
+	//let scene_name = '5P_tower';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -48,16 +48,6 @@ window.onload = function(){
 	let opening_count = 0;
 
 	let cameraVertAngle = 0.0;
-	//const cameraVertAngleMax = 12.0 * Math.PI / 180.0;
-	//const cameraVertAngleMin = -78.0 * Math.PI / 180.0;
-	/*
-	let cameraTranslationDelta = 1.0;
-	let cameraTranslationRange = [420.0, -420.0, 420.0, -420.0, 150.0, 0.0]; //X max, X min, Y max, Y min, Z max, Z min
-	let cameraVertAngleMax = 10.0 * Math.PI / 180.0;
-	let cameraVertAngleMin = -80.0 * Math.PI / 180.0;
-	let cameraViewAngleMax = 1.2;
-	let cameraViewAngleMin = 0.1;
-	*/
 
 	let cameraOriginZSpeed;
 	let cameraOriginZDest;
@@ -87,41 +77,46 @@ window.onload = function(){
   let v_shader = create_shader('vs');
   let f_shader = create_shader('fs');
   let prg = create_program(v_shader, f_shader);
+	VBOEnum = {
+		position: 0,
+		textureCoord: 1
+	}
   let attLocation = new Array();
-  attLocation[0] = gl.getAttribLocation(prg, 'position');
-  attLocation[1] = gl.getAttribLocation(prg, 'textureCoord');
+  attLocation[VBOEnum.position] = gl.getAttribLocation(prg, 'position');
+  attLocation[VBOEnum.textureCoord] = gl.getAttribLocation(prg, 'textureCoord');
   let attStride = new Array();
-  attStride[0] = 3;
-  attStride[1] = 2;
+  attStride[VBOEnum.position] = 3;
+  attStride[VBOEnum.textureCoord] = 2;
+
+	uniEnum = {
+		color: 0,
+		mvpMatrix: 1,
+		texture: 2,
+		texture2: 3,
+		alpha: 4,
+		tex_shift: 5,
+		drawMap: 6,
+	}
   let uniLocation = new Array();
-  uniLocation[0] = gl.getUniformLocation(prg, 'color');
-  uniLocation[1] = gl.getUniformLocation(prg, 'mvpMatrix');
-  uniLocation[2] = gl.getUniformLocation(prg, 'invMatrix');
-  uniLocation[3] = gl.getUniformLocation(prg, 'texture');
-  uniLocation[4] = gl.getUniformLocation(prg, 'alpha');
-  uniLocation[5] = gl.getUniformLocation(prg, 'tex_shift');
-  uniLocation[6] = gl.getUniformLocation(prg, 'texMatrix');
-  uniLocation[7] = gl.getUniformLocation(prg, 'textureShade');
-  uniLocation[8] = gl.getUniformLocation(prg, 'mMatrix');
-	uniLocation[9] = gl.getUniformLocation(prg, 'texture2');
-	uniLocation[10] = gl.getUniformLocation(prg, 'drawMap');
-	//uniLocation[11] = gl.getUniformLocation(prg, 'selected');
+  uniLocation[uniEnum.color] = gl.getUniformLocation(prg, 'color');
+  uniLocation[uniEnum.mvpMatrix] = gl.getUniformLocation(prg, 'mvpMatrix');
+  uniLocation[uniEnum.texture] = gl.getUniformLocation(prg, 'texture');
+	uniLocation[uniEnum.texture2] = gl.getUniformLocation(prg, 'texture2');
+	uniLocation[uniEnum.alpha] = gl.getUniformLocation(prg, 'alpha');
+  uniLocation[uniEnum.tex_shift] = gl.getUniformLocation(prg, 'tex_shift');
+  uniLocation[uniEnum.drawMap] = gl.getUniformLocation(prg, 'drawMap');
 
   gl.useProgram(prg);
 
 	// 各種行列の生成と初期化
   let m = new matIV();
   let vMatrix = m.identity(m.create());
-	let pMatrix = m.identity(m.create());
+	//let pMatrix = m.identity(m.create());
   let p1Matrix = m.identity(m.create());
 	let vpoMatrix = m.identity(m.create());//For UI
   let vpMatrix = m.identity(m.create());
 	let mvpMatrix = m.identity(m.create());
-	let invMatrix = m.identity(m.create());
-	let tMatrix = m.identity(m.create());
 	let vTempMatrix = m.identity(m.create());
-
-	//let tmvpMatrix = m.identity(m.create());
 
 	let q = new qtnIV();
 
@@ -147,7 +142,6 @@ window.onload = function(){
 	let annotations = [];
 	let tempAnnotation = new Annoatation([0.0, 0.0, 0.0], null, [0.0, 0.0, 0.0], '');
 
-	//let obUI = []; // List of UI objects
 	let obUI = new Array(); // List of UI objects
 
 	let Scene = function (name) {
@@ -159,13 +153,17 @@ window.onload = function(){
 		this.cameraViewAngleMax = 1.2;
 		this.cameraViewAngleMin = 0.1;
 	}
-	let scene = new Scene(scene_name);
 
-	let objects = new Array();
 	let object = function (name) {
 		this.name = name;
 	}
 
+	let scene = new Scene(scene_name);
+
+	let objects = new Array();
+
+	loadScene(scene_name);
+	/*
 	let allDataReady = false;
 	let numDataReady = 0;
 
@@ -178,7 +176,7 @@ window.onload = function(){
 	let hiddenObjects = [];
 
 	readUIData();
-
+	*/
 	const objectActions = [
 /*
 						   {object: 'camera_origin',
@@ -283,13 +281,14 @@ window.onload = function(){
 
 	let buttonContainerElement = document.getElementById("buttonContainer");
 	buttonContainerElement.style.visibility = 'hidden';
-	let hideButton = document.createElement('input');
-	hideButton.className = "floating-buttonHide";
-	hideButton.type = 'image';
-	hideButton.src = './resource/UI/html/UI_obButton_hide.png';
-	hideButton.onclick = buttonHidePressed;
-	buttonContainerElement.appendChild(hideButton);
-	//hideButton.style.visibility = 'hidden';
+
+	let obButton = document.createElement('input');
+	obButton.className = "floating-buttonObject";
+	obButton.type = 'image';
+	obButton.src = './resource/UI/html/UI_obButton_hide.png';
+	obButton.onclick = obButtonPressed;
+	obButton.style.visibility = 'hidden';
+	buttonContainerElement.appendChild(obButton);
 
 /*
 	let overlayElement = document.getElementById('overlay');
@@ -300,7 +299,7 @@ window.onload = function(){
 
 	render();
 
-    function render(){
+	function render(){
 		//gl.clearColor(0.4, 0.6, 1.0, 1.0);
 		gl.clearColor(0.95, 0.95, 0.9, 1.0);
 		//gl.clearColor(0.98, 0.98, 1.0, 1.0);
@@ -311,12 +310,10 @@ window.onload = function(){
             // 全てのロードが完了した際に一度だけ行いたい処理
         }
 		*/
-        // アニメーション
-        requestAnimationFrame(render);
+    // アニメーション
+		requestAnimationFrame(render);
 
-				//console.log('allDataReady:', allDataReady);
-
-        if (allDataReady === true) {
+    if (allDataReady === true) {
 			// 全てのリソースのロードが完了している
 
 			if (opening_count < OPENING_LENGTH) {
@@ -348,30 +345,32 @@ window.onload = function(){
 			//gl.blendFuncSeparate(gl.ONE, gl.ZERO, gl.ONE, gl.ONE);
 			//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-			cameraUpdate();
+			cameraUpdate(false);
 
 			// canvasを初期化
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            gl.viewport(0, 0, c.width, c.height);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            // objects の描画
-            objectRender();
-            // hud 関連
-						gl.disable(gl.DEPTH_TEST);
-            UIRender();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, c.width, c.height);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      // objects の描画
+      objectRender();
+      // hud 関連
+			gl.disable(gl.DEPTH_TEST);
+			//cameraUpdate(true);
+			//UI3DRender();
+      UIRender();
 
-        }else{
-            // canvasを初期化
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    }else{
+      // canvasを初期化
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            // リソースのロードが完了していない
-            // プログレス表示
-            m.multiply(p1Matrix, vMatrix, vpMatrix);
-            progressRender();
-        }
-
-        gl.flush();
+      // リソースのロードが完了していない
+      // プログレス表示
+      m.multiply(p1Matrix, vMatrix, vpMatrix);
+      progressRender();
     }
+
+      gl.flush();
+  }
 
 	function openingUpdate() {
 		let speed_amp = FPS / OPENING_SPEED;
@@ -546,11 +545,15 @@ window.onload = function(){
 	}
 
     // camera update
-  function cameraUpdate(){
+  function cameraUpdate(_UI3D){
 			let _obCamera = objects[obCamera[camMode]];
 			switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
 				case 0: //PERSP
-					m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
+					if (!_UI3D) {
+						m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
+					} else {
+						m.perspective(_obCamera.angle_y0 / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
+					}
 					break;
 			}
 			m.inverse(_obCamera.mMatrix, vMatrix);
@@ -574,19 +577,27 @@ window.onload = function(){
 			// 特例のあるオブジェクト（drone_body or parent=none）
             var mMatrixLocal = m.identity(m.create());
             if (i == 'mambo_body') {
-                m.multiply(objects[i].mMatrix0, drone.gMatrix, mMatrixLocal);
-			} else if (i === 'camera_follow') {
-				m.multiply(objects[i].mMatrix0, camera_follow_gMatrix, mMatrixLocal);
-			} else if (i === 'camera_front') {
-				m.multiply(objects[i].mMatrix0, camera_front_gMatrix, mMatrixLocal);
+							m.multiply(objects[i].mMatrix0, drone.gMatrix, mMatrixLocal);
+						} else if (i === 'camera_follow') {
+							m.multiply(objects[i].mMatrix0, camera_follow_gMatrix, mMatrixLocal);
+						} else if (i === 'camera_front') {
+							m.multiply(objects[i].mMatrix0, camera_front_gMatrix, mMatrixLocal);
             } else {
-                m.multiply(objects[i].mMatrix0, mMatrixLocal, mMatrixLocal);
+	            m.multiply(objects[i].mMatrix0, mMatrixLocal, mMatrixLocal);
             }
             //if (objects[i].parent != 'none') {
 						if (objects[i].parent != '') {
                 var po = objects[objects[i].parent];
 								if (po.dataReady) {
+									if (objects[i].kind != 'UI3D') {
                     m.multiply(po.mMatrix, mMatrixLocal, objects[i].mMatrix);
+									} else {
+										let uimMatrix = m.identity(m.create());
+										uimMatrix[12] = po.mMatrix[12];
+										uimMatrix[13] = po.mMatrix[13];
+										uimMatrix[14] = po.mMatrix[14];
+										m.multiply(uimMatrix, mMatrixLocal, objects[i].mMatrix);
+									}
                 }
             } else {
                 objects[i].mMatrix = mMatrixLocal;
@@ -636,79 +647,83 @@ window.onload = function(){
 
   // objects rendering
   function objectRender(){
-		// uniform変数にテクスチャを登録
-        gl.uniform1i(uniLocation[3], 0); //texture
-        gl.uniform1i(uniLocation[7], 6);
-				gl.uniform1i(uniLocation[9], 1); //texture2
+		for (var i = 0 in objects) {
+			if (objects[i].one_sided) {
+				let _ray = vecSub(objects[i].center, objects[obCamera[camMode]].mMatrix.slice(12, 15));
+				if (dot(objects[i].normal, _ray) < 0.0) {
+					objects[i].draw = true;
+				} else {
+					objects[i].draw = false;
+				}
+			}
+      if (
+          objects[i].type === 0 &&
+					objects[i].kind === 'mesh' &&
+          objects[i].draw === true &&
+					objects[i].internal === drawInternal &&
+          obLoading.indexOf(i) === -1
+      ) {
+				let _color = [];
+				if (i === selectedObject) {
+					_color = [1.0, 0.0, 0.0, 0.3];
+				} else {
+					_color = [1.0, 1.0, 1.0, 0.0];
+				}
 
-				for (var i = 0 in objects) {
-
-					if (objects[i].one_sided) {
-						let _ray = vecSub(objects[i].center, objects[obCamera[camMode]].mMatrix.slice(12, 15));
-						if (dot(objects[i].normal, _ray) < 0.0) {
-							objects[i].draw = true;
-						} else {
-							objects[i].draw = false;
-						}
-					}
-            if (
-                objects[i].type === 0 &&
-								objects[i].kind === 'mesh' &&
-                objects[i].draw === true &&
-								objects[i].internal === drawInternal &&
-								//objects[i].facing === true &&
-                //obUI.indexOf(i) === -1 &&
-                obLoading.indexOf(i) === -1
-            ) {
-								//console.log('objectRender:', objects[i].name);
-								set_attribute(objects[i].VBOList, attLocation, attStride);
-								gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[i].iIndex);
-
-								gl.activeTexture(gl.TEXTURE0);
-                gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[i]);
-								//gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[0]);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-								gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-
-								if (drawMap && i === '5P_tower_GL') {
-									gl.uniform1i(uniLocation[10], drawMap);
-									gl.activeTexture(gl.TEXTURE1);
-									//gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[1]);
-									gl.bindTexture(gl.TEXTURE_2D, objects[i].texture[i + '_map']);
-	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-									gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-								} else {
-									gl.uniform1i(uniLocation[10], false);
-								}
-								if (i === selectedObject) {
-									//gl.uniform1i(uniLocation[11], true);
-									gl.uniform4fv(uniLocation[0], [1.0, 0.0, 0.0, 0.3]);
-								} else {
-									//gl.uniform1i(uniLocation[11], false);
-									gl.uniform4fv(uniLocation[0], [1.0, 1.0, 1.0, 0.0]);
-								}
-
-                gl.uniform1f(uniLocation[4], objects[i].alpha);
-                gl.uniform2fv(uniLocation[5], objects[i].texture_shift);
-                //gl.uniform1f(uniLocation[9], objects[i].shadow);
-                //m.multiply(vpMatrix, mTempMatrix, mvpMatrix);
-                m.multiply(vpMatrix, objects[i].mMatrix, mvpMatrix);
-
-                gl.uniformMatrix4fv(uniLocation[1], false, mvpMatrix);
-                gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
-                gl.uniformMatrix4fv(uniLocation[6], false, tMatrix);
-                gl.uniformMatrix4fv(uniLocation[8], false, objects[i].mMatrix);
-
-                //gl.drawElements(gl.TRIANGLES, objects[i].numLoop, gl.UNSIGNED_SHORT, 0);
-                gl.drawElements(gl.TRIANGLES, objects[i].numLoop, gl.UNSIGNED_SHORT, 0);
-            }
-        }
-        //gl.uniform1f(uniLocation[9], 0.0);
+				objectRendergl(i, _color);
+      }
     }
+	}
+
+	function UI3DRender(){
+		for (var i = 0 in objects) {
+			if (
+					objects[i].type === 0 &&
+					objects[i].kind === 'UI3D' &&
+					objects[i].draw === true &&
+					objects[i].internal === drawInternal &&
+					obLoading.indexOf(i) === -1
+			) {
+				let _color = [1.0, 1.0, 1.0, 0.0];
+
+				objectRendergl(i, _color);
+			}
+		}
+	}
+
+		function objectRendergl(_obName, _color){
+			gl.uniform1i(uniLocation[uniEnum.texture], 0);
+			gl.uniform1i(uniLocation[uniEnum.texture2], 1);
+			set_attribute(objects[_obName].VBOList, attLocation, attStride);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[_obName].iIndex);
+
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, objects[_obName].texture[_obName]);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+
+			if (drawMap && objects[_obName].mappable) {
+				gl.uniform1i(uniLocation[uniEnum.drawMap], drawMap);
+				gl.activeTexture(gl.TEXTURE1);
+				gl.bindTexture(gl.TEXTURE_2D, objects[_obName].texture[_obName + '_map']);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			} else {
+				gl.uniform1i(uniLocation[uniEnum.drawMap], false);
+			}
+			gl.uniform4fv(uniLocation[uniEnum.color], _color);
+			gl.uniform1f(uniLocation[uniEnum.alpha], objects[_obName].alpha);
+			gl.uniform2fv(uniLocation[uniEnum.tex_shift], objects[_obName].texture_shift);
+			m.multiply(vpMatrix, objects[_obName].mMatrix, mvpMatrix);
+
+			gl.uniformMatrix4fv(uniLocation[uniEnum.mvpMatrix], false, mvpMatrix);
+
+			gl.drawElements(gl.TRIANGLES, objects[_obName].numLoop, gl.UNSIGNED_SHORT, 0);
+		}
 
     // UI
     function UIRender(){
@@ -756,25 +771,14 @@ window.onload = function(){
 				obUI['UI_annotation_edit'].mMatrix = _tMatrix;
 				obUI['UI_annotation_edit'].location = _tMatrix.slice(12, 15);
 				UIRendergl(obUI['UI_annotation_edit'], [1.0, 1.0, 1.0, 0.0]);
-				/*
-				m.translate(_tMatrix, [20.0, 0.0, 0.0], _tMatrix);
-				obUI['UI_annotation_check'].mMatrix = _tMatrix;
-				obUI['UI_annotation_check'].location = _tMatrix.slice(12, 15);
-				UIRendergl(obUI['UI_annotation_check'], [1.0, 1.0, 1.0, 0.0]);
-				m.translate(_tMatrix, [-40.0, 0.0, 0.0], _tMatrix);
-				obUI['UI_annotation_cancel'].mMatrix = _tMatrix;
-				obUI['UI_annotation_cancel'].location = _tMatrix.slice(12, 15);
-				UIRendergl(obUI['UI_annotation_cancel'], [1.0, 1.0, 1.0, 0.0]);
-				*/
 			}
     }
 
 		function UIRendergl(_ob, _color) {
 			set_attribute(_ob.VBOList, attLocation, attStride);
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, _ob.iIndex);
-			gl.uniform1i(uniLocation[10], false);
-			//gl.uniform1i(uniLocation[11], false);
-			gl.uniform4fv(uniLocation[0], _color);
+			gl.uniform1i(uniLocation[uniEnum.drawMap], false);
+			gl.uniform4fv(uniLocation[uniEnum.color], _color);
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_ob.name]);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -782,19 +786,18 @@ window.onload = function(){
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 
-			gl.uniform2fv(uniLocation[5], _ob.texture_shift);
+			gl.uniform2fv(uniLocation[uniEnum.tex_shift], _ob.texture_shift);
 
 			m.multiply(vpoMatrix, _ob.mMatrix, mvpMatrix);
-			gl.uniformMatrix4fv(uniLocation[1], false, mvpMatrix);
-			gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
-			gl.uniform1f(uniLocation[4], _ob.alpha);
+			gl.uniformMatrix4fv(uniLocation[uniEnum.mvpMatrix], false, mvpMatrix);
+			gl.uniform1f(uniLocation[uniEnum.alpha], _ob.alpha);
 
 			gl.drawElements(gl.TRIANGLES, _ob.numLoop, gl.UNSIGNED_SHORT, 0);
 		}
 
     // プログレス表示
     function progressRender(){
-        gl.uniform2fv(uniLocation[5], [0.0, 0.0]);
+        gl.uniform2fv(uniLocation[uniEnum.tex_shift], [0.0, 0.0]);
         for (var i = 0 in obLoading) {
             //eText.textContent = numDataReady + ': ' + obNames.length;
             //if (objects[obLoading[i]].dataReady && objects[obLoading[i]].texture[objects[obLoading[i]].name] && !allDataReady) {
@@ -807,9 +810,6 @@ window.onload = function(){
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
 
-                // uniform変数にテクスチャを登録
-                //gl.uniform1f(uniLocation[7], 1.0);
-
                 var mTempMatrix = m.identity(m.create());
                 if (obLoading[i] == 'progress_bar') {
                     m.scale(mTempMatrix, [numDataReady / (obNames.length * 2), 1, 1], mTempMatrix);
@@ -817,9 +817,8 @@ window.onload = function(){
                 m.multiply(objects[obLoading[i]].mMatrix, mTempMatrix, mTempMatrix);
 
                 m.multiply(vpoMatrix, mTempMatrix, mvpMatrix);
-                gl.uniformMatrix4fv(uniLocation[1], false, mvpMatrix);
-                gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
-                gl.uniform1f(uniLocation[4], 1.0);
+                gl.uniformMatrix4fv(uniLocation[uniEnum.mvpMatrix], false, mvpMatrix);
+                gl.uniform1f(uniLocation[uniEnum.alpha], 1.0);
 
                 gl.drawElements(gl.TRIANGLES, objects[obLoading[i]].numLoop, gl.UNSIGNED_SHORT, 0);
             }
@@ -855,10 +854,12 @@ window.onload = function(){
 				}
 				if (buttonContainerElement.style.visibility === 'visible') {
 					let buttonLoc = fromObTo2D(objects[selectedObject]);
-					buttonLoc[0] -= hideButton.clientWidth / 2.0;
-					let adButtonLoc = adjustUI(buttonLoc, [0.0, c.width - hideButton.clientWidth], [0.0, c.height - 160.0]);
-					hideButton.style.left = Math.floor(adButtonLoc[0]) + "px";
-					hideButton.style.top  = Math.floor(adButtonLoc[1]) + "px";
+					buttonLoc[0] -= obButton.clientWidth / 2.0;
+					let adButtonLoc = adjustUI(buttonLoc, [0.0, c.width - obButton.clientWidth], [0.0, c.height - 160.0]);
+					obButton.style.left = Math.floor(adButtonLoc[0]) + "px";
+					obButton.style.top  = Math.floor(adButtonLoc[1]) + "px";
+					//detailButton.style.left = Math.floor(adButtonLoc[0]) + "px";
+					//detailButton.style.top  = Math.floor(adButtonLoc[1]) + "px";
 				}
 			}
 			if (selectedAnnotation != null) {
@@ -970,7 +971,7 @@ window.onload = function(){
     function set_attribute(vbo, attL, attS){
         // 引数として受け取った配列を処理する
         for(var i in vbo){
-			//console.log(i);
+					//console.log('set_attribute', i);
             // バッファをバインドする
             gl.bindBuffer(gl.ARRAY_BUFFER, vbo[i]);
 
@@ -1038,6 +1039,27 @@ window.onload = function(){
 		return tex;
 	}
 
+	function loadScene(_scene_name) {
+		drawMap = false;
+		selectedObject = null;
+		annotationMode = 0; //0:normal 1:pointable 2:temporary
+		selectedAnnotation = null;
+		drawInternal = false;
+		navigatable = true;
+
+		scene = new Scene(_scene_name);
+		objects = new Array();
+		obUI = new Array();
+		allDataReady = false;
+		numDataReady = 0;
+		readSceneData();
+		for (let i in objects) {
+			read3DModelData(resourcePath + scene.name, objects[i].name, 'object');
+		}
+		hiddenObjects = [];
+		readUIData();
+	}
+
 	function readSceneData() {
 		var data = new XMLHttpRequest();
 		data.open("GET", resourcePath + 'scenes/' + title + '-' + scene.name + '.csv', false); //true:非同期,false:同期
@@ -1048,6 +1070,7 @@ window.onload = function(){
 		let _sceneData = lines[1].split(',');
 		let sdIndex = 0;
 		scene.num_object = Number(_sceneData[sdIndex++]);
+		scene.parent = _sceneData[sdIndex++];
 		scene.UI = _sceneData[sdIndex++];
 		scene.cameraTranslationDelta = Number(_sceneData[sdIndex++]);
 		scene.cameraTranslationRange = _sceneData.slice(sdIndex, sdIndex + 6).map(Number);
@@ -1069,6 +1092,8 @@ window.onload = function(){
 			let _camera = _line[lIndex++] === 'yes' ? true : false;
 			let _selectMesh = _line[lIndex++];
 			let _pointMesh = _line[lIndex++];
+			let _mappable = _line[lIndex++] === 'yes' ? true : false;
+			let _hasDetail = _line[lIndex++] === 'yes' ? true : false;
 			let _hidable = _line[lIndex++] === 'yes' ? true : false;
 			let _oneSide = _line[lIndex++] === 'yes' ? true : false;
 			let _normal = _line.slice(lIndex, lIndex + 3).map(Number);
@@ -1091,6 +1116,8 @@ window.onload = function(){
 
 			ob.selectMesh = _selectMesh;
 			ob.pointMesh = _pointMesh;
+			ob.mappable = _mappable;
+			ob.hasDetail = _hasDetail;
 			ob.hidable = _hidable;
 			ob.one_sided = _oneSide;
 			ob.normal = _normal;
@@ -1104,7 +1131,7 @@ window.onload = function(){
 			ob.depth = 1000000; // Z Depth from Camera
 	    objects[_name] = ob;
 
-			if (_camera) {
+			if (_kind === 'camera') {
 				obCamera.push(_name);
 			}
 			if (_selectMesh != '') {
@@ -1144,6 +1171,16 @@ window.onload = function(){
 			} else if (_type === 'UI') {
 				var ob = obUI[_objectName];
 			}
+
+			let lenT = dv.getInt32(off, true);
+			let _name = '';
+			off += 4;
+			for (var i = 0; i < lenT; i++) {
+				//_name.push(dv.getInt8(off));
+				_name += String.fromCharCode(dv.getInt8(off));
+				off += 1;
+			}
+			console.log(_name);
 
 			ob.type = dv.getInt32(off, true); //0:MESH, 7:EMPTY, 8:CAMERA
 			off += 4;
@@ -1475,7 +1512,7 @@ window.onload = function(){
 
 		var mQtn = q.identity(q.create());
 		var rMatrix = m.identity(m.create());
-		var tMatrix = m.identity(m.create());
+		var _tMatrix = m.identity(m.create());
 		var sMatrix = m.identity(m.create());
 
 		switch (_rot_mode) {
@@ -1521,10 +1558,10 @@ window.onload = function(){
 				break;
 		}
 
-		m.translate(tMatrix, _loc, tMatrix);
+		m.translate(_tMatrix, _loc, _tMatrix);
 		m.scale(sMatrix, _scale, sMatrix);
 
-		m.multiply(tMatrix, sMatrix, mMatrix);
+		m.multiply(_tMatrix, sMatrix, mMatrix);
 		m.multiply(mMatrix, rMatrix, mMatrix);
 		return mMatrix;
 	}
@@ -1657,6 +1694,7 @@ window.onload = function(){
 
 	function selectBlock(_location) {
 		let _selObInfo = selection_3D(_location, 'block');
+		console.log(_selObInfo.object);
 
 		if (_selObInfo.object != null) {
 			//while (comment.firstChild) comment.removeChild(comment.firstChild);
@@ -1665,12 +1703,27 @@ window.onload = function(){
 				//text01 = '';
 				comment.style.visibility = 'hidden';
 				buttonContainerElement.style.visibility = 'hidden';
+				obButton.style.visibility = 'hidden';
+				//detailButton.style.visibility = 'hidden';
 			} else {
 				selectedObject = _selObInfo.object;
 
 				if (objects[selectedObject].hidable) {
+					obButton.src = './resource/UI/html/UI_obButton_hide.png';
 					buttonContainerElement.style.visibility = 'visible';
-					hideButton.style.pointerEvents = 'auto';
+					obButton.style.visibility = 'visible';
+					obButton.style.pointerEvents = 'auto';
+					mousePressed = false;
+					touched = false;
+				}
+
+				if (objects[selectedObject].hasDetail) {
+					obButton.src = './resource/UI/html/UI_obButton_detail.png';
+					buttonContainerElement.style.visibility = 'visible';
+					obButton.style.visibility = 'visible';
+					obButton.style.pointerEvents = 'auto';
+					mousePressed = false;
+					touched = false;
 				}
 
 				replaceCommentText(objects[selectedObject].description);
@@ -1878,6 +1931,9 @@ window.onload = function(){
 				obUI['UI_show_button'].texture_shift[0] = 0.0;
 			}
 		}
+		if (buttonPressed('UI_whole_button', _location)) {
+			loadScene(scene.parent);
+		}
 	}
 
 	function checkAnnotations(_location) {
@@ -1968,9 +2024,6 @@ window.onload = function(){
 			if (annotations.length > 0) {
 				checkAnnotations(currentMouseLocation);
 			}
-
-			//eText.textContent = selectedObject;
-			//console.log(text01location, tmvpMatrix);
 		}
 	}
 
@@ -2180,11 +2233,18 @@ window.onload = function(){
 		touched = false;
 	}
 
-	function buttonHidePressed() {
-		objects[selectedObject].draw = false;
-		buttonContainerElement.style.visibility = 'hidden';
-		hiddenObjects.push(selectedObject);
-		obUI['UI_show_button'].texture_shift[0] = 0.5;
-		selectedObject = null;
+	function obButtonPressed() {
+		if (objects[selectedObject].hasDetail) {
+			buttonContainerElement.style.visibility = 'hidden';
+			obButton.style.visibility = 'hidden';
+			loadScene(objects[selectedObject].name);
+		} else if (objects[selectedObject].hidable) {
+			objects[selectedObject].draw = false;
+			buttonContainerElement.style.visibility = 'hidden';
+			obButton.style.visibility = 'hidden';
+			hiddenObjects.push(selectedObject);
+			obUI['UI_show_button'].texture_shift[0] = 0.5;
+			selectedObject = null;
+		}
 	}
 };

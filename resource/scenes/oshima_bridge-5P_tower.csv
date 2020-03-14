@@ -1,0 +1,34 @@
+number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,,,,
+30,oshima_bridge,third_layer,0.2,20.0,-20.0,20.0,-20.0,90.0,2.0,30.0,-30.0,0.9,0.06,,,,
+object,kind,texture01,texture02,parent,internal,camera,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
+camera_whole,camera,,,camera_whole_origin,,yes,,,,,,,,,,,
+UI_compass,UI3D,UI_compass,,camera_whole_origin,,,,,,,,,,,,,2
+camera_whole_origin,empty,,,,,,,,,,,,,,,,
+shaftL_dia,mesh,shaftL_dia,,,yes,,,shaftL_dia,,,,,,,,,"2,768"
+shaftL_wall_E,mesh,shaftL_wall_E,,,yes,,,shaftL_wall_E,,,,yes,-0.9997379183769230,0.0,0.022890908643603300,,"2,181"
+shaftL_wall_N,mesh,shaftL_wall_N,,,yes,,,shaftL_wall_N,,,,yes,0.0,-1.0,0.0,,"2,688"
+shaftL_wall_S,mesh,shaftL_wall_S,,,yes,,,shaftL_wall_S,,,,yes,0.0,1.0,0.0,,"2,634"
+shaftL_wall_W,mesh,shaftL_wall_W,,,yes,,,shaftL_wall_W,,,,yes,0.9999422430992130,0.0,-0.010752078145742400,,"2,066"
+shaftR_wall_W,mesh,shaftR_wall_W,,,yes,,,shaftR_wall_W,,,,yes,0.9997379183769230,0.0,0.022890908643603300,,"2,177"
+shaftR_wall_N,mesh,shaftR_wall_N,,,yes,,,shaftR_wall_N,,,,yes,0.0,-1.0,0.0,,"2,690"
+shaftR_wall_S,mesh,shaftR_wall_S,,,yes,,,shaftR_wall_S,,,,yes,0.0,1.0,0.0,,"2,630"
+shaftR_wall_E,mesh,shaftR_wall_E,,,yes,,,shaftR_wall_E,,,,yes,-0.9999422430992130,0.0,-0.010752078145742400,,"2,070"
+shaftR_dia,mesh,shaftR_dia,,,yes,,,shaftR_dia,,,,,,,,,"2,714"
+top_strat_dia,mesh,top_strat_dia,,,yes,,,top_strat_dia,,,,,,,,,160
+top_strat_wall_T,mesh,top_strat_wall_T,,,yes,,,top_strat_wall_T,,,,yes,0.0,0.0,-1.0,,657
+top_strat_wall_S,mesh,top_strat_wall_S,,,yes,,,top_strat_wall_S,,,,yes,0.0,1.0,-1.43051158829621E-06,,208
+top_strat_wall_C,mesh,top_strat_wall_C,,,yes,,,top_strat_wall_C,,,,yes,0.0,-1.0,1.43051158829621E-06,,206
+top_strat_wall_B,mesh,top_strat_wall_B,,,yes,,,top_strat_wall_B,,,,yes,0.0,0.0,1.0,,584
+lower_strat_wall_C,mesh,lower_strat_wall_C,,,yes,,,lower_strat_wall_C,,,,yes,0.0,-1.0,0.0,,440
+lower_strat_dia,mesh,lower_strat_dia,,,yes,,,lower_strat_dia,,,,,,,,,406
+lower_strat_wall_T,mesh,lower_strat_wall_T,,,yes,,,lower_strat_wall_T,,,,yes,0.0,0.0,-1.0,,"1,112"
+lower_strat_wall_S,mesh,lower_strat_wall_S,,,yes,,,lower_strat_wall_S,,,,yes,0.0,1.0,0.0,,80
+lower_strat_wall_B,mesh,lower_strat_wall_B,,,yes,,,lower_strat_wall_B,,,,yes,0.0,0.0,1.0,,620
+shaftL_wall_outer,mesh,shaftL_wall_outer,,,,,,shaftL_wall_outer,,,,,,,,,"2,417"
+suddleL,mesh,suddleL,,,,,,suddleL,,,,,,,,,518
+shaftR_wall_outer,mesh,shaftR_wall_outer,,,,,,shaftR_wall_outer,,,,,,,,,"2,417"
+suddleR,mesh,suddleR,,,,,,suddleR,,,,,,,,,518
+suddle_cover,mesh,suddle_cover,,,,,suddle_cover,suddle_cover,,,yes,,,,,,"1,352"
+top_strat_wall,mesh,top_strat_wall,,,,,,top_strat_wall,,,,,,,,,486
+lower_strat_wall,mesh,lower_strat_wall,,,,,,lower_strat_wall,,,,,,,,,"1,156"
+,,,,,,,,,,,,,,,,,"37,955"

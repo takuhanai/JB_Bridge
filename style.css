@@ -94,9 +94,10 @@ body {margin:0;
 	pointer-events: none;
 }
 
-.floating-buttonHide {
+.floating-buttonObject {
 	border: none;
 }
+
 /*
 #overlay {
 	width: 200px;
@@ -286,9 +287,10 @@ body {
 	grid-row-start: img;
 }
 
-.floating-buttonHide {
+.floating-buttonObject {
 	position: relative;
 }
+
 /*
 #overlay {
 	position:relative;

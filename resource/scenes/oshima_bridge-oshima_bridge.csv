@@ -1,36 +1,37 @@
-number of objects,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,,,
-32,second_layer,1.2,420.0,-420.0,420.0,-420.0,150.0,0,10.0,-80.0,1.2,0.1,,,
-object,kind,texture01,texture02,parent,internal,camera,select mesh,point mesh,hidable,one side,normal x,normal y,normal z,description,number of polygons
-camera_whole,camera,,,camera_whole_origin,,yes,,,,,,,,,
-camera_whole_origin,empty,,,,,,,,,,,,,,
-view01,camera,,,,,yes,,,,,,,,,
-view02,camera,,,,,yes,,,,,,,,,
-view03,camera,,,,,yes,,,,,,,,,
-view04,camera,,,,,yes,,,,,,,,,
-view05,camera,,,,,yes,,,,,,,,,
-5P_caisson_GL,mesh,5P_caisson_GL,,,,,5P_caisson_GL,,,,,,,5Pケーソン¥　コンクリートケーソン¥　L = 13m、W = 36m、H = 19m,10
-5P_tower_GL,mesh,5P_tower_GL,5P_tower_GL_map,,,,5P_tower_GL,,,,,,,5P主塔¥　鋼製主塔¥　塔頂：TP+97m,352
-6P_caisson_GL,mesh,6P_caisson_GL,,,,,6P_caisson_GL,,,,,,,6Pケーソン¥　コンクリートケーソ¥　L = 13m、W = 36m、H = 13m,10
-6P_tower_GL,mesh,6P_tower_GL,,,,,6P_tower_GL,,,,,,,6P主塔¥　鋼製主塔¥　塔頂：TP+97m,352
-4A_GL,mesh,4A_GL,,,,,4A_GL,,,,,,,4Aアンカレイジ¥　重力式アンカレイジ¥　L = 46m、W = 35m¥　スプレー点：TP+34.6m,364
-4A_road_girder_GL,mesh,4A_road_girder_GL,,,,,4A_road_girder_GL,,,,,,,4A道路桁¥　3径間連続RC床版¥　支間割：11.85m + 11.85m + 8.95m,28
-4A_shed_GL,mesh,4A_shed_GL,,,,,4A_shed_GL,,,,,,,4A上屋,112
-7A_GL,mesh,7A_GL,,,,,7A_GL,,,,,,,7Aアンカレイジ¥　重力式アンカレイジ¥　L = 46m、W = 35m¥　スプレー点：TP+34.6m,370
-7A_road_girder_GL,mesh,7A_road_girder_GL,,,,,7A_road_girder_GL,,,,,,,7A道路桁¥　3径間連続RC床版¥　支間割：10.55m + 13.57m + 13.57m,28
-7A_shed_GL,mesh,7A_shed_GL,,,,,7A_shed_GL,,,,,,,7A上屋,154
-P1_GL,mesh,P1_GL,,,,,P1_GL,,,,,,,P1橋脚¥　RCラーメン橋脚¥　H = 2.0m,66
-P2_GL,mesh,P2_GL,,,,,P2_GL,,,,,,,P2橋脚¥　RCラーメン橋脚¥　H = 8.5m,140
-P3_GL,mesh,P3_GL,,,,,P3_GL,,,,,,,P3橋脚¥　RCラーメン橋脚¥　H = 18.5m,140
-P4_GL,mesh,P4_GL,,,,,P4_GL,,,,,,,P4橋脚¥　RCラーメン橋脚¥　H = 22.5m,66
-P5_GL,mesh,P5_GL,,,,,P5_GL,,,,,,,P5橋脚¥　RCラーメン橋脚¥　H = 13.5m,140
-P6_GL,mesh,P6_GL,,,,,P6_GL,,,,,,,P6橋脚¥　RCラーメン橋脚¥　H = 20.0m,84
-cable_GL,mesh,cable_GL,,,,,cable_selection,,,,,,,主ケーブル¥　平行線ケーブル¥　直径：472mm¥　支間割：140m + 560m + 140m,768
-girder_GL,mesh,girder_GL,,,,,girder_GL,,,,,,,補剛桁¥　鋼製箱桁¥　W = 23.7m、D = 2.2m、支間長：560m,"6,344"
-north_side_span_GL,mesh,north_side_span_GL,,,,,north_side_span_GL,,,,,,,4A側側径間桁¥　4径間連続非合成鋼鈑桁¥　支間割：33.75m+33.75m+33.75m+32.65m,"1,072"
-south_side_span_GL,mesh,south_side_span_GL,,,,,south_side_span_GL,,,,,,,7A側側径間桁¥　4径間連続非合成鋼鈑桁¥　支間割：32.65m+33.75m+33.75m+33.75m,"1,072"
-suspender_GL,mesh,suspender_GL,,,,,suspender_selection,,,,,,,ハンガーロープ¥　CFRCハンガーロープ¥　4本/格点、直径：48mm/50mm,"2,944"
-sea_surface_GL,mesh,sea_surface_GL,,,,,,,,,,,,,2
-terrain_GL,mesh,terrain_GL,,,,,,,,,,,,,"3,260"
-cable_selection,selection_mesh,,,,,,,,,,,,,,
-suspender_selection,selection_mesh,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,"17,878"
+number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,,,,
+33,root,second_layer,1.2,420.0,-420.0,420.0,-420.0,150.0,0,10.0,-80.0,1.2,0.1,,,,
+object,kind,texture01,texture02,parent,internal,camera,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
+camera_whole,camera,,,camera_whole_origin,,yes,,,,,,,,,,,
+UI_compass,UI3D,UI_compass,,camera_whole_origin,,,,,,,,,,,,,2
+camera_whole_origin,empty,,,,,,,,,,,,,,,,
+view01,camera,,,,,yes,,,,,,,,,,,
+view02,camera,,,,,yes,,,,,,,,,,,
+view03,camera,,,,,yes,,,,,,,,,,,
+view04,camera,,,,,yes,,,,,,,,,,,
+view05,camera,,,,,yes,,,,,,,,,,,
+5P_caisson,mesh,5P_caisson,,,,,5P_caisson,,,,,,,,,5Pケーソン¥　コンクリートケーソン¥　L = 13m、W = 36m、H = 19m,10
+5P_tower,mesh,5P_tower,5P_tower_map,,,,5P_tower,,yes,yes,,,,,,5P主塔¥　鋼製主塔¥　塔頂：TP+97m,352
+6P_caisson,mesh,6P_caisson,,,,,6P_caisson,,,,,,,,,6Pケーソン¥　コンクリートケーソ¥　L = 13m、W = 36m、H = 13m,10
+6P_tower,mesh,6P_tower,,,,,6P_tower,,,,,,,,,6P主塔¥　鋼製主塔¥　塔頂：TP+97m,352
+4A,mesh,4A,,,,,4A,,,,,,,,,4Aアンカレイジ¥　重力式アンカレイジ¥　L = 46m、W = 35m¥　スプレー点：TP+34.6m,364
+4A_road_girder,mesh,4A_road_girder,,,,,4A_road_girder,,,,,,,,,4A道路桁¥　3径間連続RC床版¥　支間割：11.85m + 11.85m + 8.95m,28
+4A_shed,mesh,4A_shed,,,,,4A_shed,,,,,,,,,4A上屋,112
+7A,mesh,7A,,,,,7A,,,,,,,,,7Aアンカレイジ¥　重力式アンカレイジ¥　L = 46m、W = 35m¥　スプレー点：TP+34.6m,370
+7A_road_girder,mesh,7A_road_girder,,,,,7A_road_girder,,,,,,,,,7A道路桁¥　3径間連続RC床版¥　支間割：10.55m + 13.57m + 13.57m,28
+7A_shed,mesh,7A_shed,,,,,7A_shed,,,,,,,,,7A上屋,154
+P1,mesh,P1,,,,,P1,,,,,,,,,P1橋脚¥　RCラーメン橋脚¥　H = 2.0m,66
+P2,mesh,P2,,,,,P2,,,,,,,,,P2橋脚¥　RCラーメン橋脚¥　H = 8.5m,140
+P3,mesh,P3,,,,,P3,,,,,,,,,P3橋脚¥　RCラーメン橋脚¥　H = 18.5m,140
+P4,mesh,P4,,,,,P4,,,,,,,,,P4橋脚¥　RCラーメン橋脚¥　H = 22.5m,66
+P5,mesh,P5,,,,,P5,,,,,,,,,P5橋脚¥　RCラーメン橋脚¥　H = 13.5m,140
+P6,mesh,P6,,,,,P6,,,,,,,,,P6橋脚¥　RCラーメン橋脚¥　H = 20.0m,84
+cable,mesh,cable,,,,,cable_selection,,,,,,,,,主ケーブル¥　平行線ケーブル¥　直径：472mm¥　支間割：140m + 560m + 140m,768
+girder,mesh,girder,,,,,girder,,,,,,,,,補剛桁¥　鋼製箱桁¥　W = 23.7m、D = 2.2m、支間長：560m,"6,344"
+north_side_span,mesh,north_side_span,,,,,north_side_span,,,,,,,,,4A側側径間桁¥　4径間連続非合成鋼鈑桁¥　支間割：33.75m+33.75m+33.75m+32.65m,"1,072"
+south_side_span,mesh,south_side_span,,,,,south_side_span,,,,,,,,,7A側側径間桁¥　4径間連続非合成鋼鈑桁¥　支間割：32.65m+33.75m+33.75m+33.75m,"1,072"
+suspender,mesh,suspender,,,,,suspender_selection,,,,,,,,,ハンガーロープ¥　CFRCハンガーロープ¥　4本/格点、直径：48mm/50mm,"2,944"
+sea_surface,mesh,sea_surface,,,,,,,,,,,,,,,2
+terrain,mesh,terrain,,,,,,,,,,,,,,,"3,260"
+cable_selection,selection_mesh,,,,,,,,,,,,,,,,
+suspender_selection,selection_mesh,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,"17,878"
