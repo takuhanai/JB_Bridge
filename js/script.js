@@ -13,8 +13,6 @@ window.onload = function(){
 	let resourcePath = './resource/';
 	let title = 'oshima_bridge';
 	let scene_name = 'oshima_bridge';
-	//let scene_name = 'tower_01';
-	//let scene_name = '5P_tower';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -162,21 +160,8 @@ window.onload = function(){
 
 	let objects = new Array();
 
-	loadScene(scene_name);
-	/*
-	let allDataReady = false;
-	let numDataReady = 0;
+	//loadScene(scene_name);
 
-	readSceneData();
-
-	for (let i in objects) {
-		read3DModelData(resourcePath + scene.name, objects[i].name, 'object');
-	}
-
-	let hiddenObjects = [];
-
-	readUIData();
-	*/
 	const objectActions = [
 /*
 						   {object: 'camera_origin',
@@ -296,6 +281,8 @@ window.onload = function(){
 	let textNode = document.createTextNode('');
 	textElement.appendChild(textNode);
 */
+
+	loadScene(scene_name);
 
 	render();
 
@@ -1059,6 +1046,9 @@ window.onload = function(){
 		}
 		hiddenObjects = [];
 		readUIData();
+
+		comment.style.visibility = 'hidden';
+		buttonContainerElement.style.visibility = 'hidden';
 	}
 
 	function readSceneData() {
@@ -1869,6 +1859,7 @@ window.onload = function(){
 			selectedObject = null;
 			selectedAnnotation = null;
 			comment.style.visibility = 'hidden';
+			buttonContainerElement.style.visibility = 'hidden';
 			if (objects['sea_surface']) {
 				objects['sea_surface'].draw = true;
 			}
@@ -2234,12 +2225,10 @@ window.onload = function(){
 	function obButtonPressed() {
 		if (objects[selectedObject].hasDetail) {
 			buttonContainerElement.style.visibility = 'hidden';
-			//obButton.style.visibility = 'hidden';
 			loadScene(objects[selectedObject].name);
 		} else if (objects[selectedObject].hidable) {
 			objects[selectedObject].draw = false;
 			buttonContainerElement.style.visibility = 'hidden';
-			//obButton.style.visibility = 'hidden';
 			hiddenObjects.push(selectedObject);
 			obUI['UI_show_button'].texture_shift[0] = 0.5;
 			selectedObject = null;
