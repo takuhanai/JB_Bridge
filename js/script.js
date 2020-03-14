@@ -287,7 +287,7 @@ window.onload = function(){
 	obButton.type = 'image';
 	obButton.src = './resource/UI/html/UI_obButton_hide.png';
 	obButton.onclick = obButtonPressed;
-	obButton.style.visibility = 'hidden';
+	//obButton.style.visibility = 'hidden';
 	buttonContainerElement.appendChild(obButton);
 
 /*
@@ -1040,6 +1040,7 @@ window.onload = function(){
 	}
 
 	function loadScene(_scene_name) {
+		cameraVertAngle = 0.0;
 		drawMap = false;
 		selectedObject = null;
 		annotationMode = 0; //0:normal 1:pointable 2:temporary
@@ -1703,27 +1704,24 @@ window.onload = function(){
 				//text01 = '';
 				comment.style.visibility = 'hidden';
 				buttonContainerElement.style.visibility = 'hidden';
-				obButton.style.visibility = 'hidden';
-				//detailButton.style.visibility = 'hidden';
 			} else {
 				selectedObject = _selObInfo.object;
+				//console.log(objects[selectedObject].name, objects[selectedObject].hasDetail);
 
 				if (objects[selectedObject].hidable) {
 					obButton.src = './resource/UI/html/UI_obButton_hide.png';
 					buttonContainerElement.style.visibility = 'visible';
-					obButton.style.visibility = 'visible';
 					obButton.style.pointerEvents = 'auto';
 					mousePressed = false;
 					touched = false;
-				}
-
-				if (objects[selectedObject].hasDetail) {
+				} else if (objects[selectedObject].hasDetail) {
 					obButton.src = './resource/UI/html/UI_obButton_detail.png';
 					buttonContainerElement.style.visibility = 'visible';
-					obButton.style.visibility = 'visible';
 					obButton.style.pointerEvents = 'auto';
 					mousePressed = false;
 					touched = false;
+				} else {
+					buttonContainerElement.style.visibility = 'hidden';
 				}
 
 				replaceCommentText(objects[selectedObject].description);
@@ -1871,11 +1869,11 @@ window.onload = function(){
 			selectedObject = null;
 			selectedAnnotation = null;
 			comment.style.visibility = 'hidden';
-			if (objects['sea_surface_GL']) {
-				objects['sea_surface_GL'].draw = true;
+			if (objects['sea_surface']) {
+				objects['sea_surface'].draw = true;
 			}
-			if (objects['terrain_GL']) {
-				objects['terrain_GL'].draw = true;
+			if (objects['terrain']) {
+				objects['terrain'].draw = true;
 			}
 			if (obUI['UI_ex-in_button']) {
 				obUI['UI_ex-in_button'].texture_shift[0] = 0.0;
@@ -1888,8 +1886,8 @@ window.onload = function(){
 			obUI['UI_show_button'].texture_shift[0] = 0.0;
 		}
 		if (buttonPressed('UI_terrain_button', _location)) {
-			objects['sea_surface_GL'].draw = !objects['sea_surface_GL'].draw;
-			objects['terrain_GL'].draw = !objects['terrain_GL'].draw;
+			objects['sea_surface'].draw = !objects['sea_surface'].draw;
+			objects['terrain'].draw = !objects['terrain'].draw;
 		}
 		if (buttonPressed('UI_map_button', _location)) {
 			drawMap = !drawMap;
@@ -2236,12 +2234,12 @@ window.onload = function(){
 	function obButtonPressed() {
 		if (objects[selectedObject].hasDetail) {
 			buttonContainerElement.style.visibility = 'hidden';
-			obButton.style.visibility = 'hidden';
+			//obButton.style.visibility = 'hidden';
 			loadScene(objects[selectedObject].name);
 		} else if (objects[selectedObject].hidable) {
 			objects[selectedObject].draw = false;
 			buttonContainerElement.style.visibility = 'hidden';
-			obButton.style.visibility = 'hidden';
+			//obButton.style.visibility = 'hidden';
 			hiddenObjects.push(selectedObject);
 			obUI['UI_show_button'].texture_shift[0] = 0.5;
 			selectedObject = null;
