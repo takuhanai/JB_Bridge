@@ -551,13 +551,19 @@ window.onload = function(){
 		function actionUpdate(){
       // 全てのリソースを処理する
       for (var i = 0 in objects) {
-			// アクションの更新
+				// アクションの更新
+				let _ob = objects[i];
+				if (_ob.hasOwnProperty('objectAction') && _ob.objectAction.play != 0) {
+					_ob.mMatrix0 = evaluateAction(_ob.objectAction, _ob.objectAction.animation_count, _ob.location, _ob.rotation, _ob.scale, _ob.rotation_mode);
+					actionIncrement(_ob.objectAction);
+				}
+				/*
         if (objects[i].hasOwnProperty('objectAction') && objects[i].objectAction.play != 0) {
             objects[i].mMatrix0 = evaluateAction(actions[objects[i].objectAction.name], objects[i].objectAction.animation_count, objects[i].location, objects[i].rotation, objects[i].scale, objects[i].rotation_mode);
 
 						actionIncrement(objects[i].objectAction, actions[objects[i].objectAction.name]);
 					}
-
+					*/
 				if (objects[i].hasOwnProperty('materialAction') && objects[i].materialAction.play != 0) {
 					objects[i].alpha = evaluateMaterialAction(actions[i].materialAction, actions[i].materialAction.animation_count).alpha;
 				}
@@ -572,20 +578,30 @@ window.onload = function(){
             } else {
 	            m.multiply(objects[i].mMatrix0, mMatrixLocal, mMatrixLocal);
             }
-            //if (objects[i].parent != 'none') {
-						if (objects[i].parent != '') {
-                var po = objects[objects[i].parent];
-								if (po.dataReady) {
-									if (objects[i].kind != 'UI3D') {
-                    m.multiply(po.mMatrix, mMatrixLocal, objects[i].mMatrix);
-									} else {
-										let uimMatrix = m.identity(m.create());
-										uimMatrix[12] = po.mMatrix[12];
-										uimMatrix[13] = po.mMatrix[13];
-										uimMatrix[14] = po.mMatrix[14];
-										m.multiply(uimMatrix, mMatrixLocal, objects[i].mMatrix);
-									}
-                }
+
+						let _indexChildOf = -1;
+						for (var ii = 0; ii < objects[i].constraints.length; ii++) {
+							if (objects[i].constraints[ii].type === 23) {
+								_indexChildOf = ii;
+								break;
+							}
+						}
+						if (_indexChildOf != -1) {
+							var po = objects[objects[i].constraints[_indexChildOf].target];
+
+						//if (objects[i].parent != '') {
+                //var po = objects[objects[i].parent];
+							if (po.dataReady) {
+								if (objects[i].kind != 'UI3D') {
+                  m.multiply(po.mMatrix, mMatrixLocal, objects[i].mMatrix);
+								} else {
+									let uimMatrix = m.identity(m.create());
+									uimMatrix[12] = po.mMatrix[12];
+									uimMatrix[13] = po.mMatrix[13];
+									uimMatrix[14] = po.mMatrix[14];
+									m.multiply(uimMatrix, mMatrixLocal, objects[i].mMatrix);
+								}
+              }
             } else {
                 objects[i].mMatrix = mMatrixLocal;
             }
@@ -598,6 +614,44 @@ window.onload = function(){
 		}
 	}
 
+	function actionIncrement(_ac) {
+		if (_ac.forward) {
+			_ac.animation_count += _ac.speed;
+		} else {
+			_ac.animation_count -= _ac.speed;
+		}
+		if (_ac.animation_count > _ac.frame_end) {
+			if (_ac.play == 1) {
+				_ac.animation_count = _ac.frame_start;
+			} else if (_ac.play == 2) {
+				_ac.play = 0;
+				_ac.animation_count = _ac.frame_start;
+				/*
+				if (ob.nextAction !== undefined) {
+					ob.nextAction();
+					delete ob.nextAction;
+				}
+				*/
+			} else if (_ac.play == 3) {
+				_ac.play = 0;
+				_ac.animation_count = _ac.frame_end;
+			}
+		}
+		if (_ac.animation_count < _ac.frame_start) {
+			if (_ac.play == 1) {
+				_ac.animation_count = _ac.frame_end;
+			} else if (_ac.play == 2) {
+				_ac.animation_count = _ac.frame_end;
+				_ac.play = 0;
+			} else if (_ac.play == 3) {
+				_ac.play = 0;
+				_ac.animation_count = _ac.frame_start;
+			}
+		}
+		//eText.textContent = _ac.animation_count;
+	}
+
+	/*
 	function actionIncrement(ob, ac) {
 		if (ob.forward) {
 			ob.animation_count += ob.speed;
@@ -631,6 +685,7 @@ window.onload = function(){
 			}
 		}
 	}
+	*/
 
   // objects rendering
   function objectRender(){
@@ -1078,7 +1133,7 @@ window.onload = function(){
 			let _kind = _line[lIndex++];
 			let _texture = _line.slice(lIndex, lIndex + 2);
 			lIndex += 2;
-			let _parent = _line[lIndex++];
+			let _openingAnimation = _line[lIndex++] === 'yes' ? true : false;
 			let _internal = _line[lIndex++] === 'yes' ? true : false;
 			let _camera = _line[lIndex++] === 'yes' ? true : false;
 			let _selectMesh = _line[lIndex++];
@@ -1093,7 +1148,7 @@ window.onload = function(){
 			const ob = new object(_name);
 			ob.texture = new Array(); // WebGL texture
 			ob.dataReady = false;
-			ob.parent = _parent;
+			ob.openingAnimation = _openingAnimation;
 			ob.internal = _internal;
 			ob.kind = _kind;
 			ob.textureList = []; // List of textures (string)
@@ -1137,6 +1192,74 @@ window.onload = function(){
 
 	}
 
+	function readString(_dv, _off) {
+		//Read string from binary data
+		//Format: number of characters (Int32), string (Int8 x N)
+		let _lenT = _dv.getInt32(_off, true);
+		let _name = '';
+		_off += 4;
+		for (var i = 0; i < _lenT; i++) {
+			_name += String.fromCharCode(_dv.getInt8(_off));
+			_off += 1;
+		}
+		return _name;
+	}
+
+	function readAction(_dv, _off, _openingAnimation) {
+		let _action = new object();
+		_action.frame_start = _dv.getFloat32(_off, true);
+		_off += 4;
+		_action.frame_end = _dv.getFloat32(_off, true);
+		_off += 4;
+
+		_action.numFCurves = _dv.getInt32(_off, true);
+		_off += 4;
+
+		_action.fCurves = [];
+		for (var ii = 0; ii < _action.numFCurves; ++ii) {
+			let _fCurve = new object();
+			_fCurve.dataPath = readString(_dv, _off);
+			_off += 4 + _fCurve.dataPath.length;
+			_fCurve.arrayIndex = _dv.getInt32(_off, true);
+			console.log('dataPath: ' + _fCurve.dataPath + ', ' + _fCurve.arrayIndex);
+			_off += 4;
+			_fCurve.numKP = _dv.getInt32(_off, true);
+			_off += 4;
+
+			_fCurve.handles = [];
+			for (var jj = 0; jj < _fCurve.numKP; ++jj) {
+				let _point = new object();
+				_point.handle_left = new object();
+				_point.handle_left.x = _dv.getFloat32(_off, true);
+				_off += 4;
+				_point.handle_left.y = _dv.getFloat32(_off, true);
+				_off += 4;
+				_point.co = new object();
+				_point.co.x = _dv.getFloat32(_off, true);
+				_off += 4;
+				_point.co.y = _dv.getFloat32(_off, true);
+				_off += 4;
+				_point.handle_right = new object();
+				_point.handle_right.x = _dv.getFloat32(_off, true);
+				_off += 4;
+				_point.handle_right.y = _dv.getFloat32(_off, true);
+				_off += 4;
+				_fCurve.handles.push(_point);
+			}
+			_action.fCurves.push(_fCurve);
+		}
+		_action.off = _off;
+		_action.animation_count = _action.frame_start;
+		if (_openingAnimation) {
+			_action.play = 1;
+		} else {
+			_action.play = 0;
+		} //0: stop, 1: play loop, 2: play once (return to first frame), 3: play once (stay at last frame)
+		_action.forward = true;
+		_action.speed = 0.4;
+		return _action;
+	}
+
 	function read3DModelData(_path, _objectName, _type) { //csvﾌｧｲﾙﾉ相対ﾊﾟｽor絶対ﾊﾟｽ
 		var coord = new Array();
 		var norm = new Array();
@@ -1163,17 +1286,11 @@ window.onload = function(){
 				var ob = obUI[_objectName];
 			}
 
-			let lenT = dv.getInt32(off, true);
-			let _name = '';
-			off += 4;
-			for (var i = 0; i < lenT; i++) {
-				//_name.push(dv.getInt8(off));
-				_name += String.fromCharCode(dv.getInt8(off));
-				off += 1;
-			}
-			console.log(_name);
+			let _name = readString(dv, off);
+			off += 4 + _name.length;
+			//console.log(_name);
 
-			ob.type = dv.getInt32(off, true); //0:MESH, 7:EMPTY, 8:CAMERA
+			ob.type = dv.getInt32(off, true); //0:MESH, 1:CURVE, 7:EMPTY, 8:CAMERA
 			off += 4;
 			ob.rotation_mode = dv.getInt32(off, true);
 			off += 4;
@@ -1208,6 +1325,65 @@ window.onload = function(){
 
 			ob.mMatrix0 = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Local coordinate
 			ob.mMatrix = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Global coordinate
+
+			let _hasObjectAction = dv.getInt8(off, true);
+			off += 1;
+			if (_hasObjectAction) {
+				ob.objectAction = readAction(dv, off, ob.openingAnimation);
+				off = ob.objectAction.off;
+			}
+
+			ob.constraints = [];
+			let _numConstraints = dv.getInt32(off, true);
+			off += 4;
+			for (var i = 0; i < _numConstraints; ++i) {
+				let _constraint = new object();
+				_constraint.type = dv.getInt32(off, true);
+				off += 4;
+				switch (_constraint.type) {
+					case 20: //TRACK_TO
+						_constraint.target = readString(dv, off);
+						off += 4 + _constraint.target.length;
+						_constraint.trackAxis = dv.getInt32(off, true);
+						//0: 'TRACK_X', 1: 'TRACK_Y', 2: 'TRACK_Z', 3: 'TRACK_NEGATIVE_X', 4: 'TRACK_NEGATIVE_Y', 5: 'TRACK_NEGATIVE_Z'
+						off += 4;
+						_constraint.upAxis = dv.getInt32(off, true);
+						//0: 'UP_X', 1: 'UP_Y', 2: 'UP_Z'
+						off += 4;
+						break;
+					case 23: //CHILD_OF
+						_constraint.target = readString(dv, off);
+						off += 4 + _constraint.target.length;
+						_constraint.useGeometries = [];
+						for (var j = 0; j < 9; ++j) {
+							_constraint.useGeometries.push(dv.getInt8(off, true) === 1 ? true: false);
+							off += 1;
+						}
+						break;
+					case 25: //FOLLOW_PATH
+						_constraint.target = readString(dv, off);
+						off += 4 + _constraint.target.length;
+						_constraint.useCurveFollow = dv.getInt8(off, true) === 1 ? true: false;
+						off += 1;
+						_constraint.forwardAxis = dv.getInt32(off, true);
+						//0: 'FORWARD_X', 1: 'FORWARD_Y', 2: 'FORWARD_Z', 3: 'TRACK_NEGATIVE_X', 4: 'TRACK_NEGATIVE_Y', 5: 'TRACK_NEGATIVE_Z'
+						off += 4;
+						_constraint.upAxis = dv.getInt32(off, true);
+						//0: 'UP_X', 1: 'UP_Y', 2: 'UP_Z'
+						off += 4;
+						break;
+					default:
+						return;
+				}
+				ob.constraints.push(_constraint);
+			}
+			let _indexChildOf = -1;
+			for (var ii = 0; ii < ob.constraints.length; ii++) {
+				if (ob.constraints[ii].type === 23) {
+					_indexChildOf = ii;
+					break;
+				}
+			}
 
 			if (ob.type == 0) {//object type 'MESH'
 				let im = m.identity(m.create());
@@ -1281,6 +1457,34 @@ window.onload = function(){
 				for (var i = 0 in ob.textureList) {
 					create_texture(_path, ob.name, ob.textureList[i], _type);
 				}
+			} else if (ob.type === 1) {//object type 'CURVE'
+				let _numSplines = dv.getInt32(off, true);
+				off += 4;
+				ob.splines = [];
+				for (var ii = 0; ii < _numSplines; ++ii) {
+					let _spline = new object();
+					_spline.numP = dv.getInt32(off, true);
+					off += 4;
+					_spline.points = [];
+					for (var jj = 0; jj < _spline.numP * 9; ++jj) {
+						_spline.points.push(dv.getFloat32(off, true));
+						off += 4;
+					}
+					ob.splines.push(_spline);
+				}
+
+				let _hasCurveAction = dv.getInt8(off, true);
+				off += 1;
+				if (_hasCurveAction) {
+					console.log(ob.name);
+					ob.curveAction = readAction(dv, off, ob.openingAnimation);
+					off = ob.curveAction.off;
+				}
+
+				//console.log(ob.name);
+				//console.log(ob.splines);
+				//console.log(ob.fCurves);
+
 			} else if (ob.type == 8) {//object type 'CAMERA'
 				var _pMatrix = m.identity(m.create());
 				ob.camera_type = dv.getInt32(off, true);
@@ -1345,7 +1549,7 @@ window.onload = function(){
 			ob.draw = true;
 			ob.alpha = 1.0;
 
-			console.log(_name, _texture);
+			//console.log(_name, _texture);
 			obUI[_name] = ob;
 			read3DModelData(resourcePath + 'UI/' + scene.UI, _name, 'UI');
 		}
@@ -1471,6 +1675,19 @@ window.onload = function(){
 		let rotVec = _rot.slice();
 		let scVec = _scale.slice();
 
+		for (var i = 0; i < _action.numFCurves; i++) {
+			if (_action.fCurves[i].dataPath == 'location') {
+				locVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
+			} else if (_action.fCurves[i].dataPath == 'scale') {
+				scVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
+			} else if (_action.fCurves[i].dataPath == 'rotation_euler') {
+				rotVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
+			} else if (_action.fCurves[i].dataPath == 'rotation_quaternion') {
+				rotVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
+			}
+		}
+		//eText.textContent = locVec;
+		/*
 		for (var i = 0; i < _action.numCurve; i++) {
 			if (_action.curves[i].data_path == 'location') {
 				locVec[_action.curves[i].array_index] = bezier2D(_action.curves[i].handles, _x);
@@ -1482,7 +1699,7 @@ window.onload = function(){
 				rotVec[_action.curves[i].array_index] = bezier2D(_action.curves[i].handles, _x);
 			}
 		}
-
+		*/
 		return transformationMatrix(locVec, rotVec, scVec, _rotation_mode);
 	}
 
@@ -1957,6 +2174,11 @@ window.onload = function(){
 
 	function mouseDown(e) {
 		if (opening_count >= OPENING_LENGTH ) {
+			for (var i = 0 in objects) {
+				if (objects[i].openingAnimation === true) {
+					objects[i].objectAction.play = 0;
+				}
+			}
 			mousePressed = true;
 			prevMouseLocation = getMouseLocation(e);
 			currentMouseLocation = prevMouseLocation;
@@ -2031,6 +2253,11 @@ window.onload = function(){
 
 	function touchStart(e) {
 		if (opening_count >= OPENING_LENGTH) {
+			for (var i = 0 in objects) {
+				if (objects[i].openingAnimation === true) {
+					objects[i].objectAction.play = 0;
+				}
+			}
 			touched = true;
 			prevTouchLocations = getTouchLocations(e);
 			currentTouchLocations = prevTouchLocations;

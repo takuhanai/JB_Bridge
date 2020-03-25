@@ -1,7 +1,7 @@
 number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,,,,
 26,oshima_bridge,third_layer,0.15,20.0,-20.0,20.0,-20.0,30.0,2.0,30.0,-30.0,1.2,0.1,,,,
-object,kind,texture01,texture02,parent,internal,camera,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
-camera_whole,camera,,,camera_whole_origin,,yes,,,,,,,,,,,
+object,kind,texture01,texture02,opening animation,internal,camera,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
+camera_whole,camera,,,,,yes,,,,,,,,,,,
 camera_whole_origin,empty,,,,,,,,,,,,,,,,
 shaftL_1st_layer,mesh,shaftL_1st_layer,,,yes,,,shaftL_1st_layer,,,,,,,,,996
 shaftL_anchor_case,mesh,shaftL_anchor_case,,,yes,,,shaftL_anchor_case,,,,,,,,,"1,572"
