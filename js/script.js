@@ -430,15 +430,24 @@ window.onload = function(){
 			} else if (currentTouchLocations.length === 2) {//zoom up
 				let ct0 = currentTouchLocations[0];
 				let ct1 = currentTouchLocations[1];
-				let currentDist = Math.sqrt((ct1.x - ct0.x) * (ct1.x - ct0.x) + (ct1.y - ct0.y) * (ct1.y - ct0.y));
 				let pt0 = prevTouchLocations[0];
 				let pt1 = prevTouchLocations[1];
-				let prevDist = Math.sqrt((pt1.x - pt0.x) * (pt1.x - pt0.x) + (pt1.y - pt0.y) * (pt1.y - pt0.y));
+				let vec0 = [ct0.x - pt0.x, ct0.y - pt0.y];
+				let vec1 = [ct1.x - pt1.x, ct1.y - pt1.y];
+				if (vec0[0] * vec1[0] + vec0[1] * vec1[1] > 0.0) {
+					shiftKeyPressed = true;
+					let deltaX = (ct0.x + ct1.x - pt0.x - pt1.x) / 2.0;
+					let deltaY = (ct0.y + ct1.y - pt0.y - pt1.y) / 2.0;
+					cameraInteractionUpdate(deltaX, deltaY);
+				} else {
+					let currentDist = Math.sqrt((ct1.x - ct0.x) * (ct1.x - ct0.x) + (ct1.y - ct0.y) * (ct1.y - ct0.y));
+					let prevDist = Math.sqrt((pt1.x - pt0.x) * (pt1.x - pt0.x) + (pt1.y - pt0.y) * (pt1.y - pt0.y));
 
-				let ay = objects[obCamera[camMode]].angle_y;
-				ay -= 0.001 * (currentDist - prevDist);
-				if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
-					objects[obCamera[camMode]].angle_y = ay;
+					let ay = objects[obCamera[camMode]].angle_y;
+					ay -= 0.001 * (currentDist - prevDist);
+					if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
+						objects[obCamera[camMode]].angle_y = ay;
+					}
 				}
 				prevTouchLocations = currentTouchLocations;
 			} else if (currentTouchLocations.length === 3) {//pan
