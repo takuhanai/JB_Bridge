@@ -3,7 +3,7 @@ number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z ma
 object,kind,texture01,texture02,opening animation,internal,camera,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
 camera_whole,camera,,,,,yes,,,,,,,,,,,
 UI_compass,UI3D,UI_compass,,,,,,,,,,,,,,,2
-camera_whole_origin,empty,,,,,,,,,,,,,,,,
+camera_whole_origin,empty,,,yes,,,,,,,,,,,,,
 camera_fly,camera,,,,,yes,,,,,,,,,,,
 camera_fly_origin,empty,,,,,,,,,,,,,,,,
 camera_fly_path,path,,,,,,,,,,,,,,,,
