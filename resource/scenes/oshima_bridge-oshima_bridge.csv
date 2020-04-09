@@ -1,14 +1,15 @@
 number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,,,,
-33,root,second_layer,1.2,420.0,-420.0,420.0,-420.0,150.0,0,10.0,-80.0,1.2,0.1,,,,
-object,kind,texture01,texture02,opening animation,internal,camera,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
-camera_whole,camera,,,,,yes,,,,,,,,,,,
+34,root,second_layer,1.2,420.0,-420.0,420.0,-420.0,150.0,0,10.0,-80.0,1.2,0.1,,,,
+object,kind,texture01,texture02,opening animation,internal,camera (not used),select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
+camera_orbit,camera,,,,,yes,,,,,,,,,,,
 UI_compass,UI3D,UI_compass,,,,,,,,,,,,,,,2
-camera_whole_origin,empty,,,yes,,,,,,,,,,,,,
+camera_UI3D,camera,,,,,yes,,,,,,,,,,,
 view01,camera,,,,,yes,,,,,,,,,,,
 view02,camera,,,,,yes,,,,,,,,,,,
 view03,camera,,,,,yes,,,,,,,,,,,
 view04,camera,,,,,yes,,,,,,,,,,,
 view05,camera,,,,,yes,,,,,,,,,,,
+camera_orbit_origin,empty,,,yes,,,,,,,,,,,,,
 5P_caisson,mesh,5P_caisson,,,,,5P_caisson,,,,,,,,,5Pケーソン¥　コンクリートケーソン¥　L = 13m、W = 36m、H = 19m,10
 5P_tower,mesh,5P_tower,5P_tower_map,,,,5P_tower,,yes,yes,,,,,,5P主塔¥　鋼製主塔¥　塔頂：TP+97m,352
 6P_caisson,mesh,6P_caisson,,,,,6P_caisson,,,,,,,,,6Pケーソン¥　コンクリートケーソ¥　L = 13m、W = 36m、H = 13m,10

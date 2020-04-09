@@ -1,5 +1,6 @@
 
 window.onload = function(){
+
 	// constant
 	const numDrawMode = 5;
 	const FPS = 60;
@@ -61,6 +62,7 @@ window.onload = function(){
 		browser = 'Safari';
 	}
 	console.log(browser);
+	//test();
 
   // canvasエレメントを取得
   let c = document.getElementById('canvas1');
@@ -158,7 +160,23 @@ window.onload = function(){
 
 	let scene = new Scene(scene_name);
 
-	let objects = new Array();
+	class obArray extends Array {
+		constructor() {
+			super();
+		}
+		name(_name) {
+			let _foundName = this.find(o => o.name === _name);
+			if (_foundName != undefined) {
+				return _foundName;
+			} else {
+				return this[_name];
+			}
+			//return this.find(o => o.name === _name);
+		}
+	}
+
+	//let objects = new Array();
+	let objects = new obArray();
 
 	//loadScene(scene_name);
 
@@ -182,7 +200,8 @@ window.onload = function(){
 
 	for (var i = 0; i < objectActions.length; i++) {
 		let oa = objectActions[i];
-		let ob = objects[oa.object];
+		//let ob = objects[oa.object];
+		let ob = objects.name(oa.object);
 		let at = ['objectAction', 'materialAction'];
 		for (var j = 0; j < at.length; j++) {
 			if (oa.hasOwnProperty(at[j])) {
@@ -286,6 +305,75 @@ window.onload = function(){
 
 	render();
 
+	function test() {
+		let _a = [1.0, 2.0, 5.0];
+		let _b = _a;
+		let _c = _a.slice();
+		console.log(_b, _c);
+		_b[1] = 10.0;
+		console.log(_b, _c);
+		/*
+		class testA extends Array {
+			constructor() {
+				super();
+			}
+			name(_name) {
+				let _foundName = this.find(o => o.name === _name);
+				if (_foundName != undefined) {
+					return _foundName;
+				} else {
+					return this[_name];
+				}
+				//return this.find(o => o.name === _name);
+			}
+		}
+		let testOb = function (name) {
+			this.name = name;
+		}
+		a = new testA();
+		a.push(new testOb('hanai'));
+		a.push(new testOb('taku'));
+		a.push(new testOb('kyoko'));
+		a['shoma'] = new testOb('shoma');
+		for (let i in a) {
+			console.log(i, a[i]);
+		}
+		*/
+		//console.log(a[0], a[1], a[2]);
+		//console.log(a.name('hanai'));
+		//a.sort((_a, _b) => _a.name > _b.name);
+		//console.log(a[0], a[1], a[2]);
+		//console.log(a.name('shoma'));
+		/*
+		a = new Array();
+		a.push(1);
+		a.push(5);
+		a.push(2);
+		a['test'] = 'answer';
+		console.log(a);
+		console.log(a['test']);
+		for (let i in a) {
+			console.log('test1', i, a[i]);
+		}
+		for (let i = 0; i < a.length; i++) {
+			console.log(a[i]);
+		}
+		a.sort();
+		for (let i in a) {
+			console.log('test1', i, a[i]);
+		}
+		console.log(a);
+		console.log(a.length);
+
+		b = [6, 1, 9];
+		console.log(b);
+		b['testB'] = 'answerB';
+		console.log(b);
+		console.log(b['testB']);
+		console.log(b.length);
+		*/
+	}
+
 	function render(){
 		//gl.clearColor(0.4, 0.6, 1.0, 1.0);
 		gl.clearColor(0.95, 0.95, 0.9, 1.0);
@@ -317,8 +405,6 @@ window.onload = function(){
       // objects の更新
       actionUpdate();
 
-			//manualUpdate();
-
 			// UI の更新
 			//UIUpdate();
 
@@ -332,7 +418,7 @@ window.onload = function(){
 			//gl.blendFuncSeparate(gl.ONE, gl.ZERO, gl.ONE, gl.ONE);
 			//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-			cameraUpdate(false);
+			cameraUpdate();
 
 			// canvasを初期化
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -342,8 +428,11 @@ window.onload = function(){
       objectRender();
       // hud 関連
 			gl.disable(gl.DEPTH_TEST);
-			//cameraUpdate(true);
-			//UI3DRender();
+			camMode = 1;
+			cameraUpdate();
+			UI3DRender();
+			camMode = 0;
+			cameraUpdate();
       UIRender();
 
     }else{
@@ -361,6 +450,7 @@ window.onload = function(){
 
 	function openingUpdate() {
 		let speed_amp = FPS / OPENING_SPEED;
+		/*
 		if (opening_count > 1.0 * speed_amp && opening_count < 2.0 * speed_amp) {
 			objects['camera'].angle_y -= 40.0 * Math.PI / 180.0 / speed_amp;
 		}
@@ -405,7 +495,7 @@ window.onload = function(){
 			objects['inner_2nd'].alpha += 1.0 / speed_amp;
 			objects['camera'].angle_y += 40.0 * Math.PI / 180.0 / speed_amp;
 		}
-
+		*/
 		opening_count += 1;
 
 	}
@@ -443,10 +533,12 @@ window.onload = function(){
 					let currentDist = Math.sqrt((ct1.x - ct0.x) * (ct1.x - ct0.x) + (ct1.y - ct0.y) * (ct1.y - ct0.y));
 					let prevDist = Math.sqrt((pt1.x - pt0.x) * (pt1.x - pt0.x) + (pt1.y - pt0.y) * (pt1.y - pt0.y));
 
-					let ay = objects[obCamera[camMode]].angle_y;
+					//let ay = objects[obCamera[camMode]].angle_y;
+					let ay = objects.name(obCamera[camMode]).angle_y;
 					ay -= 0.001 * (currentDist - prevDist);
 					if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
-						objects[obCamera[camMode]].angle_y = ay;
+						//objects[obCamera[camMode]].angle_y = ay;
+						objects.name(obCamera[camMode]).angle_y = ay;
 					}
 				}
 				prevTouchLocations = currentTouchLocations;
@@ -467,8 +559,11 @@ window.onload = function(){
 
 	function cameraInteractionUpdate(dX, dY) {
 		if (camMode == 0) {
-			let _cam_o = objects['camera_whole_origin'];
-			let _cam = objects['camera_whole'];
+			//let _cam_o = objects['camera_orbit_origin'];
+			//let _cam = objects['camera_orbit'];
+			let _cam_o = objects.name('camera_orbit_origin');
+			let _cam = objects.name('camera_orbit');
+			let _cam_UI3D = objects.name('camera_UI3D');
 			if (shiftKeyPressed) {
 				//m.translate(objects['camera_whole_origin'].mMatrix0, [-1.0 * dX, 0, 1.0 * dY],
 				let cameraCoeff = Math.tan(_cam.angle_y / 2.0) / Math.tan(_cam.angle_y0 / 2.0);
@@ -484,14 +579,21 @@ window.onload = function(){
 						_cam_o.mMatrix0[i + 12] = scene.cameraTranslationRange[i * 2 + 1];
 					}
 				}
+				_cam_o.location[0] = _cam_o.mMatrix0[12];
+				_cam_o.location[1] = _cam_o.mMatrix0[13];
+				_cam_o.location[2] = _cam_o.mMatrix0[14];
 			} else {
 				m.rotate(_cam_o.mMatrix0, -0.003 * dX, [0, 0, 1], _cam_o.mMatrix0);
+				_cam_o.rotation[2] += -0.003 * dX;
 
 				let deltaRotY = -0.003 * dY;
 				if (cameraVertAngle + deltaRotY < scene.cameraVertAngleMax && cameraVertAngle + deltaRotY > scene.cameraVertAngleMin) {
 					let rMatrix = m.identity(m.create());
 					m.rotate(rMatrix, deltaRotY, [1, 0, 0], rMatrix);
 					m.multiply(rMatrix, _cam.mMatrix0, _cam.mMatrix0);
+					_cam.rotation[0] += deltaRotY;
+					m.multiply(rMatrix, _cam_UI3D.mMatrix0, _cam_UI3D.mMatrix0);
+					_cam_UI3D.rotation[0] += deltaRotY;
 					cameraVertAngle += deltaRotY;
 				}
 			}
@@ -499,6 +601,7 @@ window.onload = function(){
 	}
 
 	function drawUpdate() {
+		/*
 		switch (drawMode) {
 			case 0:
 				objects['window'].draw = true;
@@ -537,90 +640,141 @@ window.onload = function(){
 			default:
 				return;
 		}
-
+		*/
 	}
 
     // camera update
-  function cameraUpdate(_UI3D){
-			let _obCamera = objects[obCamera[camMode]];
+	function cameraUpdate() {
+  //function cameraUpdate(_UI3D){
+			//let _obCamera = objects[obCamera[camMode]];
+			let _obCamera = objects.name(obCamera[camMode]);
 			switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
 				case 0: //PERSP
+					m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
+					/*
 					if (!_UI3D) {
 						m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
 					} else {
 						m.perspective(_obCamera.angle_y0 / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
 					}
+					*/
 					break;
 			}
 			m.inverse(_obCamera.mMatrix, vMatrix);
 	    m.multiply(_obCamera.pMatrix, vMatrix, vpMatrix);
   }
 
-    // action update
-		function actionUpdate(){
-      // 全てのリソースを処理する
-      for (var i = 0 in objects) {
-				// アクションの更新
-				let _ob = objects[i];
-				if (_ob.hasOwnProperty('objectAction') && _ob.objectAction.play != 0) {
-					_ob.mMatrix0 = evaluateAction(_ob.objectAction, _ob.objectAction.animation_count, _ob.location, _ob.rotation, _ob.scale, _ob.rotation_mode);
-					actionIncrement(_ob.objectAction);
-				}
-				/*
-        if (objects[i].hasOwnProperty('objectAction') && objects[i].objectAction.play != 0) {
-            objects[i].mMatrix0 = evaluateAction(actions[objects[i].objectAction.name], objects[i].objectAction.animation_count, objects[i].location, objects[i].rotation, objects[i].scale, objects[i].rotation_mode);
+  function actionUpdate(){
+    for (var i in objects) {
+			let _ob = objects[i];
+			if (_ob.hasOwnProperty('objectAction') && _ob.objectAction.play != 0) {
+				//_ob.mMatrix0 = evaluateAction(_ob.objectAction, _ob.objectAction.animation_count, _ob.location_o, _ob.rotation_o, _ob.scale_o, _ob.rotation_mode);
+				evaluateAction(_ob.name);
+				actionIncrement(_ob.objectAction);
+			}
+			if (_ob.hasOwnProperty('materialAction') && _ob.materialAction.play != 0) {
+				_ob.alpha = evaluateMaterialAction(actions[i].materialAction, actions[i].materialAction.animation_count).alpha;
+			}
 
-						actionIncrement(objects[i].objectAction, actions[objects[i].objectAction.name]);
+      var mMatrixLocal = m.identity(m.create());
+      m.multiply(_ob.mMatrix0, mMatrixLocal, mMatrixLocal);
+
+			_ob.mMatrix = mMatrixLocal;
+
+			for (let ii in _ob.constraints) {
+				if (_ob.constraints[ii].type == 23) {
+					if (_ob.kind === 'UI3D') {
+						_ob.mMatrix = evaluateUI3DOb(_ob.name, _ob.constraints[ii].target);
+					} else {
+						let uimMatrix = evaluateParent(_ob.constraints[ii], false);
+						m.multiply(uimMatrix, mMatrixLocal, _ob.mMatrix);
 					}
-					*/
-				if (objects[i].hasOwnProperty('materialAction') && objects[i].materialAction.play != 0) {
-					objects[i].alpha = evaluateMaterialAction(actions[i].materialAction, actions[i].materialAction.animation_count).alpha;
 				}
-			// 特例のあるオブジェクト（drone_body or parent=none）
-            var mMatrixLocal = m.identity(m.create());
-            if (i == 'mambo_body') {
-							m.multiply(objects[i].mMatrix0, drone.gMatrix, mMatrixLocal);
-						} else if (i === 'camera_follow') {
-							m.multiply(objects[i].mMatrix0, camera_follow_gMatrix, mMatrixLocal);
-						} else if (i === 'camera_front') {
-							m.multiply(objects[i].mMatrix0, camera_front_gMatrix, mMatrixLocal);
-            } else {
-	            m.multiply(objects[i].mMatrix0, mMatrixLocal, mMatrixLocal);
-            }
+			}
 
-						let _indexChildOf = -1;
-						for (var ii = 0; ii < objects[i].constraints.length; ii++) {
-							if (objects[i].constraints[ii].type === 23) {
-								_indexChildOf = ii;
-								break;
-							}
-						}
-						if (_indexChildOf != -1) {
-							var po = objects[objects[i].constraints[_indexChildOf].target];
+			/*
+			let _indexChildOf = -1;
+			for (var ii = 0; ii < _ob.constraints.length; ii++) {
+				if (_ob.constraints[ii].type === 23) {
+					_indexChildOf = ii;
+					break;
+				}
+			}
+			if (_indexChildOf != -1) {
+				//var po = objects[_ob.constraints[_indexChildOf].target];
+				var po = objects.name(_ob.constraints[_indexChildOf].target);
 
-						//if (objects[i].parent != '') {
-                //var po = objects[objects[i].parent];
-							if (po.dataReady) {
-								if (objects[i].kind != 'UI3D') {
-                  m.multiply(po.mMatrix, mMatrixLocal, objects[i].mMatrix);
-								} else {
-									let uimMatrix = m.identity(m.create());
-									uimMatrix[12] = po.mMatrix[12];
-									uimMatrix[13] = po.mMatrix[13];
-									uimMatrix[14] = po.mMatrix[14];
-									m.multiply(uimMatrix, mMatrixLocal, objects[i].mMatrix);
-								}
-              }
-            } else {
-                objects[i].mMatrix = mMatrixLocal;
-            }
+				if (po.dataReady) {
+					m.multiply(po.mMatrix, mMatrixLocal, _ob.mMatrix);
+
+					if (_ob.kind != 'UI3D') {
+            m.multiply(po.mMatrix, mMatrixLocal, _ob.mMatrix);
+					} else {
+						let uimMatrix = m.identity(m.create());
+						uimMatrix[12] = po.mMatrix[12];
+						uimMatrix[13] = po.mMatrix[13];
+						uimMatrix[14] = po.mMatrix[14];
+						m.multiply(uimMatrix, mMatrixLocal, _ob.mMatrix);
+					}
+
         }
+      } else {
+          _ob.mMatrix = mMatrixLocal;
+      }
+			*/
     }
+  }
 
-	function manualUpdate() {
-		if (Math.abs(cameraOriginZDest - objects['camera_origin'].mMatrix0[14]) > 0.01) {
-			objects['camera_origin'].mMatrix0[14] += cameraOriginZSpeed;
+	function evaluateUI3DOb(_obName, _target) {
+		let _ob = objects.name(_obName);
+		let _tOb = objects.name(_target);
+		//eText.textContent = _tOb.rotation[2];
+		let locVec = _ob.location.slice();
+		let rotVec = vecSub(_ob.rotation.slice(), _tOb.rotation.slice());
+		let scVec = vecMult(_ob.scale.slice(), _tOb.scale.slice());
+		//eText.textContent = rotVec[2];
+
+		return transformationMatrix(locVec, rotVec, scVec, 1);
+	}
+
+	function evaluateParent(_constraint, _log) {
+		let _ob = objects.name(_constraint.target);
+		let locVec = _ob.location.slice();
+		let rotVec = _ob.rotation.slice();
+		let scVec = _ob.scale.slice();
+
+		if (_log) {
+			//console.log(_ob.name);
+			//console.log(_ob.location, _ob.rotation, _ob.scale);
+			//console.log(_constraint.useGeometries);
+			//console.log(locVec[0], locVec[1], locVec[2], rotVec[0], rotVec[1], rotVec[2], scVec[0], scVec[1], scVec[2]);
 		}
+		/*
+		for (let i = 0; i < 3; i++) {
+			if (!_constraint.useGeometries[i]) {
+				locVec[i] = 0.0;
+			}
+		}
+		if (!_constraint.useGeometries[3] || !_constraint.useGeometries[4] || !_constraint.useGeometries[5]) {
+			if (rotVec.length === 3) {
+				rotVec = [0.0, 0.0, 0.0];
+			} else {
+				rotVec = [0.0, 0.0, 0.0, 0.0];
+			}
+		}
+		for (let i = 6; i < 9; i++) {
+			if (!_constraint.useGeometries[i]) {
+				scVec[i - 6] = 1.0;
+			}
+		}
+		//eText.textContent = _ob.rotation[2] + ', ' + rotVec[2];
+
+		if (_log) {
+			//console.log(locVec[0], locVec[1], locVec[2], rotVec[0], rotVec[1], rotVec[2], scVec[0], scVec[1], scVec[2]);
+			//console.log(locVec, rotVec, scVec);
+		}
+		*/
+		return transformationMatrix(locVec, rotVec, scVec, 1);
 	}
 
 	function actionIncrement(_ac) {
@@ -698,67 +852,75 @@ window.onload = function(){
 
   // objects rendering
   function objectRender(){
-		for (var i = 0 in objects) {
-			if (objects[i].one_sided) {
-				let _ray = vecSub(objects[i].center, objects[obCamera[camMode]].mMatrix.slice(12, 15));
-				if (dot(objects[i].normal, _ray) < 0.0) {
-					objects[i].draw = true;
+		for (var i in objects) {
+			let _ob = objects[i];
+			if (_ob.one_sided) {
+				let _ray = vecSub(_ob.center, objects.name(obCamera[camMode]).mMatrix.slice(12, 15));
+				if (dot(_ob.normal, _ray) < 0.0) {
+					_ob.draw = true;
 				} else {
-					objects[i].draw = false;
+					_ob.draw = false;
 				}
 			}
       if (
-          objects[i].type === 0 &&
-					objects[i].kind === 'mesh' &&
-          objects[i].draw === true &&
-					objects[i].internal === drawInternal &&
+          _ob.type === 0 &&
+					_ob.kind === 'mesh' &&
+          _ob.draw === true &&
+					_ob.internal === drawInternal &&
           obLoading.indexOf(i) === -1
       ) {
 				let _color = [];
-				if (i === selectedObject) {
+				if (_ob.name === selectedObject) {
+				//if (i === selectedObject) {
 					_color = [1.0, 0.0, 0.0, 0.3];
 				} else {
 					_color = [1.0, 1.0, 1.0, 0.0];
 				}
 
-				objectRendergl(i, _color);
+				//objectRendergl(i, _color);
+				objectRendergl(_ob.name, _color);
       }
     }
 	}
 
 	function UI3DRender(){
 		for (var i = 0 in objects) {
+			let _ob = objects[i];
 			if (
-					objects[i].type === 0 &&
-					objects[i].kind === 'UI3D' &&
-					objects[i].draw === true &&
-					objects[i].internal === drawInternal &&
+					_ob.type === 0 &&
+					_ob.kind === 'UI3D' &&
+					_ob.draw === true &&
+					//_ob.internal === drawInternal &&
 					obLoading.indexOf(i) === -1
 			) {
+				//eText.textContent = _ob.rotation[2];
 				let _color = [1.0, 1.0, 1.0, 0.0];
 
-				objectRendergl(i, _color);
+				//objectRendergl(i, _color);
+				objectRendergl(_ob.name, _color);
 			}
 		}
 	}
 
 		function objectRendergl(_obName, _color){
+			//let _ob = objects[_obName];
+			let _ob = objects.name(_obName);
 			gl.uniform1i(uniLocation[uniEnum.texture], 0);
 			gl.uniform1i(uniLocation[uniEnum.texture2], 1);
-			set_attribute(objects[_obName].VBOList, attLocation, attStride);
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[_obName].iIndex);
+			set_attribute(_ob.VBOList, attLocation, attStride);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, _ob.iIndex);
 
 			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, objects[_obName].texture[_obName]);
+			gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_obName]);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 
-			if (drawMap && objects[_obName].mappable) {
+			if (drawMap && _ob.mappable) {
 				gl.uniform1i(uniLocation[uniEnum.drawMap], drawMap);
 				gl.activeTexture(gl.TEXTURE1);
-				gl.bindTexture(gl.TEXTURE_2D, objects[_obName].texture[_obName + '_map']);
+				gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_obName + '_map']);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -767,13 +929,13 @@ window.onload = function(){
 				gl.uniform1i(uniLocation[uniEnum.drawMap], false);
 			}
 			gl.uniform4fv(uniLocation[uniEnum.color], _color);
-			gl.uniform1f(uniLocation[uniEnum.alpha], objects[_obName].alpha);
-			gl.uniform2fv(uniLocation[uniEnum.tex_shift], objects[_obName].texture_shift);
-			m.multiply(vpMatrix, objects[_obName].mMatrix, mvpMatrix);
+			gl.uniform1f(uniLocation[uniEnum.alpha], _ob.alpha);
+			gl.uniform2fv(uniLocation[uniEnum.tex_shift], _ob.texture_shift);
+			m.multiply(vpMatrix, _ob.mMatrix, mvpMatrix);
 
 			gl.uniformMatrix4fv(uniLocation[uniEnum.mvpMatrix], false, mvpMatrix);
 
-			gl.drawElements(gl.TRIANGLES, objects[_obName].numLoop, gl.UNSIGNED_SHORT, 0);
+			gl.drawElements(gl.TRIANGLES, _ob.numLoop, gl.UNSIGNED_SHORT, 0);
 		}
 
     // UI
@@ -791,8 +953,10 @@ window.onload = function(){
 				annoOb.mMatrix = _tMatrix;
 				//console.log(objects[annotations[i].ob].draw);
 				let _color = [1.0, 1.0, 1.0, 1.0];
-				if (objects[annotations[i].ob].draw) {
-					let _ray = vecSub(annotations[i].loc, objects[obCamera[camMode]].mMatrix.slice(12, 15));
+				//if (objects[annotations[i].ob].draw) {
+				if (objects.name(annotations[i].ob).draw) {
+					//let _ray = vecSub(annotations[i].loc, objects[obCamera[camMode]].mMatrix.slice(12, 15));
+					let _ray = vecSub(annotations[i].loc, objects.name(obCamera[camMode]).mMatrix.slice(12, 15));
 					if (dot(annotations[i].normal, _ray) < 0.0) {
 						_color = [1.0, 0.0, 0.0, 1.0];
 					} else {
@@ -801,7 +965,8 @@ window.onload = function(){
 				} else {
 					_color = [1.0, 0.6, 0.6, 1.0];
 				}
-				if (objects[annotations[i].ob].internal != drawInternal) {
+				//if (objects[annotations[i].ob].internal != drawInternal) {
+				if (objects.name(annotations[i].ob).internal != drawInternal) {
 					_color = [1.0, 0.6, 0.6, 1.0];
 				}
 				UIRendergl(annoOb, _color);
@@ -852,11 +1017,13 @@ window.onload = function(){
         for (var i = 0 in obLoading) {
             //eText.textContent = numDataReady + ': ' + obNames.length;
             //if (objects[obLoading[i]].dataReady && objects[obLoading[i]].texture[objects[obLoading[i]].name] && !allDataReady) {
-            if (objects[obLoading[i]].dataReady && objects[obLoading[i]].texture[obLoading[i]]) {
-                set_attribute(objects[obLoading[i]].VBOList, attLocation, attStride);
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[obLoading[i]].iIndex);
+						//let _obLoading = objects[obLoading[i]];
+						let _obLoading = objects.name(obLoading[i]);
+            if (_obLoading.dataReady && _obLoading.texture[obLoading[i]]) {
+                set_attribute(_obLoading.VBOList, attLocation, attStride);
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, _obLoading.iIndex);
 
-                gl.bindTexture(gl.TEXTURE_2D, objects[obLoading[i]].texture[obLoading[i]]);
+                gl.bindTexture(gl.TEXTURE_2D, _obLoading.texture[obLoading[i]]);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
@@ -865,13 +1032,13 @@ window.onload = function(){
                 if (obLoading[i] == 'progress_bar') {
                     m.scale(mTempMatrix, [numDataReady / (obNames.length * 2), 1, 1], mTempMatrix);
                 }
-                m.multiply(objects[obLoading[i]].mMatrix, mTempMatrix, mTempMatrix);
+                m.multiply(_obLoading.mMatrix, mTempMatrix, mTempMatrix);
 
                 m.multiply(vpoMatrix, mTempMatrix, mvpMatrix);
                 gl.uniformMatrix4fv(uniLocation[uniEnum.mvpMatrix], false, mvpMatrix);
                 gl.uniform1f(uniLocation[uniEnum.alpha], 1.0);
 
-                gl.drawElements(gl.TRIANGLES, objects[obLoading[i]].numLoop, gl.UNSIGNED_SHORT, 0);
+                gl.drawElements(gl.TRIANGLES, _obLoading.numLoop, gl.UNSIGNED_SHORT, 0);
             }
         }
     }
@@ -898,13 +1065,15 @@ window.onload = function(){
 		function UIInteractionUpdate() {
 			if (selectedObject != null) {
 				if (comment.style.visibility === 'visible') {
-					let commentLoc = fromObTo2D(objects[selectedObject]);
+					//let commentLoc = fromObTo2D(objects[selectedObject]);
+					let commentLoc = fromObTo2D(objects.name(selectedObject));
 					let adComLoc = adjustUI(commentLoc, [0.0, c.width - comment.clientWidth], [0.0, c.height - 160.0]);
 					comment.style.left = Math.floor(adComLoc[0]) + "px";
 					comment.style.top  = Math.floor(adComLoc[1]) + "px";
 				}
 				if (buttonContainerElement.style.visibility === 'visible') {
-					let buttonLoc = fromObTo2D(objects[selectedObject]);
+					//let buttonLoc = fromObTo2D(objects[selectedObject]);
+					let buttonLoc = fromObTo2D(objects.name(selectedObject));
 					buttonLoc[0] -= obButton.clientWidth / 2.0;
 					let adButtonLoc = adjustUI(buttonLoc, [0.0, c.width - obButton.clientWidth], [0.0, c.height - 160.0]);
 					obButton.style.left = Math.floor(adButtonLoc[0]) + "px";
@@ -1054,6 +1223,7 @@ window.onload = function(){
     }
 
 	function create_texture(_path, source, i_source, _type){
+		//console.log(source, i_source);
 		var img = new Image();
 		//img.src = './resource/textures/' + i_source + '.png';
 		//img.src = resourcePath + scene.name + '/textures/' + i_source + '.png';
@@ -1068,13 +1238,16 @@ window.onload = function(){
 			objects[source].texture[i_source] = tex;
 			*/
 			if (_type === 'object') {
-				var ob = objects[source];
+				//var ob = objects[source];
+				var ob = objects.name(source);
 			} else if (_type === 'UI') {
 				var ob = obUI[source];
 			}
 			//objects[source].texture[i_source] = create_texture_gl(img);
+			//console.log(ob, i_source, img.src);
 			ob.texture[i_source] = create_texture_gl(img);
 			numDataReady += 1;
+			//console.log(source, i_source);
 			allDataReady = checkAllDataReady();
 		};
 		//img.src = './resource/textures/' + i_source + '.png';
@@ -1100,19 +1273,49 @@ window.onload = function(){
 		navigatable = true;
 
 		scene = new Scene(_scene_name);
-		objects = new Array();
+		//objects = new Array();
+		objects = new obArray();
 		obUI = new Array();
 		allDataReady = false;
 		numDataReady = 0;
 		readSceneData();
+		//console.log(objects);
 		for (let i in objects) {
+			//console.log(objects[i].name);
 			read3DModelData(resourcePath + scene.name, objects[i].name, 'object');
 		}
+		/*
+		for (let _name in objects) {
+			//console.log(_name, objects[_name].constraints);
+			//countOrder(_name);
+			//console.log(_name, objects[_name].order);
+		}
+		*/
+
 		hiddenObjects = [];
 		readUIData();
 
 		comment.style.visibility = 'hidden';
 		buttonContainerElement.style.visibility = 'hidden';
+	}
+
+	function countOrder(_obName) {
+		//let _ob = objects[_obName];
+		console.log(_obName);
+		let _ob = objects.name(_obName);
+		if (_ob.order == -1) {
+			if (_ob.constraints.length === 0) {
+				_ob.order = 0;
+			} else {
+				for (let i = 0; i < _ob.constraints.length; i++) {
+					let _tempOrder = countOrder(_ob.constraints[i].target) + 1;
+					if (_tempOrder > _ob.order) {
+						_ob.order = _tempOrder;
+					}
+				}
+			}
+		}
+		return _ob.order;
 	}
 
 	function readSceneData() {
@@ -1134,7 +1337,6 @@ window.onload = function(){
 		scene.cameraVertAngleMin = Number(_sceneData[sdIndex++]) * Math.PI / 180.0;
 		scene.cameraViewAngleMax = Number(_sceneData[sdIndex++]);
 		scene.cameraViewAngleMin = Number(_sceneData[sdIndex++]);
-		let dList = new Array();
 		for (var i = 3; i < scene.num_object + 3; i++) {
 			let _line = lines[i].split(',');
 			let lIndex = 0;
@@ -1184,7 +1386,10 @@ window.onload = function(){
 	    ob.isHit = false;
 	    ob.shadow = 0.0;
 			ob.depth = 1000000; // Z Depth from Camera
-	    objects[_name] = ob;
+			ob.order = -1; //order of constraints (0: root, n: nth generation, -1: not decided)
+	    //objects[_name] = ob;
+			//console.log(ob.name);
+			objects.push(ob);
 
 			if (_kind === 'camera') {
 				obCamera.push(_name);
@@ -1271,7 +1476,6 @@ window.onload = function(){
 
 	function read3DModelData(_path, _objectName, _type) { //csvﾌｧｲﾙﾉ相対ﾊﾟｽor絶対ﾊﾟｽ
 		var coord = new Array();
-		var norm = new Array();
 		var uv_coord = new Array();
 		var data = new XMLHttpRequest();
 		//data.open("GET", resourcePath + scene.name + '/objects/' + _objectName + '.dat', true); //true:非同期,false:同期
@@ -1290,7 +1494,8 @@ window.onload = function(){
 			var bound_box = [];
 			var off = 0;
 			if (_type === 'object') {
-				var ob = objects[_objectName];
+				//var ob = objects[_objectName];
+				var ob = objects.name(_objectName);
 			} else if (_type === 'UI') {
 				var ob = obUI[_objectName];
 			}
@@ -1308,7 +1513,8 @@ window.onload = function(){
 				location.push(dv.getFloat32(off, true));
 				off += 4;
 			}
-			ob.location = location;
+			ob.location_o = location; //original location
+			ob.location = location.slice(); //location
 
 			var rotation_comp = 4;
 			if (ob.rotation_mode != 0) {
@@ -1318,13 +1524,17 @@ window.onload = function(){
 				rotation.push(dv.getFloat32(off, true));
 				off += 4;
 			}
-			ob.rotation = rotation;
+			ob.rotation_o = rotation; //original rotation
+			ob.rotation = rotation.slice(); //rotation
 
 			for (var i = 0; i < 3; i++) {
 				scale.push(dv.getFloat32(off, true));
 				off += 4;
 			}
-			ob.scale = scale;
+			ob.scale_o = scale; //original scale
+			ob.scale = scale.slice(); //scale
+
+			//console.log(ob.name, ob.location, ob.rotation, ob.scale);
 
 			for (var i = 0; i < 3; i++) {
 				dimensions.push(dv.getFloat32(off, true));
@@ -1386,6 +1596,10 @@ window.onload = function(){
 				}
 				ob.constraints.push(_constraint);
 			}
+			if (ob.constraints.length > 0) {
+				console.log(ob.name, ob.constraints);
+			}
+
 			let _indexChildOf = -1;
 			for (var ii = 0; ii < ob.constraints.length; ii++) {
 				if (ob.constraints[ii].type === 23) {
@@ -1464,6 +1678,7 @@ window.onload = function(){
 				ob.iIndex        = create_ibo(ind);
 
 				for (var i = 0 in ob.textureList) {
+					//console.log(ob.name, i, ob.textureList[i]);
 					create_texture(_path, ob.name, ob.textureList[i], _type);
 				}
 			} else if (ob.type === 1) {//object type 'CURVE'
@@ -1490,10 +1705,6 @@ window.onload = function(){
 					off = ob.curveAction.off;
 				}
 
-				//console.log(ob.name);
-				//console.log(ob.splines);
-				//console.log(ob.fCurves);
-
 			} else if (ob.type == 8) {//object type 'CAMERA'
 				var _pMatrix = m.identity(m.create());
 				ob.camera_type = dv.getInt32(off, true);
@@ -1519,7 +1730,9 @@ window.onload = function(){
 			//objects[_objectName].dataReady = true;
 			ob.dataReady = true;
 			numDataReady += 1;
+			//console.log('read object', ob.name);
 			allDataReady = checkAllDataReady();
+
 		}
 	}
 
@@ -1566,14 +1779,40 @@ window.onload = function(){
 
 	function checkAllDataReady() {
 		var ready = true;
-		for (var i = 0 in objects) {
-			if (!objects[i].dataReady) {
+		for (var i in objects) {
+			let _ob = objects[i];
+			if (!_ob.dataReady) {
 				ready = false;
-				//console.log('checkAllDataReady:', objects[i].name);
 			}
-			if (objects[i].type == 0 && objects[i].kind === 'mesh' && !objects[i].texture[i]) {
-				//console.log('checkAllDataReady:', objects[i].name);
+			//if (_ob.type == 0 && _ob.kind === 'mesh' && !_ob.texture[i]) {
+			if (_ob.type == 0 && _ob.kind === 'mesh' && !_ob.texture[_ob.name]) {
 				ready = false;
+			}
+		}
+		for (var i = 0 in obUI) {
+			if(!obUI[i].dataReady) {
+				ready = false;
+			}
+			if (!obUI[i].texture[i]) {
+				ready = false;
+			}
+		}
+		if (ready) {
+			for (let i in objects) {
+				let _order = countOrder(objects[i].name);
+				//let _order = countOrder(i);
+				//console.log(objects[i].name, _order);
+			}
+			//console.log('----------------');
+			objects.sort((a, b) => a.order > b.order);
+			for (let i in objects) {
+				//console.log(objects[i].name, objects[i].order);
+				if (objects[i].constraints.length > 0) {
+					console.log(objects[i].name);
+					for (let ii in objects[i].constraints) {
+						evaluateParent(objects[i].constraints[ii], true);
+					}
+				}
 			}
 		}
 		return ready;
@@ -1642,43 +1881,35 @@ window.onload = function(){
 		return action;
 	}
 
-	function readParentList() {
-		var data = new XMLHttpRequest();
-		data.open("GET", './resource/parent_list.csv', false); //true:非同期,false:同期
-		data.send(null);
+	function evaluateAction(_obName) {
+		let _ob = objects.name(_obName);
+		let _action = _ob.objectAction;
+		let _x = _action.animation_count;
+		//let locVec = _ob.location.slice();
+		//let rotVec = _ob.rotation.slice();
+		//let scVec = _ob.scale.slice();
+		let locVec = _ob.location;
+		let rotVec = _ob.rotation;
+		let scVec = _ob.scale;
+		let _rotation_mode = _ob.rotation_mode;
 
-		var LF = String.fromCharCode(10); //改行ｺｰﾄﾞ
-		var lines = data.responseText.split(LF);
-		var pList = new Array();
-		for (var i = 0 in lines) {
-			var a = lines[i].split(',');
-			pList[a[0]] = a[1];
+		for (var i = 0; i < _action.numFCurves; i++) {
+			if (_action.fCurves[i].dataPath == 'location') {
+				locVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
+			} else if (_action.fCurves[i].dataPath == 'scale') {
+				scVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
+			} else if (_action.fCurves[i].dataPath == 'rotation_euler') {
+				rotVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
+			} else if (_action.fCurves[i].dataPath == 'rotation_quaternion') {
+				rotVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
+			}
 		}
-
-		return pList;
+		_ob.mMatrix0 = transformationMatrix(locVec, rotVec, scVec, _rotation_mode);
+		//_ob.location = locVec;
+		//_ob.rotation = rotVec;
+		//_ob.scale = scVec;
 	}
-
-	function readDescriptionList() {
-		var data = new XMLHttpRequest();
-		data.open("GET", './resource/object_description.csv', false); //true:非同期,false:同期
-		data.send(null);
-
-		let LF = String.fromCharCode(10); //改行ｺｰﾄﾞ
-		let lines = data.responseText.split(LF);
-		let dList = new Array();
-		for (var i = 0 in lines) {
-			let a = lines[i].split(',');
-			//let b = a[1].split('¥');
-			//b.join('a');
-			//console.log(a[0], b);
-			//let st = "大島\n大橋";
-			dList[a[0]] = a[1];
-			//console.log(st);
-		}
-
-		return dList;
-	}
-
+	/*
 	function evaluateAction(_action, _x, _loc, _rot, _scale, _rotation_mode) {
 		let locVec = _loc.slice();
 		let rotVec = _rot.slice();
@@ -1695,23 +1926,9 @@ window.onload = function(){
 				rotVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
 			}
 		}
-		//eText.textContent = locVec;
-		/*
-		for (var i = 0; i < _action.numCurve; i++) {
-			if (_action.curves[i].data_path == 'location') {
-				locVec[_action.curves[i].array_index] = bezier2D(_action.curves[i].handles, _x);
-			} else if (_action.curves[i].data_path == 'scale') {
-				scVec[_action.curves[i].array_index] = bezier2D(_action.curves[i].handles, _x);
-			} else if (_action.curves[i].data_path == 'rotation_euler') {
-				rotVec[_action.curves[i].array_index] = bezier2D(_action.curves[i].handles, _x);
-			} else if (_action.curves[i].data_path == 'rotation_quaternion') {
-				rotVec[_action.curves[i].array_index] = bezier2D(_action.curves[i].handles, _x);
-			}
-		}
-		*/
 		return transformationMatrix(locVec, rotVec, scVec, _rotation_mode);
 	}
-
+	*/
 	function evaluateMaterialAction(_action, _x) {
 		let material = function () {
 
@@ -1780,6 +1997,8 @@ window.onload = function(){
 
 		m.multiply(_tMatrix, sMatrix, mMatrix);
 		m.multiply(mMatrix, rMatrix, mMatrix);
+		//m.multiply(sMatrix, rMatrix, mMatrix);
+		//m.multiply(mMatrix, _tMatrix, mMatrix);
 		return mMatrix;
 	}
 
@@ -1849,6 +2068,10 @@ window.onload = function(){
 		return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 	}
 
+	function vecMult(a, b) {
+		return [a[0] * b[0], a[1] * b[1], a[2] * b[2]];
+	}
+
 	function scalarVec(s, a) {
 		return [s * a[0], s * a[1], s * a[2]];
 	}
@@ -1911,10 +2134,10 @@ window.onload = function(){
 
 	function selectBlock(_location) {
 		let _selObInfo = selection_3D(_location, 'block');
-		console.log(_selObInfo.object);
+		//console.log(_selObInfo.object);
 
 		if (_selObInfo.object != null) {
-			//while (comment.firstChild) comment.removeChild(comment.firstChild);
+			//console.log(_selObInfo.object, selectedObject);
 			if (_selObInfo.object === selectedObject) {
 				selectedObject = null;
 				//text01 = '';
@@ -1922,15 +2145,16 @@ window.onload = function(){
 				buttonContainerElement.style.visibility = 'hidden';
 			} else {
 				selectedObject = _selObInfo.object;
+				let _selOb = objects.name(selectedObject);
 				//console.log(objects[selectedObject].name, objects[selectedObject].hasDetail);
 
-				if (objects[selectedObject].hidable) {
+				if (_selOb.hidable) {
 					obButton.src = './resource/UI/html/UI_obButton_hide.png';
 					buttonContainerElement.style.visibility = 'visible';
 					obButton.style.pointerEvents = 'auto';
 					mousePressed = false;
 					touched = false;
-				} else if (objects[selectedObject].hasDetail) {
+				} else if (_selOb.hasDetail) {
 					obButton.src = './resource/UI/html/UI_obButton_detail.png';
 					buttonContainerElement.style.visibility = 'visible';
 					obButton.style.pointerEvents = 'auto';
@@ -1940,10 +2164,11 @@ window.onload = function(){
 					buttonContainerElement.style.visibility = 'hidden';
 				}
 
-				replaceCommentText(objects[selectedObject].description);
+				replaceCommentText(_selOb.description);
 				text01 = selectedObject.substring(0, selectedObject.length - 3);
 			}
 		}
+		//console.log(selectedObject);
 	}
 
 	function replaceCommentText(_string) {
@@ -1961,7 +2186,9 @@ window.onload = function(){
 		var y = 1.0 - (2.0 * _location.y) /c.height;
 		var z = 1.0;
 
-		let _obCamera = objects[obCamera[camMode]];
+		//let _obCamera = objects[obCamera[camMode]];
+		let _obCamera = objects.name(obCamera[camMode]);
+		//let _obCamera = objects.name(obCamera[0]);
 		var invPMatrix = m.identity(m.create());
 		m.transpose(_obCamera.pMatrix, invPMatrix);
 		m.inverse(invPMatrix, invPMatrix);
@@ -1982,14 +2209,16 @@ window.onload = function(){
 		let _selPoint = [0.0, 0.0, 0.0];
 		let _selNormal = [0.0, 0.0, 0.0];
 
-		for (var i = 0 in objects) {
+		for (var i in objects) {
+			let _ob = objects[i];
 			if (
 				_type === 'point' &&
-				objects[i].pointMesh != '' &&
-				objects[i].draw &&
-				objects[i].internal === drawInternal
+				_ob.pointMesh != '' &&
+				_ob.draw &&
+				_ob.internal === drawInternal
 			) {
-				let _selInfo = selectObject(objects[objects[i].pointMesh], ray_wld);
+				//let _selInfo = selectObject(objects[_ob.pointMesh], ray_wld);
+				let _selInfo = selectObject(objects.name(_ob.pointMesh), ray_wld);
 				if (_selInfo.depth < _depth) {
 					_depth = _selInfo.depth;
 					_selPoint = _selInfo.point;
@@ -1999,14 +2228,15 @@ window.onload = function(){
 			}
 			if (
 				_type === 'block' &&
-				objects[i].draw &&
-				objects[i].selectMesh != '') {
-				let _selInfo = selectObject(objects[objects[i].selectMesh], ray_wld);
+				_ob.draw &&
+				_ob.selectMesh != '') {
+				let _selInfo = selectObject(objects.name(_ob.selectMesh), ray_wld);
 				if (_selInfo.depth < _depth) {
 					_depth = _selInfo.depth;
 					_selPoint = _selInfo.point;
 					_selNormal = _selInfo.normal;
-					_selOb = i;
+					//_selOb = i;
+					_selOb = objects[i].name;
 				}
 			}
 		}
@@ -2026,7 +2256,8 @@ window.onload = function(){
 			_p0 = _ob.coord.slice(l, l + 3);
 			_p1 = _ob.coord.slice(l + 3, l + 6);
 			_p2 = _ob.coord.slice(l + 6, l + 9);
-			_o = objects[obCamera[camMode]].mMatrix.slice(12, 15);
+			//_o = objects[obCamera[camMode]].mMatrix.slice(12, 15);
+			_o = objects.name(obCamera[camMode]).mMatrix.slice(12, 15);
 			_d = _ray;
 			_e = vecSub(_o, _p0);
 			_e1 = vecSub(_p1, _p0);
@@ -2074,11 +2305,23 @@ window.onload = function(){
 
 	function checkButtons(_location) {
 		if (buttonPressed('UI_revert_button', _location)) {
-			let obc = objects['camera_whole'];
-			let obco = objects['camera_whole_origin'];
+			for (let i in objects) {
+				let _ob = objects[i];
+				_ob.mMatrix0 = transformationMatrix(_ob.location_o, _ob.rotation_o, _ob.scale_o, _ob.rotation_mode);
+				_ob.location = _ob.location_o.slice();
+				_ob.rotation = _ob.rotation_o.slice();
+				_ob.scale = _ob.scale_o.slice();
+				if (_ob.type === 8) {
+					_ob.angle_y = _ob.angle_y0;
+				}
+			}
+			/*
+			let obc = objects.name('camera_orbit');
+			let obco = objects.name('camera_orbit_origin');
 			obc.angle_y = obc.angle_y0;
 			obc.mMatrix0 = transformationMatrix(obc.location, obc.rotation, obc.scale, obc.rotation_mode);
 			obco.mMatrix0 = transformationMatrix(obco.location, obco.rotation, obco.scale, obco.rotation_mode);
+			*/
 			cameraVertAngle = 0.0;
 			drawMap = false;
 			drawInternal = false;
@@ -2086,25 +2329,31 @@ window.onload = function(){
 			selectedAnnotation = null;
 			comment.style.visibility = 'hidden';
 			buttonContainerElement.style.visibility = 'hidden';
-			if (objects['sea_surface']) {
-				objects['sea_surface'].draw = true;
+			//if (objects['sea_surface']) {
+				//objects['sea_surface'].draw = true;
+			if (objects.name('sea_surface')) {
+				objects.name('sea_surface').draw = true;
 			}
-			if (objects['terrain']) {
-				objects['terrain'].draw = true;
+			if (objects.name('terrain')) {
+				objects.name('terrain').draw = true;
 			}
 			if (obUI['UI_ex-in_button']) {
 				obUI['UI_ex-in_button'].texture_shift[0] = 0.0;
 			}
 
 			for (var i = 0; i < hiddenObjects.length; i++) {
-				objects[hiddenObjects[i]].draw = true;
+				objects.name(hiddenObjects[i]).draw = true;
 			}
 			hiddenObjects = [];
-			obUI['UI_show_button'].texture_shift[0] = 0.0;
+			if (obUI['UI_show_button']) {
+				obUI['UI_show_button'].texture_shift[0] = 0.0;
+			}
 		}
 		if (buttonPressed('UI_terrain_button', _location)) {
-			objects['sea_surface'].draw = !objects['sea_surface'].draw;
-			objects['terrain'].draw = !objects['terrain'].draw;
+			//objects['sea_surface'].draw = !objects['sea_surface'].draw;
+			//objects['terrain'].draw = !objects['terrain'].draw;
+			objects.name('sea_surface').draw = !objects.name('sea_surface').draw;
+			objects.name('terrain').draw = !objects.name('terrain').draw;
 		}
 		if (buttonPressed('UI_map_button', _location)) {
 			drawMap = !drawMap;
@@ -2140,7 +2389,8 @@ window.onload = function(){
 		if (buttonPressed('UI_show_button', _location)) {
 			if (obUI['UI_show_button'].texture_shift[0] === 0.5) {
 				for (var i = 0; i < hiddenObjects.length; i++) {
-					objects[hiddenObjects[i]].draw = true;
+					//objects[hiddenObjects[i]].draw = true;
+					objects.name(hiddenObjects[i]).draw = true;
 				}
 				hiddenObjects = [];
 				obUI['UI_show_button'].texture_shift[0] = 0.0;
@@ -2183,7 +2433,7 @@ window.onload = function(){
 
 	function mouseDown(e) {
 		if (opening_count >= OPENING_LENGTH ) {
-			for (var i = 0 in objects) {
+			for (var i in objects) {
 				if (objects[i].openingAnimation === true) {
 					objects[i].objectAction.play = 0;
 				}
@@ -2250,10 +2500,11 @@ window.onload = function(){
 	function wheel(e) {
 		if (opening_count >= OPENING_LENGTH && navigatable) {
 			//wheelDelta = e.deltaY;
-			let ay = objects[obCamera[camMode]].angle_y;
+			let _obCam = objects.name(obCamera[camMode]);
+			let ay = _obCam.angle_y;
 			ay += wheelDelta * e.deltaY;
 			if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
-				objects[obCamera[camMode]].angle_y = ay;
+				_obCam.angle_y = ay;
 			}
 			UIInteractionUpdate();
 			//eText.textContent = ay;
@@ -2362,7 +2613,7 @@ window.onload = function(){
 		if (e.keyCode === 87 && opening_count >= OPENING_LENGTH) {//w key
 			drawMode += 1;
 			drawMode %= numDrawMode;
-			drawUpdate();
+			//drawUpdate();
 		}
 		switch (e.keyCode) {
 			case 16: //shift key
@@ -2427,11 +2678,18 @@ window.onload = function(){
 	}
 
 	function toggleCameraAction() {
+		if (objects.name('camera_origin').objectAction.play === 0) {
+			objects.name('camera_origin').objectAction.play = 1;
+		} else {
+			objects.name('camera_origin').objectAction.play = 0;
+		}
+		/*
 		if (objects['camera_origin'].objectAction.play === 0) {
 			objects['camera_origin'].objectAction.play = 1;
 		} else {
 			objects['camera_origin'].objectAction.play = 0;
 		}
+		*/
 	}
 
 	function memoOKPressed() {
@@ -2459,11 +2717,12 @@ window.onload = function(){
 	}
 
 	function obButtonPressed() {
-		if (objects[selectedObject].hasDetail) {
+		let _selOb = objects.name(selectedObject);
+		if (_selOb.hasDetail) {
 			buttonContainerElement.style.visibility = 'hidden';
-			loadScene(objects[selectedObject].name);
-		} else if (objects[selectedObject].hidable) {
-			objects[selectedObject].draw = false;
+			loadScene(_selOb.name);
+		} else if (_selOb.hidable) {
+			_selOb.draw = false;
 			buttonContainerElement.style.visibility = 'hidden';
 			hiddenObjects.push(selectedObject);
 			obUI['UI_show_button'].texture_shift[0] = 0.5;
