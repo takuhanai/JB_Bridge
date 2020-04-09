@@ -427,7 +427,7 @@ window.onload = function(){
       // objects の描画
       objectRender();
       // hud 関連
-			gl.disable(gl.DEPTH_TEST);
+			//gl.disable(gl.DEPTH_TEST);
 			camMode = 1;
 			cameraUpdate();
 			UI3DRender();
@@ -731,7 +731,8 @@ window.onload = function(){
 		//eText.textContent = _tOb.rotation[2];
 		let locVec = _ob.location.slice();
 		let rotVec = vecSub(_ob.rotation.slice(), _tOb.rotation.slice());
-		let scVec = vecMult(_ob.scale.slice(), _tOb.scale.slice());
+		let scVec = _ob.scale.slice();
+		//let scVec = vecMult(_ob.scale.slice(), _tOb.scale.slice());
 		//eText.textContent = rotVec[2];
 
 		return transformationMatrix(locVec, rotVec, scVec, 1);
