@@ -122,7 +122,21 @@ window.onload = function(){
 
 	//m.ortho(0.0, 0.02 * c.width, 0.02 * c.height, 0.0, 0.1, 300, vpoMatrix);
 	m.ortho(0.0, c.width, c.height, 0.0, 0.1, 300, vpoMatrix);
-	m.translate(vpoMatrix, [0, 0, -20], vpoMatrix);
+	m.translate(vpoMatrix, [0, 0, -300], vpoMatrix);
+
+	class obArray extends Array {
+		constructor() {
+			super();
+		}
+		name(_name) {
+			let _foundName = this.find(o => o.name === _name);
+			if (_foundName != undefined) {
+				return _foundName;
+			} else {
+				return this[_name];
+			}
+		}
+	}
 
   let obNames = []; // Not used
 
@@ -142,7 +156,15 @@ window.onload = function(){
 	let annotations = [];
 	let tempAnnotation = new Annoatation([0.0, 0.0, 0.0], null, [0.0, 0.0, 0.0], '');
 
-	let obUI = new Array(); // List of UI objects
+	//let obUI = new Array(); // List of UI objects
+	let obUI = new obArray(); // List of UI objects
+
+	let obText = function () {
+
+	}
+	let obTexts = new obArray();
+
+	let obTextures = new obArray();
 
 	let Scene = function (name) {
 		this.name = name;
@@ -159,21 +181,6 @@ window.onload = function(){
 	}
 
 	let scene = new Scene(scene_name);
-
-	class obArray extends Array {
-		constructor() {
-			super();
-		}
-		name(_name) {
-			let _foundName = this.find(o => o.name === _name);
-			if (_foundName != undefined) {
-				return _foundName;
-			} else {
-				return this[_name];
-			}
-			//return this.find(o => o.name === _name);
-		}
-	}
 
 	//let objects = new Array();
 	let objects = new obArray();
@@ -432,7 +439,9 @@ window.onload = function(){
 			cameraUpdate();
 			UI3DRender();
 			camMode = 0;
+			gl.disable(gl.DEPTH_TEST);
 			cameraUpdate();
+			textRender();
       UIRender();
 
     }else{
@@ -912,7 +921,8 @@ window.onload = function(){
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, _ob.iIndex);
 
 			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_obName]);
+			//gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_obName]);
+			gl.bindTexture(gl.TEXTURE_2D, obTextures.name(_ob.textureList[0]));
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -921,7 +931,8 @@ window.onload = function(){
 			if (drawMap && _ob.mappable) {
 				gl.uniform1i(uniLocation[uniEnum.drawMap], drawMap);
 				gl.activeTexture(gl.TEXTURE1);
-				gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_obName + '_map']);
+				//gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_obName + '_map']);
+				gl.bindTexture(gl.TEXTURE_2D, obTextures.name(_ob.textureList[1]));
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -939,13 +950,50 @@ window.onload = function(){
 			gl.drawElements(gl.TRIANGLES, _ob.numLoop, gl.UNSIGNED_SHORT, 0);
 		}
 
+		function textRender() {
+			for (let i in obTexts) {
+				let _ot = obTexts[i];
+				let _tMatrix = m.identity(m.create());
+				let _v = from3DPointTo2D(_ot.location.concat(1.0));
+				//eText.textContent = _v[2];
+				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
+				_ot.mMatrix = _tMatrix;
+				let _color = [1.0, 1.0, 1.0, 0.0];
+				textRendergl(_ot, _color);
+			}
+		}
+
+		function textRendergl(_ot, _color) {
+			//eText.textContent = obTextures.name(_ob.font).name;
+			set_attribute(_ot.VBOList, attLocation, attStride);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, _ot.iIndex);
+			gl.uniform1i(uniLocation[uniEnum.drawMap], false);
+			gl.uniform4fv(uniLocation[uniEnum.color], _color);
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, obTextures.name(_ot.font));
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+
+			gl.uniform2fv(uniLocation[uniEnum.tex_shift], [0, 0]);
+
+			m.multiply(vpoMatrix, _ot.mMatrix, mvpMatrix);
+			gl.uniformMatrix4fv(uniLocation[uniEnum.mvpMatrix], false, mvpMatrix);
+			gl.uniform1f(uniLocation[uniEnum.alpha], 1.0);
+
+			gl.drawElements(gl.TRIANGLES, _ot.numLoop, gl.UNSIGNED_SHORT, 0);
+		}
+
     // UI
     function UIRender(){
 			// Draw Annoations
 			for (var i = 0; i < annotations.length; i++) {
-				let annoOb = obUI['UI_annotation'];
+				//let annoOb = obUI['UI_annotation'];
+				let annoOb = obUI.name('UI_annotation');
 				let _tMatrix = m.identity(m.create());
 				let _v = from3DPointTo2D(annotations[i].loc.concat(1.0));
+				//eText.textContent = _v[0];
 				annotations[i].loc_2D = _v.slice(0, 3);
 				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
 				if (annotations[i] === selectedAnnotation) {
@@ -985,9 +1033,12 @@ window.onload = function(){
 				let _tMatrix = m.identity(m.create());
 				let _v = from3DPointTo2D(tempAnnotation.loc.concat(1.0));
 				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
-				obUI['UI_annotation_edit'].mMatrix = _tMatrix;
-				obUI['UI_annotation_edit'].location = _tMatrix.slice(12, 15);
-				UIRendergl(obUI['UI_annotation_edit'], [1.0, 1.0, 1.0, 0.0]);
+				//obUI['UI_annotation_edit'].mMatrix = _tMatrix;
+				//obUI['UI_annotation_edit'].location = _tMatrix.slice(12, 15);
+				//UIRendergl(obUI['UI_annotation_edit'], [1.0, 1.0, 1.0, 0.0]);
+				obUI.name('UI_annotation_edit').mMatrix = _tMatrix;
+				obUI.name('UI_annotation_edit').location = _tMatrix.slice(12, 15);
+				UIRendergl(obUI.name('UI_annotation_edit'), [1.0, 1.0, 1.0, 0.0]);
 			}
     }
 
@@ -997,7 +1048,8 @@ window.onload = function(){
 			gl.uniform1i(uniLocation[uniEnum.drawMap], false);
 			gl.uniform4fv(uniLocation[uniEnum.color], _color);
 			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_ob.name]);
+			//gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_ob.name]);
+			gl.bindTexture(gl.TEXTURE_2D, obTextures.name(_ob.textureList[0]));
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -1020,11 +1072,13 @@ window.onload = function(){
             //if (objects[obLoading[i]].dataReady && objects[obLoading[i]].texture[objects[obLoading[i]].name] && !allDataReady) {
 						//let _obLoading = objects[obLoading[i]];
 						let _obLoading = objects.name(obLoading[i]);
-            if (_obLoading.dataReady && _obLoading.texture[obLoading[i]]) {
+						if (_obLoading.dataReady && obTextures.name(_obLoading.textureList[0])) {
+            //if (_obLoading.dataReady && _obLoading.texture[obLoading[i]]) {
                 set_attribute(_obLoading.VBOList, attLocation, attStride);
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, _obLoading.iIndex);
 
-                gl.bindTexture(gl.TEXTURE_2D, _obLoading.texture[obLoading[i]]);
+								gl.bindTexture(gl.TEXTURE_2D, obTextures.name(_obLoading.texture[0]));
+                //gl.bindTexture(gl.TEXTURE_2D, _obLoading.texture[obLoading[i]]);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
@@ -1223,36 +1277,19 @@ window.onload = function(){
         return ibo;
     }
 
-	function create_texture(_path, source, i_source, _type){
-		//console.log(source, i_source);
+	//function create_texture(_path, source, i_source, _type){
+	function create_texture(_path, i_source){
 		var img = new Image();
-		//img.src = './resource/textures/' + i_source + '.png';
-		//img.src = resourcePath + scene.name + '/textures/' + i_source + '.png';
-		img.src = _path + '/textures/' + i_source + '.png';
+		//img.src = _path + '/textures/' + i_source + '.png';
+		img.src = _path + i_source + '.png';
 		img.onload = function(){
-			/*
-			var tex = gl.createTexture();
-			gl.bindTexture(gl.TEXTURE_2D, tex);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-			gl.generateMipmap(gl.TEXTURE_2D);
-			gl.bindTexture(gl.TEXTURE_2D, null);
-			objects[source].texture[i_source] = tex;
-			*/
-			if (_type === 'object') {
-				//var ob = objects[source];
-				var ob = objects.name(source);
-			} else if (_type === 'UI') {
-				var ob = obUI[source];
-			}
-			//objects[source].texture[i_source] = create_texture_gl(img);
-			//console.log(ob, i_source, img.src);
-			ob.texture[i_source] = create_texture_gl(img);
+			//ob.texture[i_source] = create_texture_gl(img);
+			let _texture = create_texture_gl(img);
+			_texture.name = i_source;
+			obTextures.push(_texture);
 			numDataReady += 1;
-			//console.log(source, i_source);
 			allDataReady = checkAllDataReady();
 		};
-		//img.src = './resource/textures/' + i_source + '.png';
-		//console.log(i_source);
 	}
 
 	function create_texture_gl(img) {
@@ -1274,9 +1311,12 @@ window.onload = function(){
 		navigatable = true;
 
 		scene = new Scene(_scene_name);
-		//objects = new Array();
+
 		objects = new obArray();
-		obUI = new Array();
+		obUI = new obArray();
+		obTexts = new obArray();
+		obTextures = new obArray();
+
 		allDataReady = false;
 		numDataReady = 0;
 		readSceneData();
@@ -1296,13 +1336,15 @@ window.onload = function(){
 		hiddenObjects = [];
 		readUIData();
 
+		readTextData(resourcePath + scene.name);
+
 		comment.style.visibility = 'hidden';
 		buttonContainerElement.style.visibility = 'hidden';
 	}
 
 	function countOrder(_obName) {
 		//let _ob = objects[_obName];
-		console.log(_obName);
+		//console.log(_obName);
 		let _ob = objects.name(_obName);
 		if (_ob.order == -1) {
 			if (_ob.constraints.length === 0) {
@@ -1358,7 +1400,7 @@ window.onload = function(){
 			lIndex += 3;
 			let _description = _line[lIndex++];
 			const ob = new object(_name);
-			ob.texture = new Array(); // WebGL texture
+			//ob.texture = new Array(); // WebGL texture
 			ob.dataReady = false;
 			ob.openingAnimation = _openingAnimation;
 			ob.internal = _internal;
@@ -1371,6 +1413,7 @@ window.onload = function(){
 					ob.textureList.push(_texture[j]);
 				}
 			}
+			//console.log(ob.name, ob.textureList[0]);
 
 			ob.selectMesh = _selectMesh;
 			ob.pointMesh = _pointMesh;
@@ -1498,12 +1541,13 @@ window.onload = function(){
 				//var ob = objects[_objectName];
 				var ob = objects.name(_objectName);
 			} else if (_type === 'UI') {
-				var ob = obUI[_objectName];
+				//var ob = obUI[_objectName];
+				var ob = obUI.name(_objectName);
 			}
 
 			let _name = readString(dv, off);
 			off += 4 + _name.length;
-			//console.log(_name);
+			//console.log(ob);
 
 			ob.type = dv.getInt32(off, true); //0:MESH, 1:CURVE, 7:EMPTY, 8:CAMERA
 			off += 4;
@@ -1672,6 +1716,10 @@ window.onload = function(){
 				for (var ii = 0; ii < ob.numLoop;++ii) {
 					ind.push(ii);
 				}
+				//console.log(ob.name);
+				//console.log(coord);
+				//console.log(uv_coord);
+				//console.log(ind);
 
 				var vPosition     = create_vbo(coord);
 				var vTextureCoord = create_vbo(uv_coord);
@@ -1680,7 +1728,8 @@ window.onload = function(){
 
 				for (var i = 0 in ob.textureList) {
 					//console.log(ob.name, i, ob.textureList[i]);
-					create_texture(_path, ob.name, ob.textureList[i], _type);
+					//create_texture(_path, ob.name, ob.textureList[i], _type);
+					create_texture(_path + '/textures/', ob.textureList[i]);
 				}
 			} else if (ob.type === 1) {//object type 'CURVE'
 				let _numSplines = dv.getInt32(off, true);
@@ -1757,7 +1806,7 @@ window.onload = function(){
 			//let _texture = _line.slice(lIndex, lIndex + 2);
 			//console.log('[readUIData] name: ' + _name + ', texture: ' + _texture);
 			let ob = new object(_name);
-			ob.texture = new Array(); // WebGL texture
+			//ob.texture = new Array(); // WebGL texture
 			ob.dataReady = false;
 			ob.textureList = []; // List of textures (string)
 			ob.texture_shift = [0.0, 0.0];
@@ -1773,8 +1822,74 @@ window.onload = function(){
 			ob.alpha = 1.0;
 
 			//console.log(_name, _texture);
-			obUI[_name] = ob;
+			//obUI[_name] = ob;
+			obUI.push(ob);
 			read3DModelData(resourcePath + 'UI/' + scene.UI, _name, 'UI');
+		}
+	}
+
+	function readTextData(_path) {
+		let data = new XMLHttpRequest();
+		data.open("GET", _path + '/text/text.dat', true); //true:非同期,false:同期
+		data.responseType = 'arraybuffer';
+		data.send(null);
+
+		data.onload = function(e) {
+			let arrayBuffer = data.response;
+			let dv = new DataView(arrayBuffer);
+			let off = 0;
+
+			let _numOb = dv.getInt32(off, true);
+			off += 4
+			for (let i = 0; i < _numOb; i++) {
+				let _ot = new obText();
+				_ot.name = readString(dv, off);
+				off += 4 + _ot.name.length;
+				_ot.font = readString(dv, off);
+				off += 4 + _ot.font.length;
+				_ot.location = [];
+				for (let j = 0; j < 3; j++) {
+					_ot.location.push(dv.getFloat32(off, true));
+					off += 4;
+				}
+				_ot.ratio = dv.getInt32(off, true);
+				off += 4;
+
+				let _sizeX = 7.0 * _ot.ratio;
+				let _sizeY = 7.0;
+				let _coord = [
+					//-_sizeX, 0.0, -_sizeY, -_sizeX, 0.0, _sizeY, _sizeX, 0.0, -_sizeY,
+					//_sizeX, 0.0, -_sizeY, -_sizeX, 0.0, _sizeY, _sizeX, 0.0, _sizeY
+					//-_sizeX, 0.0, -_sizeY, _sizeX, 0.0, -_sizeY, -_sizeX, 0.0, _sizeY,
+					//_sizeX, 0.0, -_sizeY, _sizeX, 0.0, _sizeY, -_sizeX, 0.0, _sizeY
+					//-_sizeX, -_sizeY, 0.0, _sizeX, -_sizeY, 0.0, -_sizeX, _sizeY, 0.0,
+					//_sizeX, -_sizeY, 0.0, _sizeX, _sizeY, 0.0, -_sizeX, _sizeY, 0.0
+					//-_sizeX, -_sizeY, 0.0, -_sizeX, _sizeY, 0.0, _sizeX, -_sizeY, 0.0,
+					//_sizeX, -_sizeY, 0.0, -_sizeX, _sizeY, 0.0, _sizeX, _sizeY, 0.0
+					_sizeX, -_sizeY, 0.0, -_sizeX, _sizeY, 0.0, -_sizeX, -_sizeY, 0.0,
+					_sizeX, -_sizeY, 0.0, _sizeX, _sizeY, 0.0, -_sizeX, _sizeY, 0.0
+				]
+				let _uv_coord = [
+					//0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
+					//1.0, 0.0, 0.0, 1.0, 1.0, 1.0
+					//0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
+					//1.0, 0.0, 1.0, 1.0, 0.0, 1.0
+					//0.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+					//1.0, 1.0, 1.0, 0.0, 0.0, 0.0
+					1.0, 1.0, 0.0, 0.0, 0.0, 1.0,
+					1.0, 1.0, 1.0, 0.0, 0.0, 0.0
+				]
+				let _ind = [0, 1, 2, 3, 4, 5];
+				let _vPosition     = create_vbo(_coord);
+				let _vTextureCoord = create_vbo(_uv_coord);
+				_ot.VBOList = [_vPosition, _vTextureCoord];
+				_ot.iIndex = create_ibo(_ind);
+				_ot.numLoop	= 6;
+
+				obTexts.push(_ot);
+				create_texture(_path + '/text/', _ot.font);
+			}
+			console.log(obTexts);
 		}
 	}
 
@@ -1785,8 +1900,8 @@ window.onload = function(){
 			if (!_ob.dataReady) {
 				ready = false;
 			}
-			//if (_ob.type == 0 && _ob.kind === 'mesh' && !_ob.texture[i]) {
-			if (_ob.type == 0 && _ob.kind === 'mesh' && !_ob.texture[_ob.name]) {
+			//if (_ob.type == 0 && _ob.kind === 'mesh' && !_ob.texture[_ob.name]) {
+			if (_ob.type == 0 && _ob.kind === 'mesh' && !obTextures.name(_ob.textureList[0])) {
 				ready = false;
 			}
 		}
@@ -1794,11 +1909,13 @@ window.onload = function(){
 			if(!obUI[i].dataReady) {
 				ready = false;
 			}
-			if (!obUI[i].texture[i]) {
+			//if (!obUI[i].texture[obUI[i].name]) {
+			if (!obTextures.name(obUI[i].textureList[0])) {
 				ready = false;
 			}
 		}
 		if (ready) {
+			//console.log(obTextures);
 			for (let i in objects) {
 				let _order = countOrder(objects[i].name);
 				//let _order = countOrder(i);
@@ -1809,7 +1926,7 @@ window.onload = function(){
 			for (let i in objects) {
 				//console.log(objects[i].name, objects[i].order);
 				if (objects[i].constraints.length > 0) {
-					console.log(objects[i].name);
+					//console.log(objects[i].name);
 					for (let ii in objects[i].constraints) {
 						evaluateParent(objects[i].constraints[ii], true);
 					}
@@ -2291,9 +2408,12 @@ window.onload = function(){
 */
 
 	function buttonPressed(_button, _location) {
-		if (obUI[_button] != null) {
-			let loc = obUI[_button].location;
-			let dim = obUI[_button].dimensions;
+		//if (obUI[_button] != null) {
+			//let loc = obUI[_button].location;
+			//let dim = obUI[_button].dimensions;
+		if (obUI.name(_button) != null) {
+			let loc = obUI.name(_button).location;
+			let dim = obUI.name(_button).dimensions;
 			if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
 				return true;
 			} else {
@@ -2338,16 +2458,16 @@ window.onload = function(){
 			if (objects.name('terrain')) {
 				objects.name('terrain').draw = true;
 			}
-			if (obUI['UI_ex-in_button']) {
-				obUI['UI_ex-in_button'].texture_shift[0] = 0.0;
+			if (obUI.name('UI_ex-in_button')) {
+				obUI.name('UI_ex-in_button').texture_shift[0] = 0.0;
 			}
 
 			for (var i = 0; i < hiddenObjects.length; i++) {
 				objects.name(hiddenObjects[i]).draw = true;
 			}
 			hiddenObjects = [];
-			if (obUI['UI_show_button']) {
-				obUI['UI_show_button'].texture_shift[0] = 0.0;
+			if (obUI.name('UI_show_button')) {
+				obUI.name('UI_show_button').texture_shift[0] = 0.0;
 			}
 		}
 		if (buttonPressed('UI_terrain_button', _location)) {
@@ -2371,30 +2491,30 @@ window.onload = function(){
 		}
 		if (buttonPressed('UI_ex-in_button', _location)) {
 			drawInternal = !drawInternal;
-			obUI['UI_ex-in_button'].texture_shift[0] = drawInternal ? 0.5: 0.0;
+			obUI.name('UI_ex-in_button').texture_shift[0] = drawInternal ? 0.5: 0.0;
 		}
 		if (buttonPressed('UI_point_button', _location)) {
 			switch (annotationMode) {
 				case 0:
 					annotationMode = 1;
-					obUI['UI_point_button'].texture_shift[0] = 0.5;
+					obUI.name('UI_point_button').texture_shift[0] = 0.5;
 					break;
 				case 1:
 					annotationMode = 0;
-					obUI['UI_point_button'].texture_shift[0] = 0.0;
+					obUI.name('UI_point_button').texture_shift[0] = 0.0;
 					break;
 				default:
 					return;
 			}
 		}
 		if (buttonPressed('UI_show_button', _location)) {
-			if (obUI['UI_show_button'].texture_shift[0] === 0.5) {
+			if (obUI.name('UI_show_button').texture_shift[0] === 0.5) {
 				for (var i = 0; i < hiddenObjects.length; i++) {
 					//objects[hiddenObjects[i]].draw = true;
 					objects.name(hiddenObjects[i]).draw = true;
 				}
 				hiddenObjects = [];
-				obUI['UI_show_button'].texture_shift[0] = 0.0;
+				obUI.name('UI_show_button').texture_shift[0] = 0.0;
 			}
 		}
 		if (buttonPressed('UI_whole_button', _location)) {
@@ -2408,7 +2528,7 @@ window.onload = function(){
 		for (var i in annotations) {
 			console.log(annotations[i].desc);
 			let loc = annotations[i].loc_2D;
-			let dim = obUI['UI_annotation'].dimensions;
+			let dim = obUI.name('UI_annotation').dimensions;
 			if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
 				//selectedAnnotation = annotations[i];
 				_selAnno = annotations[i];
@@ -2695,7 +2815,7 @@ window.onload = function(){
 
 	function memoOKPressed() {
 		annotationMode = 0;
-		obUI['UI_point_button'].texture_shift[0] = 0.0;
+		obUI.name('UI_point_button').texture_shift[0] = 0.0;
 		memoContainerElement.style.visibility = 'hidden';
 		navigatable = true;
 		let newAnnotation = Object.assign({}, tempAnnotation);
@@ -2709,7 +2829,7 @@ window.onload = function(){
 
 	function memoCancelPressed() {
 		annotationMode = 0;
-		obUI['UI_point_button'].texture_shift[0] = 0.0;
+		obUI.name('UI_point_button').texture_shift[0] = 0.0;
 		memoContainerElement.style.visibility = 'hidden';
 		navigatable = true;
 		memo.value = '';
@@ -2726,7 +2846,7 @@ window.onload = function(){
 			_selOb.draw = false;
 			buttonContainerElement.style.visibility = 'hidden';
 			hiddenObjects.push(selectedObject);
-			obUI['UI_show_button'].texture_shift[0] = 0.5;
+			obUI.name('UI_show_button').texture_shift[0] = 0.5;
 			selectedObject = null;
 		}
 	}
