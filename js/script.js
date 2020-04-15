@@ -1855,8 +1855,8 @@ window.onload = function(){
 				_ot.ratio = dv.getInt32(off, true);
 				off += 4;
 
-				let _sizeX = 7.0 * _ot.ratio;
-				let _sizeY = 7.0;
+				let _sizeX = 6.0 * _ot.ratio;
+				let _sizeY = 6.0;
 				let _coord = [
 					//-_sizeX, 0.0, -_sizeY, -_sizeX, 0.0, _sizeY, _sizeX, 0.0, -_sizeY,
 					//_sizeX, 0.0, -_sizeY, -_sizeX, 0.0, _sizeY, _sizeX, 0.0, _sizeY
