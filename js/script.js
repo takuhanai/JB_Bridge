@@ -1858,24 +1858,10 @@ window.onload = function(){
 				let _sizeX = 6.0 * _ot.ratio;
 				let _sizeY = 6.0;
 				let _coord = [
-					//-_sizeX, 0.0, -_sizeY, -_sizeX, 0.0, _sizeY, _sizeX, 0.0, -_sizeY,
-					//_sizeX, 0.0, -_sizeY, -_sizeX, 0.0, _sizeY, _sizeX, 0.0, _sizeY
-					//-_sizeX, 0.0, -_sizeY, _sizeX, 0.0, -_sizeY, -_sizeX, 0.0, _sizeY,
-					//_sizeX, 0.0, -_sizeY, _sizeX, 0.0, _sizeY, -_sizeX, 0.0, _sizeY
-					//-_sizeX, -_sizeY, 0.0, _sizeX, -_sizeY, 0.0, -_sizeX, _sizeY, 0.0,
-					//_sizeX, -_sizeY, 0.0, _sizeX, _sizeY, 0.0, -_sizeX, _sizeY, 0.0
-					//-_sizeX, -_sizeY, 0.0, -_sizeX, _sizeY, 0.0, _sizeX, -_sizeY, 0.0,
-					//_sizeX, -_sizeY, 0.0, -_sizeX, _sizeY, 0.0, _sizeX, _sizeY, 0.0
 					_sizeX, -_sizeY, 0.0, -_sizeX, _sizeY, 0.0, -_sizeX, -_sizeY, 0.0,
 					_sizeX, -_sizeY, 0.0, _sizeX, _sizeY, 0.0, -_sizeX, _sizeY, 0.0
 				]
 				let _uv_coord = [
-					//0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
-					//1.0, 0.0, 0.0, 1.0, 1.0, 1.0
-					//0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
-					//1.0, 0.0, 1.0, 1.0, 0.0, 1.0
-					//0.0, 1.0, 1.0, 1.0, 0.0, 0.0,
-					//1.0, 1.0, 1.0, 0.0, 0.0, 0.0
 					1.0, 1.0, 0.0, 0.0, 0.0, 1.0,
 					1.0, 1.0, 1.0, 0.0, 0.0, 0.0
 				]
