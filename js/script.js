@@ -659,6 +659,7 @@ window.onload = function(){
 			let _obCamera = objects.name(obCamera[camMode]);
 			switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
 				case 0: //PERSP
+					//eText.textContent = _obCamera.angle_y;
 					m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
 					/*
 					if (!_UI3D) {
@@ -953,13 +954,15 @@ window.onload = function(){
 		function textRender() {
 			for (let i in obTexts) {
 				let _ot = obTexts[i];
-				let _tMatrix = m.identity(m.create());
-				let _v = from3DPointTo2D(_ot.location.concat(1.0));
-				//eText.textContent = _v[2];
-				m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
-				_ot.mMatrix = _tMatrix;
-				let _color = [1.0, 1.0, 1.0, 0.0];
-				textRendergl(_ot, _color);
+				if (scene.textZoomAngle[_ot.level] > objects.name(obCamera[camMode]).angle_y) {
+					let _tMatrix = m.identity(m.create());
+					let _v = from3DPointTo2D(_ot.location.concat(1.0));
+					//eText.textContent = _v[2];
+					m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
+					_ot.mMatrix = _tMatrix;
+					let _color = [1.0, 1.0, 1.0, 0.0];
+					textRendergl(_ot, _color);
+				}
 			}
 		}
 
@@ -1380,6 +1383,11 @@ window.onload = function(){
 		scene.cameraVertAngleMin = Number(_sceneData[sdIndex++]) * Math.PI / 180.0;
 		scene.cameraViewAngleMax = Number(_sceneData[sdIndex++]);
 		scene.cameraViewAngleMin = Number(_sceneData[sdIndex++]);
+		scene.textZoomAngle = [];
+		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
+		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
+		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
+		//console.log(scene);
 		for (var i = 3; i < scene.num_object + 3; i++) {
 			let _line = lines[i].split(',');
 			let lIndex = 0;
@@ -1840,9 +1848,11 @@ window.onload = function(){
 			let off = 0;
 
 			let _numOb = dv.getInt32(off, true);
-			off += 4
+			off += 4;
 			for (let i = 0; i < _numOb; i++) {
 				let _ot = new obText();
+				_ot.level = dv.getInt32(off, true);
+				off += 4;
 				_ot.name = readString(dv, off);
 				off += 4 + _ot.name.length;
 				_ot.font = readString(dv, off);
@@ -1852,7 +1862,7 @@ window.onload = function(){
 					_ot.location.push(dv.getFloat32(off, true));
 					off += 4;
 				}
-				_ot.ratio = dv.getInt32(off, true);
+				_ot.ratio = dv.getFloat32(off, true);
 				off += 4;
 
 				let _sizeX = 6.0 * _ot.ratio;
@@ -2384,14 +2394,6 @@ window.onload = function(){
 		_selInfo.normal = _selNormal;
 		return _selInfo;
 	}
-/*
-	function UIInteractionUpdate(){
-		textRender();
-		if (comment.style.visibility === 'visible') {
-			textRender();
-		}
-	}
-*/
 
 	function buttonPressed(_button, _location) {
 		//if (obUI[_button] != null) {

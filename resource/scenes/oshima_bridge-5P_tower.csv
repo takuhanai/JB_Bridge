@@ -1,5 +1,5 @@
-number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,,,,
-34,oshima_bridge,third_layer,0.2,20.0,-20.0,20.0,-20.0,90.0,2.0,30.0,-30.0,0.9,0.06,,,,
+number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,
+34,oshima_bridge,third_layer,0.2,20.0,-20.0,20.0,-20.0,90.0,2.0,30.0,-30.0,0.9,0.06,0.9,0.6,0.3,
 object,kind,texture01,texture02,opening animation,internal,camera (not used),select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
 camera_orbit,camera,,,,,yes,,,,,,,,,,,
 camera_UI3D,camera,,,,,yes,,,,,,,,,,,
