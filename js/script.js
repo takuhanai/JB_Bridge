@@ -952,9 +952,20 @@ window.onload = function(){
 		}
 
 		function textRender() {
+			let _drawLevel = -1;
+			for (let i = 0; i < scene.textZoomAngle.length; i++) {
+				if (scene.textZoomAngle[i] > objects.name(obCamera[camMode]).angle_y) {
+					_drawLevel = i;
+				}
+			}
 			for (let i in obTexts) {
 				let _ot = obTexts[i];
-				if (scene.textZoomAngle[_ot.level] > objects.name(obCamera[camMode]).angle_y) {
+				if (
+					_ot.attributes.hasOwnProperty('level' + _drawLevel) &&
+					!(drawInternal && _ot.attributes.hasOwnProperty('outer')) &&
+					!(!drawInternal && _ot.attributes.hasOwnProperty('inner'))
+				) {
+				//if (scene.textZoomAngle[_ot.level] > objects.name(obCamera[camMode]).angle_y) {
 					let _tMatrix = m.identity(m.create());
 					let _v = from3DPointTo2D(_ot.location.concat(1.0));
 					//eText.textContent = _v[2];
@@ -1282,17 +1293,19 @@ window.onload = function(){
 
 	//function create_texture(_path, source, i_source, _type){
 	function create_texture(_path, i_source){
-		var img = new Image();
-		//img.src = _path + '/textures/' + i_source + '.png';
-		img.src = _path + i_source + '.png';
-		img.onload = function(){
-			//ob.texture[i_source] = create_texture_gl(img);
-			let _texture = create_texture_gl(img);
-			_texture.name = i_source;
-			obTextures.push(_texture);
-			numDataReady += 1;
-			allDataReady = checkAllDataReady();
-		};
+		if (!obTextures.find(o => o.name === i_source)) {
+			var img = new Image();
+			//img.src = _path + '/textures/' + i_source + '.png';
+			img.src = _path + i_source + '.png';
+			img.onload = function(){
+				//ob.texture[i_source] = create_texture_gl(img);
+				let _texture = create_texture_gl(img);
+				_texture.name = i_source;
+				obTextures.push(_texture);
+				numDataReady += 1;
+				allDataReady = checkAllDataReady();
+			};
+		}
 	}
 
 	function create_texture_gl(img) {
@@ -1387,7 +1400,13 @@ window.onload = function(){
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
-		//console.log(scene);
+		/*
+		scene.textZoomAngle = {};
+		scene.textZoomAngle.level0 = Number(_sceneData[sdIndex++]);
+		scene.textZoomAngle.level1 = Number(_sceneData[sdIndex++]);
+		scene.textZoomAngle.level2 = Number(_sceneData[sdIndex++]);
+		*/
+		console.log(scene);
 		for (var i = 3; i < scene.num_object + 3; i++) {
 			let _line = lines[i].split(',');
 			let lIndex = 0;
@@ -1851,8 +1870,17 @@ window.onload = function(){
 			off += 4;
 			for (let i = 0; i < _numOb; i++) {
 				let _ot = new obText();
-				_ot.level = dv.getInt32(off, true);
+				let _numColl = dv.getInt32(off, true);
 				off += 4;
+				_ot.attributes = {};
+				for (let j = 0; j < _numColl; j++) {
+					let _col = readString(dv, off);
+					off += 4 + _col.length;
+					_ot.attributes[_col] = true;
+				}
+				//console.log(_ot.collections);
+				//_ot.level = dv.getInt32(off, true);
+				//off += 4;
 				_ot.name = readString(dv, off);
 				off += 4 + _ot.name.length;
 				_ot.font = readString(dv, off);
