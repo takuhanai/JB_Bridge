@@ -1,7 +1,8 @@
 number of objects,,,
-7,,,
+8,,,
 object,texture01,fix,description
 UI_revert_button,UI_revert_button,yes,
+UI_info_button,UI_info_button,yes,
 UI_ex-in_button,UI_ex-in_button,yes,
 UI_point_button,UI_point_button,yes,
 UI_show_button,UI_show_button,yes,

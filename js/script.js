@@ -18,6 +18,7 @@ window.onload = function(){
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
 
+	let drawText = false;
 	let drawMap = false;
 	let selectedObject = null;
 	//let pointable = false;
@@ -961,9 +962,10 @@ window.onload = function(){
 			for (let i in obTexts) {
 				let _ot = obTexts[i];
 				if (
+					drawText &&
 					_ot.attributes.hasOwnProperty('level' + _drawLevel) &&
-					!(drawInternal && _ot.attributes.hasOwnProperty('outer')) &&
-					!(!drawInternal && _ot.attributes.hasOwnProperty('inner'))
+					!(drawInternal && _ot.attributes.hasOwnProperty('outer_text')) &&
+					!(!drawInternal && _ot.attributes.hasOwnProperty('inner_text'))
 				) {
 				//if (scene.textZoomAngle[_ot.level] > objects.name(obCamera[camMode]).angle_y) {
 					let _tMatrix = m.identity(m.create());
@@ -1318,6 +1320,7 @@ window.onload = function(){
 	}
 
 	function loadScene(_scene_name) {
+		drawText = false;
 		cameraVertAngle = 0.0;
 		drawMap = false;
 		selectedObject = null;
@@ -2496,6 +2499,8 @@ window.onload = function(){
 			drawMap = !drawMap;
 		}
 		if (buttonPressed('UI_info_button', _location)) {
+			drawText = !drawText;
+			/*
 			if (selectedObject != null) {
 				if (comment.style.visibility === 'visible') {
 					comment.style.visibility = 'hidden';
@@ -2504,6 +2509,7 @@ window.onload = function(){
 					UIInteractionUpdate();
 				}
 			}
+			*/
 		}
 		if (buttonPressed('UI_ex-in_button', _location)) {
 			drawInternal = !drawInternal;
