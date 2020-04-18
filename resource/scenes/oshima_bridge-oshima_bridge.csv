@@ -1,14 +1,14 @@
 number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,
 34,root,second_layer,1.2,420.0,-420.0,420.0,-420.0,150.0,0,10.0,-80.0,1.2,0.1,1.2,0.8,0.4,
-object,kind,texture01,texture02,opening animation,internal,camera (not used),select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
-camera_orbit,camera,,,,,yes,,,,,,,,,,,
+object,kind,texture01,texture02,opening animation,internal,terrain,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
+camera_orbit,camera,,,,,,,,,,,,,,,,
 UI_compass,UI3D,UI_compass,,,,,,,,,,,,,,,2
-camera_UI3D,camera,,,,,yes,,,,,,,,,,,
-view01,camera,,,,,yes,,,,,,,,,,,
-view02,camera,,,,,yes,,,,,,,,,,,
-view03,camera,,,,,yes,,,,,,,,,,,
-view04,camera,,,,,yes,,,,,,,,,,,
-view05,camera,,,,,yes,,,,,,,,,,,
+camera_UI3D,camera,,,,,,,,,,,,,,,,
+view01,camera,,,,,,,,,,,,,,,,
+view02,camera,,,,,,,,,,,,,,,,
+view03,camera,,,,,,,,,,,,,,,,
+view04,camera,,,,,,,,,,,,,,,,
+view05,camera,,,,,,,,,,,,,,,,
 camera_orbit_origin,empty,,,yes,,,,,,,,,,,,,
 5P_caisson,mesh,5P_caisson,,,,,5P_caisson,,,,,,,,,5Pケーソン¥　コンクリートケーソン¥　L = 13m、W = 36m、H = 19m,10
 5P_tower,mesh,5P_tower,5P_tower_map,,,,5P_tower,,yes,yes,,,,,,5P主塔¥　鋼製主塔¥　塔頂：TP+97m,352
@@ -31,8 +31,8 @@ girder,mesh,girder,,,,,girder,,,,,,,,,補剛桁¥　鋼製箱桁¥　W = 23.7m�
 north_side_span,mesh,north_side_span,,,,,north_side_span,,,,,,,,,4A側側径間桁¥　4径間連続非合成鋼鈑桁¥　支間割：33.75m+33.75m+33.75m+32.65m,"1,072"
 south_side_span,mesh,south_side_span,,,,,south_side_span,,,,,,,,,7A側側径間桁¥　4径間連続非合成鋼鈑桁¥　支間割：32.65m+33.75m+33.75m+33.75m,"1,072"
 suspender,mesh,suspender,,,,,suspender_selection,,,,,,,,,ハンガーロープ¥　CFRCハンガーロープ¥　4本/格点、直径：48mm/50mm,"2,944"
-sea_surface,mesh,sea_surface,,,,,,,,,,,,,,,2
-terrain,mesh,terrain,,,,,,,,,,,,,,,"3,260"
+sea_surface,mesh,sea_surface,,,,yes,,,,,,,,,,,2
+terrain,mesh,terrain,,,,yes,,,,,,,,,,,"3,260"
 cable_selection,selection_mesh,,,,,,,,,,,,,,,,
 suspender_selection,selection_mesh,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,"17,878"

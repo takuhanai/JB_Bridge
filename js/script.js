@@ -18,7 +18,8 @@ window.onload = function(){
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
 
-	let drawText = false;
+	let drawText = true;
+	let drawTerrain = true;
 	let drawMap = false;
 	let selectedObject = null;
 	//let pointable = false;
@@ -879,6 +880,7 @@ window.onload = function(){
 					_ob.kind === 'mesh' &&
           _ob.draw === true &&
 					_ob.internal === drawInternal &&
+					!(_ob.terrain && !drawTerrain) &&
           obLoading.indexOf(i) === -1
       ) {
 				let _color = [];
@@ -965,7 +967,8 @@ window.onload = function(){
 					drawText &&
 					_ot.attributes.hasOwnProperty('level' + _drawLevel) &&
 					!(drawInternal && _ot.attributes.hasOwnProperty('outer_text')) &&
-					!(!drawInternal && _ot.attributes.hasOwnProperty('inner_text'))
+					!(!drawInternal && _ot.attributes.hasOwnProperty('inner_text')) &&
+					!(!drawTerrain && _ot.attributes.hasOwnProperty('terrain_text'))
 				) {
 				//if (scene.textZoomAngle[_ot.level] > objects.name(obCamera[camMode]).angle_y) {
 					let _tMatrix = m.identity(m.create());
@@ -1320,7 +1323,8 @@ window.onload = function(){
 	}
 
 	function loadScene(_scene_name) {
-		drawText = false;
+		drawText = true;
+		drawTerrain = true;
 		cameraVertAngle = 0.0;
 		drawMap = false;
 		selectedObject = null;
@@ -1419,7 +1423,7 @@ window.onload = function(){
 			lIndex += 2;
 			let _openingAnimation = _line[lIndex++] === 'yes' ? true : false;
 			let _internal = _line[lIndex++] === 'yes' ? true : false;
-			let _camera = _line[lIndex++] === 'yes' ? true : false;
+			let _terrain = _line[lIndex++] === 'yes' ? true : false;
 			let _selectMesh = _line[lIndex++];
 			let _pointMesh = _line[lIndex++];
 			let _mappable = _line[lIndex++] === 'yes' ? true : false;
@@ -1434,6 +1438,7 @@ window.onload = function(){
 			ob.dataReady = false;
 			ob.openingAnimation = _openingAnimation;
 			ob.internal = _internal;
+			ob.terrain = _terrain;
 			ob.kind = _kind;
 			ob.textureList = []; // List of textures (string)
 
@@ -1443,7 +1448,7 @@ window.onload = function(){
 					ob.textureList.push(_texture[j]);
 				}
 			}
-			//console.log(ob.name, ob.textureList[0]);
+			console.log(ob.name, ob.terrain);
 
 			ob.selectMesh = _selectMesh;
 			ob.pointMesh = _pointMesh;
@@ -2509,14 +2514,6 @@ window.onload = function(){
 			selectedAnnotation = null;
 			comment.style.visibility = 'hidden';
 			buttonContainerElement.style.visibility = 'hidden';
-			//if (objects['sea_surface']) {
-				//objects['sea_surface'].draw = true;
-			if (objects.name('sea_surface')) {
-				objects.name('sea_surface').draw = true;
-			}
-			if (objects.name('terrain')) {
-				objects.name('terrain').draw = true;
-			}
 			if (obUI.name('UI_ex-in_button')) {
 				obUI.name('UI_ex-in_button').texture_shift[0] = 0.0;
 			}
@@ -2530,10 +2527,7 @@ window.onload = function(){
 			}
 		}
 		if (buttonPressed('UI_terrain_button', _location)) {
-			//objects['sea_surface'].draw = !objects['sea_surface'].draw;
-			//objects['terrain'].draw = !objects['terrain'].draw;
-			objects.name('sea_surface').draw = !objects.name('sea_surface').draw;
-			objects.name('terrain').draw = !objects.name('terrain').draw;
+			drawTerrain = !drawTerrain;
 		}
 		if (buttonPressed('UI_map_button', _location)) {
 			drawMap = !drawMap;
