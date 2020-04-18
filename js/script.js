@@ -1483,14 +1483,27 @@ window.onload = function(){
 	function readString(_dv, _off) {
 		//Read string from binary data
 		//Format: number of characters (Int32), string (Int8 x N)
-		let _lenT = _dv.getInt32(_off, true);
+		let _strOb = {};
+		_strOb.length = _dv.getInt32(_off, true);
+		//let _lenT = _dv.getInt32(_off, true);
+		//let _lenT = _dv.getUint32(_off, true);
+		//console.log(_strOb.length);
 		let _name = '';
+		let _nameArray = [];
 		_off += 4;
-		for (var i = 0; i < _lenT; i++) {
-			_name += String.fromCharCode(_dv.getInt8(_off));
+		for (var i = 0; i < _strOb.length; i++) {
+		//for (var i = 0; i < _lenT; i++) {
+			_nameArray.push(_dv.getUint8(_off));
+			_name += String.fromCharCode(_dv.getUint8(_off));
 			_off += 1;
 		}
-		return _name;
+		let text_decoder = new TextDecoder('utf-8');
+		_strOb.string = text_decoder.decode(Uint8Array.from(_nameArray).buffer);
+		//let _decString = text_decoder.decode(Uint8Array.from(_nameArray).buffer);
+		//console.log(_nameArray, _decString);
+		//return _name;
+		//return _decString;
+		return _strOb
 	}
 
 	function readAction(_dv, _off, _openingAnimation) {
@@ -1506,8 +1519,11 @@ window.onload = function(){
 		_action.fCurves = [];
 		for (var ii = 0; ii < _action.numFCurves; ++ii) {
 			let _fCurve = new object();
-			_fCurve.dataPath = readString(_dv, _off);
-			_off += 4 + _fCurve.dataPath.length;
+			let _fdp = readString(_dv, _off);
+			_fCurve.dataPath = _fdp.string;
+			_off += 4 + _fdp.length;
+			//_fCurve.dataPath = readString(_dv, _off);
+			//_off += 4 + _fCurve.dataPath.length;
 			_fCurve.arrayIndex = _dv.getInt32(_off, true);
 			console.log('dataPath: ' + _fCurve.dataPath + ', ' + _fCurve.arrayIndex);
 			_off += 4;
@@ -1575,8 +1591,11 @@ window.onload = function(){
 				var ob = obUI.name(_objectName);
 			}
 
-			let _name = readString(dv, off);
-			off += 4 + _name.length;
+			let _ns = readString(dv, off);
+			let _name = _ns.string;
+			off += 4 + _ns.length;
+			//let _name = readString(dv, off);
+			//off += 4 + _name.length;
 			//console.log(ob);
 
 			ob.type = dv.getInt32(off, true); //0:MESH, 1:CURVE, 7:EMPTY, 8:CAMERA
@@ -1634,10 +1653,14 @@ window.onload = function(){
 				let _constraint = new object();
 				_constraint.type = dv.getInt32(off, true);
 				off += 4;
+				let _cts;
 				switch (_constraint.type) {
 					case 20: //TRACK_TO
-						_constraint.target = readString(dv, off);
-						off += 4 + _constraint.target.length;
+						_cts = readString(dv, off);
+						_constraint.target = _cts.string;
+						off += 4 + _cts.length;
+						//_constraint.target = readString(dv, off);
+						//off += 4 + _constraint.target.length;
 						_constraint.trackAxis = dv.getInt32(off, true);
 						//0: 'TRACK_X', 1: 'TRACK_Y', 2: 'TRACK_Z', 3: 'TRACK_NEGATIVE_X', 4: 'TRACK_NEGATIVE_Y', 5: 'TRACK_NEGATIVE_Z'
 						off += 4;
@@ -1646,8 +1669,11 @@ window.onload = function(){
 						off += 4;
 						break;
 					case 23: //CHILD_OF
-						_constraint.target = readString(dv, off);
-						off += 4 + _constraint.target.length;
+						_cts = readString(dv, off);
+						_constraint.target = _cts.string;
+						off += 4 + _cts.length;
+						//_constraint.target = readString(dv, off);
+						//off += 4 + _constraint.target.length;
 						_constraint.useGeometries = [];
 						for (var j = 0; j < 9; ++j) {
 							_constraint.useGeometries.push(dv.getInt8(off, true) === 1 ? true: false);
@@ -1655,8 +1681,11 @@ window.onload = function(){
 						}
 						break;
 					case 25: //FOLLOW_PATH
-						_constraint.target = readString(dv, off);
-						off += 4 + _constraint.target.length;
+						_cts = readString(dv, off);
+						_constraint.target = _cts.string;
+						off += 4 + _cts.length;
+						//_constraint.target = readString(dv, off);
+						//off += 4 + _constraint.target.length;
 						_constraint.useCurveFollow = dv.getInt8(off, true) === 1 ? true: false;
 						off += 1;
 						_constraint.forwardAxis = dv.getInt32(off, true);
@@ -1877,17 +1906,28 @@ window.onload = function(){
 				off += 4;
 				_ot.attributes = {};
 				for (let j = 0; j < _numColl; j++) {
-					let _col = readString(dv, off);
-					off += 4 + _col.length;
+					let _cs = readString(dv, off);
+					let _col = _cs.string;
+					off += 4 + _cs.length;
+					//let _col = readString(dv, off);
+					//off += 4 + _col.length;
 					_ot.attributes[_col] = true;
 				}
 				//console.log(_ot.collections);
 				//_ot.level = dv.getInt32(off, true);
 				//off += 4;
-				_ot.name = readString(dv, off);
-				off += 4 + _ot.name.length;
-				_ot.font = readString(dv, off);
-				off += 4 + _ot.font.length;
+				let _ons = readString(dv, off);
+				_ot.name = _ons.string;
+				off += 4 + _ons.length;
+				//_ot.name = readString(dv, off);
+				//off += 4 + _ot.name.length;
+				//console.log(_ot.name);
+				let _ofs = readString(dv, off);
+				_ot.font = _ofs.string;
+				off += 4 + _ofs.length;
+				//_ot.font = readString(dv, off);
+				//console.log(_ot.font, unescape(_ot.font));
+				//off += 4 + _ot.font.length;
 				_ot.location = [];
 				for (let j = 0; j < 3; j++) {
 					_ot.location.push(dv.getFloat32(off, true));
