@@ -37,6 +37,7 @@ window.onload = function(){
 	let memoRows = 5;
 
 	let mousePressed = false;
+	let mouseButton = 0;//0: Left Button, 1: Middle Button, 2: Right Button
 	let shiftKeyPressed = false;
 	let prevMouseLocation;
 	let currentMouseLocation;
@@ -575,7 +576,7 @@ window.onload = function(){
 			let _cam_o = objects.name('camera_orbit_origin');
 			let _cam = objects.name('camera_orbit');
 			let _cam_UI3D = objects.name('camera_UI3D');
-			if (shiftKeyPressed) {
+			if (shiftKeyPressed || mouseButton === 1) {
 				//m.translate(objects['camera_whole_origin'].mMatrix0, [-1.0 * dX, 0, 1.0 * dY],
 				let cameraCoeff = Math.tan(_cam.angle_y / 2.0) / Math.tan(_cam.angle_y0 / 2.0);
 				//console.log(_cam.angle_y, _cam.angle_y0);
@@ -826,42 +827,6 @@ window.onload = function(){
 		}
 		//eText.textContent = _ac.animation_count;
 	}
-
-	/*
-	function actionIncrement(ob, ac) {
-		if (ob.forward) {
-			ob.animation_count += ob.speed;
-		} else {
-			ob.animation_count -= ob.speed;
-		}
-		if (ob.animation_count > ac.frame_end) {
-			if (ob.play == 1) {
-				ob.animation_count = ac.frame_start;
-			} else if (ob.play == 2) {
-				ob.play = 0;
-				ob.animation_count = ac.frame_start;
-				if (ob.nextAction !== undefined) {
-					ob.nextAction();
-					delete ob.nextAction;
-				}
-			} else if (ob.play == 3) {
-				ob.play = 0;
-				ob.animation_count = ac.frame_end;
-			}
-		}
-		if (ob.animation_count < ac.frame_start) {
-			if (ob.play == 1) {
-				ob.animation_count = ac.frame_end;
-			} else if (ob.play == 2) {
-				ob.animation_count = ac.frame_end;
-				ob.play = 0;
-			} else if (ob.play == 3) {
-				ob.play = 0;
-				ob.animation_count = ac.frame_start;
-			}
-		}
-	}
-	*/
 
   // objects rendering
   function objectRender(){
@@ -2237,35 +2202,6 @@ window.onload = function(){
 
 	}
 
-	function cross(a, b) {
-		return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-	}
-
-	function dot(a, b) {
-		return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-	}
-
-	function normalize(a) {
-		let _l = Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
-		return [a[0] / _l, a[1] / _l, a[2] / _l];
-	}
-
-	function vecAdd(a, b) {
-		return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-	}
-
-	function vecSub(a, b) {
-		return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-	}
-
-	function vecMult(a, b) {
-		return [a[0] * b[0], a[1] * b[1], a[2] * b[2]];
-	}
-
-	function scalarVec(s, a) {
-		return [s * a[0], s * a[1], s * a[2]];
-	}
-
 	function fromObTo2D(_ob) {
 		let tmvpMatrix = m.identity(m.create());
 		m.multiply(vpMatrix, _ob.mMatrix, tmvpMatrix);
@@ -2616,6 +2552,7 @@ window.onload = function(){
 				}
 			}
 			mousePressed = true;
+			mouseButton = e.button;
 			prevMouseLocation = getMouseLocation(e);
 			currentMouseLocation = prevMouseLocation;
 			switch (annotationMode) {
