@@ -68,6 +68,7 @@ window.onload = function(){
 	//test();
 
   // canvasエレメントを取得
+	const initialCanvasSize = [1200, 720];
   let c = document.getElementById('canvas1');
   //c.width = 900;
   //c.height = 540;
@@ -432,6 +433,8 @@ window.onload = function(){
 
 			// canvasを初期化
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+			//let _currentRect = c.getBoundingClientRect();
+			//gl.viewport(0, 0, _currentRect.width, _currentRect.height);
       gl.viewport(0, 0, c.width, c.height);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       // objects の描画
@@ -2408,13 +2411,20 @@ window.onload = function(){
 	}
 
 	function buttonPressed(_button, _location) {
-		//if (obUI[_button] != null) {
-			//let loc = obUI[_button].location;
-			//let dim = obUI[_button].dimensions;
+		let _currentRect = c.getBoundingClientRect();
+		let _asp = _currentRect.width / initialCanvasSize[0];
+		eText.textContent = _asp;
+		//eText.textContent = c.width + ', ' + c.getBoundingClientRect().width + ', ' + initialCanvasSize[0];
 		if (obUI.name(_button) != null) {
 			let loc = obUI.name(_button).location;
 			let dim = obUI.name(_button).dimensions;
-			if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
+			if (
+				_location.x > (loc[0] - 0.5 * dim[0]) * _asp &&
+				_location.x < (loc[0] + 0.5 * dim[0]) * _asp &&
+				_currentRect.height - _location.y > (loc[1] - 0.5 * dim[1]) * _asp &&
+				_currentRect.height - _location.y < (loc[1] + 0.5 * dim[1]) * _asp
+			) {
+			//if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
 				return true;
 			} else {
 				return false;
@@ -2524,7 +2534,7 @@ window.onload = function(){
 			if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
 				//selectedAnnotation = annotations[i];
 				_selAnno = annotations[i];
-				//eText.textContent = annotations[i].desc;
+				//textContent = annotations[i].desc;
 				break;
 			}
 		}
