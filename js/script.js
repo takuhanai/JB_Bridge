@@ -448,6 +448,7 @@ window.onload = function(){
 			gl.disable(gl.DEPTH_TEST);
 			cameraUpdate();
 			textRender();
+			UIInteractionUpdate();
       UIRender();
 
     }else{
@@ -666,7 +667,9 @@ window.onload = function(){
 			switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
 				case 0: //PERSP
 					//eText.textContent = _obCamera.angle_y;
-					m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
+					let _currentRect = c.getBoundingClientRect();
+					m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, _currentRect.width / _currentRect.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
+					//m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
 					/*
 					if (!_UI3D) {
 						m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
@@ -1105,11 +1108,13 @@ window.onload = function(){
 		}
 
 		function UIInteractionUpdate() {
+			let _currentRect = c.getBoundingClientRect();
 			if (selectedObject != null) {
 				if (comment.style.visibility === 'visible') {
 					//let commentLoc = fromObTo2D(objects[selectedObject]);
 					let commentLoc = fromObTo2D(objects.name(selectedObject));
-					let adComLoc = adjustUI(commentLoc, [0.0, c.width - comment.clientWidth], [0.0, c.height - 160.0]);
+					let adComLoc = adjustUI(commentLoc, [0.0, _currentRect.width - comment.clientWidth], [0.0, _currentRect.height - 160.0]);
+					//let adComLoc = adjustUI(commentLoc, [0.0, c.width - comment.clientWidth], [0.0, c.height - 160.0]);
 					comment.style.left = Math.floor(adComLoc[0]) + "px";
 					comment.style.top  = Math.floor(adComLoc[1]) + "px";
 				}
@@ -1117,7 +1122,8 @@ window.onload = function(){
 					//let buttonLoc = fromObTo2D(objects[selectedObject]);
 					let buttonLoc = fromObTo2D(objects.name(selectedObject));
 					buttonLoc[0] -= obButton.clientWidth / 2.0;
-					let adButtonLoc = adjustUI(buttonLoc, [0.0, c.width - obButton.clientWidth], [0.0, c.height - 160.0]);
+					//let adButtonLoc = adjustUI(buttonLoc, [0.0, c.width - obButton.clientWidth], [0.0, c.height - 160.0]);
+					let adButtonLoc = adjustUI(buttonLoc, [0.0, _currentRect.width - obButton.clientWidth], [0.0, _currentRect.height - 160.0]);
 					obButton.style.left = Math.floor(adButtonLoc[0]) + "px";
 					obButton.style.top  = Math.floor(adButtonLoc[1]) + "px";
 					//detailButton.style.left = Math.floor(adButtonLoc[0]) + "px";
@@ -1126,13 +1132,16 @@ window.onload = function(){
 			}
 			if (selectedAnnotation != null) {
 				let annoTexLoc = selectedAnnotation.loc_2D.concat(0);
-				annoTexLoc[1] = c.height - annoTexLoc[1] + 2.0;
+				//annoTexLoc[1] = c.height - annoTexLoc[1] + 2.0;
+				annoTexLoc[1] = _currentRect.height - annoTexLoc[1] + 2.0;
 				comment.style.visibility = 'visible'
 				if (
 					annoTexLoc[0] < 0.0 ||
-					annoTexLoc[0] > c.width - comment.clientWidth ||
+					//annoTexLoc[0] > c.width - comment.clientWidth ||
+					annoTexLoc[0] > _currentRect.width - comment.clientWidth ||
 					annoTexLoc[1] < 0.0 ||
-					annoTexLoc[1] > c.height - 20
+					//annoTexLoc[1] > c.height - 20
+					annoTexLoc[1] > _currentRect.height - 20
 				) {comment.style.visibility = 'hidden'}
 				comment.style.left = Math.floor(annoTexLoc[0]) + "px";
 				comment.style.top  = Math.floor(annoTexLoc[1]) + "px";
@@ -1310,6 +1319,7 @@ window.onload = function(){
 
 		allDataReady = false;
 		numDataReady = 0;
+		annotations = [];
 		readSceneData();
 		//console.log(objects);
 		for (let i in objects) {
@@ -2206,11 +2216,14 @@ window.onload = function(){
 	}
 
 	function fromObTo2D(_ob) {
+		let _currentRect = c.getBoundingClientRect();
 		let tmvpMatrix = m.identity(m.create());
 		m.multiply(vpMatrix, _ob.mMatrix, tmvpMatrix);
 		let _2dLocation = tmvpMatrix.slice(12);
-		_2dLocation[0] = (_2dLocation[0] / _2dLocation[3] + 1.0) * c.width * 0.5;
-		_2dLocation[1] = (1.0 - _2dLocation[1] / _2dLocation[3]) * c.height * 0.5;
+		_2dLocation[0] = (_2dLocation[0] / _2dLocation[3] + 1.0) * _currentRect.width * 0.5;
+		_2dLocation[1] = (1.0 - _2dLocation[1] / _2dLocation[3]) * _currentRect.height * 0.5;
+		//_2dLocation[0] = (_2dLocation[0] / _2dLocation[3] + 1.0) * c.width * 0.5;
+		//_2dLocation[1] = (1.0 - _2dLocation[1] / _2dLocation[3]) * c.height * 0.5;
 		return _2dLocation;
 	}
 
@@ -2225,10 +2238,11 @@ window.onload = function(){
 	}
 
 	function selectPoint(_location) {
+		let _currentRect = c.getBoundingClientRect();
 		let _selObInfo = selection_3D(_location, 'point');
 		if (_selObInfo.object != null) {
 			selectedAnnotation = null;
-			UIInteractionUpdate();
+			//UIInteractionUpdate();
 			annotationMode = 2;
 			tempAnnotation.loc = _selObInfo.point;
 			tempAnnotation.ob = _selObInfo.object;
@@ -2239,10 +2253,12 @@ window.onload = function(){
 
 			let _memo_x = _location.x;
 			let _memo_y = _location.y;
-			if (_memo_y > c.height - 120) {
+			if (_memo_y > _currentRect.height - 120) {
+			//if (_memo_y > c.height - 120) {
 				_memo_y -= 80;
 			}
-			if (_memo_x > c.width - 200) {
+			if (_memo_x > _currentRect.width - 200) {
+			//if (_memo_x > c.width - 200) {
 				_memo_x -= 200;
 			}
 			console.log(_location.x, _location.y, _memo_x, _memo_y);
@@ -2310,9 +2326,11 @@ window.onload = function(){
 	}
 
 	function selection_3D(_location, _type) {
-
-		var x = (2.0 * _location.x) / c.width -1.0;
-		var y = 1.0 - (2.0 * _location.y) /c.height;
+		let _currentRect = c.getBoundingClientRect();
+		var x = (2.0 * _location.x) / _currentRect.width -1.0;
+		var y = 1.0 - (2.0 * _location.y) /_currentRect.height;
+		//var x = (2.0 * _location.x) / c.width -1.0;
+		//var y = 1.0 - (2.0 * _location.y) /c.height;
 		var z = 1.0;
 
 		//let _obCamera = objects[obCamera[camMode]];
@@ -2525,13 +2543,21 @@ window.onload = function(){
 	}
 
 	function checkAnnotations(_location) {
+		let _currentRect = c.getBoundingClientRect();
+		let _asp = _currentRect.width / initialCanvasSize[0];
 		let _selAnno = null;
 		//selectedAnnotation = null;
 		for (var i in annotations) {
 			console.log(annotations[i].desc);
 			let loc = annotations[i].loc_2D;
 			let dim = obUI.name('UI_annotation').dimensions;
-			if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
+			if (
+				_location.x > (loc[0] - 0.5 * dim[0]) * _asp &&
+				_location.x < (loc[0] + 0.5 * dim[0]) * _asp &&
+				_currentRect.height - _location.y > (loc[1] - 0.5 * dim[1]) * _asp &&
+				_currentRect.height - _location.y < (loc[1] + 0.5 * dim[1]) * _asp
+			) {
+			//if (_location.x > loc[0] - 0.5 * dim[0] && _location.x < loc[0] + 0.5 * dim[0] && c.height - _location.y > loc[1] - 0.5 * dim[1] && c.height - _location.y < loc[1] + 0.5 * dim[1]) {
 				//selectedAnnotation = annotations[i];
 				_selAnno = annotations[i];
 				//textContent = annotations[i].desc;
@@ -2548,7 +2574,7 @@ window.onload = function(){
 			comment.style.border = 'none';
 			comment.style.backgroundColor = 'transparent';
 			comment.style.visibility = 'visible';
-			UIInteractionUpdate();
+			//UIInteractionUpdate();
 		} else {
 			comment.style.visibility = 'hidden';
 		}
@@ -2583,7 +2609,7 @@ window.onload = function(){
 			}
 			*/
 			//selection_3D(currentMouseLocation);
-			UIInteractionUpdate();
+			//UIInteractionUpdate();
 			/*
 			if (comment.style.visibility === 'visible') {
 				textRender();
@@ -2601,7 +2627,7 @@ window.onload = function(){
 	function mouseMove(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			currentMouseLocation = getMouseLocation(e);
-			UIInteractionUpdate();
+			//UIInteractionUpdate();
 			/*
 			if (comment.style.visibility === 'visible') {
 				textRender();
@@ -2630,7 +2656,7 @@ window.onload = function(){
 			if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
 				_obCam.angle_y = ay;
 			}
-			UIInteractionUpdate();
+			//UIInteractionUpdate();
 			//eText.textContent = ay;
 		}
 	}
@@ -2664,7 +2690,7 @@ window.onload = function(){
 			*/
 			//selectBlock(currentTouchLocations[0]);
 			//selection_3D(currentTouchLocations[0]);
-			UIInteractionUpdate();
+			//UIInteractionUpdate();
 			/*
 			if (comment.style.visibility === 'visible') {
 				textRender();
@@ -2688,7 +2714,7 @@ window.onload = function(){
 	function touchMove(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			currentTouchLocations = getTouchLocations(e);
-			UIInteractionUpdate();
+			//UIInteractionUpdate();
 			/*
 			if (comment.style.visibility === 'visible') {
 				textRender();
