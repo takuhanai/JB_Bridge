@@ -12,8 +12,8 @@ window.onload = function(){
 
   // variables
 	let resourcePath = './resource/';
-	let title = 'oshima_bridge';
-	let scene_name = 'oshima_bridge';
+	let title = 'jb_bridge';
+	let scene_name = 'kurushima_bridges';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -28,7 +28,7 @@ window.onload = function(){
 	let drawInternal = false;
 	let navigatable = true;
 
-	let text01 = 'Oshima Bridge';
+	let text01 = 'JB Bridges';
 	//let text01location = [20.0, 50.0, 0.0, 0.0];
 	//let selObLoc3D = [0.0, 0.0, 0.0, 1.0];
 
@@ -389,6 +389,7 @@ window.onload = function(){
 		//gl.clearColor(0.4, 0.6, 1.0, 1.0);
 		gl.clearColor(0.95, 0.95, 0.9, 1.0);
 		//gl.clearColor(0.98, 0.98, 1.0, 1.0);
+		//gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		/*
         // is load ready
         if ((allDataReady === true) && (isInitialize === false)){
@@ -1337,7 +1338,7 @@ window.onload = function(){
 		hiddenObjects = [];
 		readUIData();
 
-		readTextData(resourcePath + scene.name);
+		//readTextData(resourcePath + scene.name);
 
 		comment.style.visibility = 'hidden';
 		buttonContainerElement.style.visibility = 'hidden';
@@ -1426,7 +1427,7 @@ window.onload = function(){
 					ob.textureList.push(_texture[j]);
 				}
 			}
-			console.log(ob.name, ob.terrain);
+			//console.log(ob.name, ob.terrain);
 
 			ob.selectMesh = _selectMesh;
 			ob.pointMesh = _pointMesh;
@@ -1696,15 +1697,22 @@ window.onload = function(){
 			}
 
 			if (ob.type == 0) {//object type 'MESH'
+				//console.log(ob.name);
 				let im = m.identity(m.create());
 				m.transpose(ob.mMatrix, im);
 				ob.numLoop = dv.getInt32(off, true);
 				off += 4;
+				console.log(ob.name, ob.numLoop);
 
 				for	(var i = 0; i < ob.numLoop; ++i) {
 					for (var j = 0; j < 3; ++ j) {
 						coord.push(dv.getFloat32(off, true));
 						off += 4;
+					}
+					if (ob.name === 'terrain') {
+						//temp = coord.slice[-3];
+						//console.log(temp[0], temp[1], temp[2]);
+						//console.log(coord.slice[-3]);
 					}
 				}
 				if (ob.kind === 'selection_mesh' || ob.name === ob.selectMesh || ob.name === ob.pointMesh) {
@@ -1817,6 +1825,12 @@ window.onload = function(){
 						break;
 				}
 				ob.pMatrix = _pMatrix;
+			}
+
+			if (ob.name == 'terrain') {
+				//console.log(ob.name);
+				//console.log('read terrain');
+				ob.numLoop = 3000;
 			}
 
 			//objects[_objectName].dataReady = true;
