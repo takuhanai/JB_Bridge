@@ -1338,7 +1338,7 @@ window.onload = function(){
 		hiddenObjects = [];
 		readUIData();
 
-		//readTextData(resourcePath + scene.name);
+		readTextData(resourcePath + scene.name);
 
 		comment.style.visibility = 'hidden';
 		buttonContainerElement.style.visibility = 'hidden';
