@@ -13,7 +13,9 @@ window.onload = function(){
   // variables
 	let resourcePath = './resource/';
 	let title = 'jb_bridge';
-	let scene_name = 'kurushima_bridges';
+	let scene_name = 'hsbe';
+	//let scene_name = 'kurushima_bridges';
+	//let scene_name = 'oshima_bridge';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -600,8 +602,10 @@ window.onload = function(){
 				_cam_o.location[1] = _cam_o.mMatrix0[13];
 				_cam_o.location[2] = _cam_o.mMatrix0[14];
 			} else {
-				m.rotate(_cam_o.mMatrix0, -0.003 * dX, [0, 0, 1], _cam_o.mMatrix0);
-				_cam_o.rotation[2] += -0.003 * dX;
+				if (scene.UI != 'first_layer') {
+					m.rotate(_cam_o.mMatrix0, -0.003 * dX, [0, 0, 1], _cam_o.mMatrix0);
+					_cam_o.rotation[2] += -0.003 * dX;
+				}
 
 				let deltaRotY = -0.003 * dY;
 				if (cameraVertAngle + deltaRotY < scene.cameraVertAngleMax && cameraVertAngle + deltaRotY > scene.cameraVertAngleMin) {
@@ -665,6 +669,7 @@ window.onload = function(){
   //function cameraUpdate(_UI3D){
 			//let _obCamera = objects[obCamera[camMode]];
 			let _obCamera = objects.name(obCamera[camMode]);
+			//console.log(camMode);
 			switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
 				case 0: //PERSP
 					//eText.textContent = _obCamera.angle_y;
@@ -1709,11 +1714,6 @@ window.onload = function(){
 						coord.push(dv.getFloat32(off, true));
 						off += 4;
 					}
-					if (ob.name === 'terrain') {
-						//temp = coord.slice[-3];
-						//console.log(temp[0], temp[1], temp[2]);
-						//console.log(coord.slice[-3]);
-					}
 				}
 				if (ob.kind === 'selection_mesh' || ob.name === ob.selectMesh || ob.name === ob.pointMesh) {
 					//let im = m.identity(m.create());
@@ -1825,12 +1825,6 @@ window.onload = function(){
 						break;
 				}
 				ob.pMatrix = _pMatrix;
-			}
-
-			if (ob.name == 'terrain') {
-				//console.log(ob.name);
-				//console.log('read terrain');
-				ob.numLoop = 3000;
 			}
 
 			//objects[_objectName].dataReady = true;
