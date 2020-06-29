@@ -588,7 +588,11 @@ window.onload = function(){
 				let cameraCoeff = Math.tan(_cam.angle_y / 2.0) / Math.tan(_cam.angle_y0 / 2.0);
 				//console.log(_cam.angle_y, _cam.angle_y0);
 				//console.log(scene.cameraTranslationDelta * cameraCoeff * dX);
-				m.translate(_cam_o.mMatrix0, [-scene.cameraTranslationDelta * cameraCoeff * dX, 0, scene.cameraTranslationDelta * cameraCoeff * dY], _cam_o.mMatrix0);
+				if (scene.UI === 'first_layer') {
+					m.translate(_cam_o.mMatrix0, [-scene.cameraTranslationDelta * cameraCoeff * dX, scene.cameraTranslationDelta * cameraCoeff * dY, 0], _cam_o.mMatrix0);
+				} else {
+					m.translate(_cam_o.mMatrix0, [-scene.cameraTranslationDelta * cameraCoeff * dX, 0, scene.cameraTranslationDelta * cameraCoeff * dY], _cam_o.mMatrix0);
+				}
 				//console.log(objects['camera_whole_origin'].mMatrix0)
 				for (var i = 0; i < 3; i++) {
 					if (_cam_o.mMatrix0[i + 12] > scene.cameraTranslationRange[i * 2]) {
