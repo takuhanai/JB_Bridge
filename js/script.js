@@ -56,6 +56,17 @@ window.onload = function(){
 	let cameraOriginZSpeed;
 	let cameraOriginZDest;
 
+	buttons = {
+		revert:'UI_revert_button',
+		terrain:'UI_terrain_button',
+		map:'UI_map_button',
+		info:'UI_info_button',
+		exin:'UI_ex-in_button',
+		point:'UI_point_button',
+		show:'UI_show_button',
+		whole:'UI_whole_button'
+	}
+
 	console.log(navigator.userAgent);
 	let browser;
 	if (navigator.userAgent.indexOf('Chrome') != -1) {
@@ -2639,6 +2650,18 @@ window.onload = function(){
 	function mouseMove(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			currentMouseLocation = getMouseLocation(e);
+			/*
+			c.style.cursor = 'default';
+			for (let _key in buttons) {
+				if (buttonPressed(buttons[_key], currentMouseLocation)) {
+					c.style.cursor = 'pointer';
+				}
+			}
+
+			if (selection_3D(currentMouseLocation, 'block').object != null) {
+				c.style.cursor = 'pointer';
+			};
+			*/
 			//UIInteractionUpdate();
 			/*
 			if (comment.style.visibility === 'visible') {
