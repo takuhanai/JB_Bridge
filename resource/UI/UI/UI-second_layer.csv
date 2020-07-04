@@ -1,9 +1,10 @@
 number of objects,,,
-6,,,
-object,texture01,fix,description
-UI_revert_button,UI_revert_button,yes,
-UI_terrain_button,UI_terrain_button,yes,
-UI_map_button,UI_map_button,yes,
-UI_info_button,UI_info_button,yes,
-UI_whole_button,UI_whole_button,yes,
+7,,,
+object,texture01,type,description
+UI_revert_button,UI_revert_button,fix,
+UI_terrain_button,UI_terrain_button,fix,
+UI_map_button,UI_map_button,fix,
+UI_info_button,UI_info_button,fix,
+UI_whole_button,UI_whole_button,fix,
 UI_annotation,UI_annotation,,
+UI_annotation_edit,UI_annotation_edit,,

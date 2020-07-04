@@ -88,7 +88,8 @@ window.onload = function(){
 
 	let camMode = 0;
     // webglコンテキストを取得
-	let gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+	//let gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+	let gl = c.getContext('webgl', {stencil: true}) || c.getContext('experimental-webgl', {stencil: true});
 
   // 頂点シェーダとフラグメントシェーダの生成
   let v_shader = create_shader('vs');
@@ -442,6 +443,7 @@ window.onload = function(){
 			//gl.blendFuncSeparate(gl.ONE, gl.ZERO, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			//gl.blendFuncSeparate(gl.ONE, gl.ZERO, gl.ONE, gl.ONE);
 			//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+			gl.enable(gl.STENCIL_TEST);
 
 			cameraUpdate();
 
@@ -450,9 +452,22 @@ window.onload = function(){
 			//let _currentRect = c.getBoundingClientRect();
 			//gl.viewport(0, 0, _currentRect.width, _currentRect.height);
       gl.viewport(0, 0, c.width, c.height);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+			gl.clearStencil(0);
+			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
       // objects の描画
-      objectRender();
+
+			stencilRender();
+
+			gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+			gl.stencilFunc(gl.NOTEQUAL, 1, ~0);
+      objectRender('mesh');
+
+			gl.stencilFunc(gl.EQUAL, 1, ~0);
+			objectRender('stenciled_mesh');
+
+			gl.disable(gl.STENCIL_TEST);
+
       // hud 関連
 			//gl.disable(gl.DEPTH_TEST);
 			camMode = 1;
@@ -856,7 +871,7 @@ window.onload = function(){
 	}
 
   // objects rendering
-  function objectRender(){
+  function objectRender(_obKind){
 		for (var i in objects) {
 			let _ob = objects[i];
 			if (_ob.one_sided) {
@@ -869,7 +884,8 @@ window.onload = function(){
 			}
       if (
           _ob.type === 0 &&
-					_ob.kind === 'mesh' &&
+					//_ob.kind === 'mesh' &&
+					_ob.kind === _obKind &&
           _ob.draw === true &&
 					_ob.internal === drawInternal &&
 					!(_ob.terrain && !drawTerrain) &&
@@ -887,6 +903,21 @@ window.onload = function(){
 				objectRendergl(_ob.name, _color);
       }
     }
+	}
+
+	function stencilRender() {
+		gl.disable(gl.DEPTH_TEST);
+
+		gl.stencilFunc(gl.EQUAL, 0, ~0);
+		gl.stencilOp(gl.KEEP, gl.INCR, gl.INCR);
+		for (var i = 0 in obUI) {
+			if (obUI[i].draw && obUI[i].UItype === 'stencil') {
+				UIRendergl(obUI[i], [1.0, 1.0, 1.0, 0.0]);
+			}
+		}
+
+		gl.enable(gl.DEPTH_TEST);
+
 	}
 
 	function UI3DRender(){
@@ -1034,7 +1065,8 @@ window.onload = function(){
 			//gl.disable(gl.DEPTH_TEST);
 			// Draw Buttons
 			for (var i = 0 in obUI) {
-				if (obUI[i].draw && obUI[i].fix) {
+				//if (obUI[i].draw && obUI[i].fix) {
+				if (obUI[i].draw && obUI[i].UItype === 'fix') {
 					UIRendergl(obUI[i], [1.0, 1.0, 1.0, 0.0]);
 				}
       }
@@ -1867,7 +1899,8 @@ window.onload = function(){
 			let lIndex = 0;
 			let _name = _line[lIndex++];
 			let _texture = [_line[lIndex++]];
-			let _fix = _line[lIndex++];
+			//let _fix = _line[lIndex++];
+			let _type = _line[lIndex++];
 			//let _texture = _line.slice(lIndex, lIndex + 2);
 			//console.log('[readUIData] name: ' + _name + ', texture: ' + _texture);
 			let ob = new object(_name);
@@ -1881,8 +1914,10 @@ window.onload = function(){
 					ob.textureList.push(_texture[j]);
 				}
 			}
+			//console.log(_name, ob.textureList);
 
-			ob.fix = _fix ==='yes' ? true : false;
+			//ob.fix = _fix ==='yes' ? true : false;
+			ob.UItype = _type;
 			ob.draw = true;
 			ob.alpha = 1.0;
 
