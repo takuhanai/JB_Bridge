@@ -1,8 +1,9 @@
 number of objects,,,
-9,,,
+10,,,
 object,texture01,type,description
 UI_revert_button,UI_revert_button,fix,
 UI_terrain_button,UI_terrain_button,fix,
+UI_ex-in_button,UI_ex-in_button,fix,
 UI_scrutiny_button,UI_scrutiny_button,fix,
 UI_map_button,UI_map_button,fix,
 UI_info_button,UI_info_button,fix,
