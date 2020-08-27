@@ -28,6 +28,7 @@ window.onload = function(){
 	let annotationMode = 0; //0:normal 1:pointable 2:temporary
 	let selectedAnnotation = null;
 	let drawInternal = false;
+	let scrutinyMode = false;
 	let navigatable = true;
 
 	let text01 = 'JB Bridges';
@@ -443,7 +444,7 @@ window.onload = function(){
 			//gl.blendFuncSeparate(gl.ONE, gl.ZERO, gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			//gl.blendFuncSeparate(gl.ONE, gl.ZERO, gl.ONE, gl.ONE);
 			//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-			gl.enable(gl.STENCIL_TEST);
+			//gl.enable(gl.STENCIL_TEST);
 
 			cameraUpdate();
 
@@ -453,20 +454,37 @@ window.onload = function(){
 			//gl.viewport(0, 0, _currentRect.width, _currentRect.height);
       gl.viewport(0, 0, c.width, c.height);
       //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-			gl.clearStencil(0);
+			//gl.clearStencil(0);
 			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
       // objects の描画
 
-			stencilRender();
+			if (!scrutinyMode) {
+				objectRender(drawInternal);
+			} else {
+				gl.enable(gl.STENCIL_TEST);
+				gl.clearStencil(0);
 
-			gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-			gl.stencilFunc(gl.NOTEQUAL, 1, ~0);
-      objectRender('mesh');
+				stencilRender();
 
-			gl.stencilFunc(gl.EQUAL, 1, ~0);
-			objectRender('stenciled_mesh');
+				gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+				gl.stencilFunc(gl.NOTEQUAL, 1, ~0);
+	      //objectRender('mesh');
+				objectRender(false);
 
-			gl.disable(gl.STENCIL_TEST);
+				gl.stencilFunc(gl.EQUAL, 1, ~0);
+				//objectRender('stenciled_mesh');
+				objectRender(true);
+				/*
+				gl.disable(gl.DEPTH_TEST);
+				for (var i = 0 in obUI) {
+					if (obUI[i].draw && obUI[i].UItype === 'stencil') {
+						UIRendergl(obUI[i], [1.0, 1.0, 1.0, 0.0]);
+					}
+				}
+				gl.enable(gl.DEPTH_TEST);
+				*/
+				gl.disable(gl.STENCIL_TEST);
+			}
 
       // hud 関連
 			//gl.disable(gl.DEPTH_TEST);
@@ -871,7 +889,8 @@ window.onload = function(){
 	}
 
   // objects rendering
-  function objectRender(_obKind){
+	function objectRender(_internal){
+  //function objectRender(_obKind){
 		for (var i in objects) {
 			let _ob = objects[i];
 			if (_ob.one_sided) {
@@ -884,10 +903,12 @@ window.onload = function(){
 			}
       if (
           _ob.type === 0 &&
-					//_ob.kind === 'mesh' &&
-					_ob.kind === _obKind &&
+					_ob.kind === 'mesh' &&
+					//_ob.kind === _obKind &&
           _ob.draw === true &&
-					_ob.internal === drawInternal &&
+					//_ob.internal === drawInternal &&
+					//_ob.internal === _internal &&
+					((_internal && _ob.internal != 'external') || (!_internal && _ob.internal != 'internal')) &&
 					!(_ob.terrain && !drawTerrain) &&
           obLoading.indexOf(i) === -1
       ) {
@@ -906,17 +927,18 @@ window.onload = function(){
 	}
 
 	function stencilRender() {
-		gl.disable(gl.DEPTH_TEST);
+		//gl.disable(gl.DEPTH_TEST);
 
 		gl.stencilFunc(gl.EQUAL, 0, ~0);
 		gl.stencilOp(gl.KEEP, gl.INCR, gl.INCR);
+
 		for (var i = 0 in obUI) {
 			if (obUI[i].draw && obUI[i].UItype === 'stencil') {
 				UIRendergl(obUI[i], [1.0, 1.0, 1.0, 0.0]);
 			}
 		}
 
-		gl.enable(gl.DEPTH_TEST);
+		//gl.enable(gl.DEPTH_TEST);
 
 	}
 
@@ -1057,7 +1079,9 @@ window.onload = function(){
 					_color = [1.0, 0.6, 0.6, 1.0];
 				}
 				//if (objects[annotations[i].ob].internal != drawInternal) {
-				if (objects.name(annotations[i].ob).internal != drawInternal) {
+				let _obInt = objects.name(annotations[i].ob).internal;
+				if ((drawInternal && _obInt != 'external') || (!drawInternal && _obInt != 'internal')) {
+				//if (objects.name(annotations[i].ob).internal != drawInternal) {
 					_color = [1.0, 0.6, 0.6, 1.0];
 				}
 				UIRendergl(annoOb, _color);
@@ -1361,6 +1385,7 @@ window.onload = function(){
 		annotationMode = 0; //0:normal 1:pointable 2:temporary
 		selectedAnnotation = null;
 		drawInternal = false;
+		scrutinyMode = false;
 		navigatable = true;
 
 		scene = new Scene(_scene_name);
@@ -1453,7 +1478,8 @@ window.onload = function(){
 			let _texture = _line.slice(lIndex, lIndex + 2);
 			lIndex += 2;
 			let _openingAnimation = _line[lIndex++] === 'yes' ? true : false;
-			let _internal = _line[lIndex++] === 'yes' ? true : false;
+			//let _internal = _line[lIndex++] === 'yes' ? true : false;
+			let _internal = _line[lIndex++];
 			let _terrain = _line[lIndex++] === 'yes' ? true : false;
 			let _selectMesh = _line[lIndex++];
 			let _pointMesh = _line[lIndex++];
@@ -2420,7 +2446,9 @@ window.onload = function(){
 				_type === 'point' &&
 				_ob.pointMesh != '' &&
 				_ob.draw &&
-				_ob.internal === drawInternal
+				((_ob.internal != 'internal' && !drawInternal) || (_ob.internal != 'external' && drawInternal)) &&
+				!scrutinyMode
+				//_ob.internal === drawInternal
 			) {
 				//let _selInfo = selectObject(objects[_ob.pointMesh], ray_wld);
 				let _selInfo = selectObject(objects.name(_ob.pointMesh), ray_wld);
@@ -2532,6 +2560,7 @@ window.onload = function(){
 			cameraVertAngle = 0.0;
 			drawMap = false;
 			drawInternal = false;
+			scrutinyMode = false;
 			selectedObject = null;
 			selectedAnnotation = null;
 			comment.style.visibility = 'hidden';
@@ -2570,6 +2599,9 @@ window.onload = function(){
 		if (buttonPressed('UI_ex-in_button', _location)) {
 			drawInternal = !drawInternal;
 			obUI.name('UI_ex-in_button').texture_shift[0] = drawInternal ? 0.5: 0.0;
+		}
+		if (buttonPressed('UI_scrutiny_button', _location)) {
+			scrutinyMode = !scrutinyMode;
 		}
 		if (buttonPressed('UI_point_button', _location)) {
 			switch (annotationMode) {

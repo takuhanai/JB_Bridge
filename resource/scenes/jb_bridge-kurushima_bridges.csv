@@ -1,5 +1,5 @@
 number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,
-35,hsbe,second_layer,1.2,800,-3400,200,-200,200,2,10.0,-80.0,1.2,0.1,1.2,0.8,0.4,
+51,hsbe,second_layer,1.2,800,-3400,200,-200,200,2,10.0,-80.0,1.2,0.05,1.2,0.8,0.4,
 object,kind,texture01,texture02,opening animation,internal,terrain,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
 camera_orbit,camera,,,,,,,,,,,,,,,,
 camera_orbit_origin,empty,,,yes,,,,,,,,,,,,,
@@ -10,7 +10,6 @@ camera_orbit_origin,empty,,,yes,,,,,,,,,,,,,
 5P,mesh,5P,,,,,,,,,,,,,,,1418
 6P,mesh,6P,,,,,,,,,,,,,,,1286
 7A,mesh,7A,,,,,,,,,,,,,,,352
-8P,mesh,8P,,,,,,,,,,,,,,,1628
 9P,mesh,9P,,,,,,,,,,,,,,,1606
 10A,mesh,10A,,,,,,,,,,,,,,,474
 cable_1st_bridge,mesh,cable_1st_bridge,,,,,,,,,,,,,,,1200
@@ -18,11 +17,11 @@ cable_2nd_bridge,mesh,cable_2nd_bridge,,,,,,,,,,,,,,,1664
 cable_3rd_bridge,mesh,cable_3rd_bridge,,,,,,,,,,,,,,,1376
 girder_1st_bridge,mesh,girder_1st_bridge,,,,,,,,,,,,,,,1606
 girder_2nd_bridge,mesh,girder_2nd_bridge,,,,,,,,,,,,,,,2274
-girder_3rd_bridge,mesh,girder_3rd_bridge,,,,,,,,,,,,,,,2057
+girder_3rd_bridge,mesh,girder_3rd_bridge,,,,,,,,,,,,,,,2058
 kurushima_minami_viaduct,mesh,kurushima_minami_viaduct,,,,,,,,,,,,,,,3660
-P1,mesh,P1,,,,,,,,,,,,,,,202
+P1,mesh,P1,,,,,,,,,,,,,,,340
 ramp_mb_imabari,mesh,ramp_mb_imabari,,,,,,,,,,,,,,,3020
-ramp_mb_ohshima,mesh,ramp_mb_ohshima,,,,,,,,,,,,,,,976
+ramp_mb_ohshima,mesh,ramp_mb_ohshima,,,,,,,,,,,,,,,2088
 ramp_ped_imabari,mesh,ramp_ped_imabari,,,,,,,,,,,,,,,4676
 ramp_ped_ohshima,mesh,ramp_ped_ohshima,,,,,,,,,,,,,,,2354
 shitadami_viaduct,mesh,shitadami_viaduct,,,,,,,,,,,,,,,542
@@ -32,8 +31,25 @@ suspender_3rd_bridge,mesh,suspender_3rd_bridge,,,,,,,,,,,,,,,1344
 umashima_viaduct_east,mesh,umashima_viaduct_east,,,,,,,,,,,,,,,2449
 umashima_viaduct_west,mesh,umashima_viaduct_west,,,,,,,,,,,,,,,1692
 sea_surface,mesh,sea_surface,,,,yes,,,,,,,,,,,2
-terrain_01,mesh,terrain_01,,,,yes,,,,,,,,,,,30267
-terrain_02,mesh,terrain_02,,,,yes,,,,,,,,,,,30267
+terrain_01,mesh,terrain_01,,,,yes,,,,,,,,,,,16907
+terrain_02,mesh,terrain_02,,,,yes,,,,,,,,,,,13360
 UI_compass,UI3D,UI_compass,,,,,,,,,,,,,,,296
 camera_UI3D,camera,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,,"104,666"
+8P_base_stair,mesh,8P_base_stair,,,,,,,,,,,,,,,942
+8P_base_hatch,mesh,8P_base_hatch,,,external,,,,,,,,,,,,156
+8P_Nshaft_inner,mesh,8P_Nshaft_inner,,,internal,,,,,,,,,,,,4553
+8P_Nshaft_inner_north_face,mesh,8P_Nshaft_inner_north_face,,,internal,,,,,,,yes,0.0,1,-0.0028169865254312800,,134
+8P_Nshaft_KN27_stair,mesh,8P_Nshaft_KN27_stair,,,internal,,,,,,,,,,,,212
+8P_Nshaft_inner_east_face,mesh,8P_Nshaft_inner_east_face,,,internal,,,,,,,yes,1,0,-0.007206498645246030,,62
+8P_Nshaft_inner_west_face,mesh,8P_Nshaft_inner_west_face,,,internal,,,,,,,yes,-1,0.0,-0.007206500507891180,,62
+8P_Nshaft_inner_south_face,mesh,8P_Nshaft_inner_south_face,,,internal,,,,,,,yes,0.0,-1,0.0028169865254312800,,179
+8P_upper_strat_inner_east_face,mesh,8P_upper_strat_inner_east_face,,,internal,,,,,,,yes,1,0.0,-0.00550239160656929,,92
+8P_upper_strat_inner_bottom_face,mesh,8P_upper_strat_inner_bottom_face,,,internal,,,,,,,yes,0.0,0.0,1.0,,52
+8P_upper_strat_inner_top_face,mesh,8P_upper_strat_inner_top_face,,,internal,,,,,,,yes,0.0,0.0,-1.0,,104
+8P_upper_strat_inner,mesh,8P_upper_strat_inner,,,internal,,,,,,,,,,,,359
+8P_upper_strat_insp_way,mesh,8P_upper_strat_insp_way,,,internal,,,,,,,,,,,,1466
+8P_upper_strat_top_hatch,mesh,8P_upper_strat_top_hatch,,,external,,,,,,,,,,,,10
+8P_upper_strat_inner_west_face,mesh,8P_upper_strat_inner_west_face,,,internal,,,,,,,yes,-1,0,-0.0055023180320859000,,92
+8P_Sshaft,mesh,8P_Sshaft,,,,,,,,,,,,,,,646
+8P_Nshaft,mesh,8P_Nshaft,,,external,,,,,,,,,,,,543
+,,,,,,,,,,,,,,,,,"83,686"

@@ -1,9 +1,10 @@
 number of objects,,,
-9,,,
+10,,,
 object,texture01,type,description
 UI_revert_button,UI_revert_button,fix,
 UI_info_button,UI_info_button,fix,
 UI_ex-in_button,UI_ex-in_button,fix,
+UI_scrutiny_button,UI_scrutiny_button,fix,
 UI_point_button,UI_point_button,fix,
 UI_show_button,UI_show_button,fix,
 UI_whole_button,UI_whole_button,fix,
