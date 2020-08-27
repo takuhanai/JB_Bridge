@@ -2602,6 +2602,7 @@ window.onload = function(){
 		}
 		if (buttonPressed('UI_scrutiny_button', _location)) {
 			scrutinyMode = !scrutinyMode;
+			drawInternal = false;
 		}
 		if (buttonPressed('UI_point_button', _location)) {
 			switch (annotationMode) {
