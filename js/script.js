@@ -50,6 +50,9 @@ window.onload = function(){
 	let prevTouchLocations;
 	let currentTouchLocations;
 
+	let staticallyPressed = false;
+	let statPressedTime = new Date().getTime();
+
 	let opening_count = 0;
 
 	let cameraVertAngle = 0.0;
@@ -564,7 +567,14 @@ window.onload = function(){
 	}
 
 	function mouseUpdate() {
-		if (mousePressed && navigatable) {
+		if (staticallyPressed) {
+			let curPressedTime = new Date().getTime();
+			if (curPressedTime - statPressedTime > 1000) {
+				scrutinyMode = true;
+				staticallyPressed = false;
+			}
+		}
+		if (mousePressed && navigatable && !scrutinyMode) {
 			let deltaX = currentMouseLocation.x - prevMouseLocation.x;
 			let deltaY = currentMouseLocation.y - prevMouseLocation.y;
 			cameraInteractionUpdate(deltaX, deltaY);
@@ -574,7 +584,14 @@ window.onload = function(){
 	}
 
 	function touchUpdate() {
-		if (touched && navigatable) {
+		if (staticallyPressed) {
+			let curPressedTime = new Date().getTime();
+			if (curPressedTime - statPressedTime > 1000) {
+				scrutinyMode = true;
+				staticallyPressed = false;
+			}
+		}
+		if (touched && navigatable && !scrutinyMode) {
 			if (currentTouchLocations.length === 1) {//rotation
 				let deltaX = currentTouchLocations[0].x - prevTouchLocations[0].x;
 				let deltaY = currentTouchLocations[0].y - prevTouchLocations[0].y;
@@ -2680,6 +2697,8 @@ window.onload = function(){
 			}
 			mousePressed = true;
 			mouseButton = e.button;
+			staticallyPressed = true;
+			statPressedTime = new Date().getTime();
 			prevMouseLocation = getMouseLocation(e);
 			currentMouseLocation = prevMouseLocation;
 			switch (annotationMode) {
@@ -2718,6 +2737,10 @@ window.onload = function(){
 	function mouseMove(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			currentMouseLocation = getMouseLocation(e);
+
+			if (!scrutinyMode && staticallyPressed) {
+				staticallyPressed = false;
+			}
 			/*
 			c.style.cursor = 'default';
 			for (let _key in buttons) {
@@ -2742,6 +2765,7 @@ window.onload = function(){
 	function mouseUp(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			mousePressed = false;
+			scrutinyMode = false;
 			currentMouseLocation = getMouseLocation(e);
 			checkButtons(currentMouseLocation);
 			if (annotations.length > 0) {
@@ -2772,6 +2796,8 @@ window.onload = function(){
 				}
 			}
 			touched = true;
+			staticallyPressed = true;
+			statPressedTime = new Date().getTime();
 			prevTouchLocations = getTouchLocations(e);
 			currentTouchLocations = prevTouchLocations;
 			switch (annotationMode) {
@@ -2817,6 +2843,10 @@ window.onload = function(){
 	function touchMove(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			currentTouchLocations = getTouchLocations(e);
+
+			if (!scrutinyMode && staticallyPressed) {
+				staticallyPressed = false;
+			}
 			//UIInteractionUpdate();
 			/*
 			if (comment.style.visibility === 'visible') {
@@ -2832,6 +2862,7 @@ window.onload = function(){
 	function touchEnd(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			touched = false;
+			scrutinyMode = false;
 			//currentTouchLocations = getTouchLocations(e);
 			//eText.textContent = currentTouchLocations[0].x
 			checkButtons(currentTouchLocations[0]);
