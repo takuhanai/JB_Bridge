@@ -1129,7 +1129,8 @@ window.onload = function(){
 			// Draw Buttons
 			for (var i = 0 in obUI) {
 				//if (obUI[i].draw && obUI[i].fix) {
-				if (obUI[i].draw && obUI[i].UItype === 'fix') {
+				//if (obUI[i].draw && obUI[i].UItype === 'fix') {
+				if (obUI[i].draw && (obUI[i].UItype === 'fix' || (obUI[i].UItype === 'stencil' && scrutinyMode))) {
 					UIRendergl(obUI[i], [1.0, 1.0, 1.0, 0.0]);
 				}
       }
