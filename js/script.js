@@ -574,6 +574,17 @@ window.onload = function(){
 				staticallyPressed = false;
 			}
 		}
+		if (scrutinyMode) {
+			for (var i = 0 in obUI) {
+				if (obUI[i].UItype === 'stencil') {
+					let _currentRect = c.getBoundingClientRect();
+					let _asp = _currentRect.width / initialCanvasSize[0];
+					let _tMatrix = m.identity(m.create());
+					m.translate(_tMatrix, [currentMouseLocation.x / _asp, (_currentRect.height - currentMouseLocation.y) / _asp, 0.0], _tMatrix);
+					obUI[i].mMatrix = _tMatrix;
+				}
+			}
+		}
 		if (mousePressed && navigatable && !scrutinyMode) {
 			let deltaX = currentMouseLocation.x - prevMouseLocation.x;
 			let deltaY = currentMouseLocation.y - prevMouseLocation.y;
@@ -589,6 +600,17 @@ window.onload = function(){
 			if (curPressedTime - statPressedTime > 1000) {
 				scrutinyMode = true;
 				staticallyPressed = false;
+			}
+		}
+		if (scrutinyMode) {
+			for (var i = 0 in obUI) {
+				if (obUI[i].UItype === 'stencil') {
+					let _currentRect = c.getBoundingClientRect();
+					let _asp = _currentRect.width / initialCanvasSize[0];
+					let _tMatrix = m.identity(m.create());
+					m.translate(_tMatrix, [currentTouchLocations[0].x / _asp, (_currentRect.height - currentTouchLocations[0].y) / _asp, 0.0], _tMatrix);
+					obUI[i].mMatrix = _tMatrix;
+				}
 			}
 		}
 		if (touched && navigatable && !scrutinyMode) {
