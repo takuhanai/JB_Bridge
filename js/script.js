@@ -569,7 +569,7 @@ window.onload = function(){
 	function mouseUpdate() {
 		if (staticallyPressed) {
 			let curPressedTime = new Date().getTime();
-			if (curPressedTime - statPressedTime > 1000) {
+			if (curPressedTime - statPressedTime > 700) {
 				scrutinyMode = true;
 				staticallyPressed = false;
 			}
@@ -597,7 +597,7 @@ window.onload = function(){
 	function touchUpdate() {
 		if (staticallyPressed) {
 			let curPressedTime = new Date().getTime();
-			if (curPressedTime - statPressedTime > 1000) {
+			if (curPressedTime - statPressedTime > 700) {
 				scrutinyMode = true;
 				staticallyPressed = false;
 			}
