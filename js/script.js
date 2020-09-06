@@ -2789,6 +2789,7 @@ window.onload = function(){
 		if (opening_count >= OPENING_LENGTH) {
 			mousePressed = false;
 			scrutinyMode = false;
+			staticallyPressed = false;
 			currentMouseLocation = getMouseLocation(e);
 			checkButtons(currentMouseLocation);
 			if (annotations.length > 0) {
@@ -2886,6 +2887,7 @@ window.onload = function(){
 		if (opening_count >= OPENING_LENGTH) {
 			touched = false;
 			scrutinyMode = false;
+			staticallyPressed = false;
 			//currentTouchLocations = getTouchLocations(e);
 			//eText.textContent = currentTouchLocations[0].x
 			checkButtons(currentTouchLocations[0]);
