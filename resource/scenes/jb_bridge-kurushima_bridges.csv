@@ -1,7 +1,7 @@
-number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,
-51,hsbe,second_layer,1.2,800,-3400,200,-200,200,2,10.0,-80.0,1.2,0.05,1.2,0.8,0.4,
+number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,number of scene animations
+53,hsbe,second_layer,1.2,800,-3400,200,-200,200,2,10.0,-80.0,1.2,0.05,1.2,0.8,0.4,1
 object,kind,texture01,texture02,opening animation,internal,terrain,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
-camera_orbit,camera,,,,,,,,,,,,,,,,
+camera_main,camera,,,,,,,,,,,,,,,,
 camera_orbit_origin,empty,,,yes,,,,,,,,,,,,,
 1A,mesh,1A,,,,,,,,,,,,,,,244
 2P,mesh,2P,,,,,,,,,,,,,,,1060
@@ -52,4 +52,9 @@ camera_UI3D,camera,,,,,,,,,,,,,,,,
 8P_upper_strat_inner_west_face,mesh,8P_upper_strat_inner_west_face,,,internal,,,,,,,yes,-1,0,-0.0055023180320859000,,92
 8P_Sshaft,mesh,8P_Sshaft,,,,,,,,,,,,,,,646
 8P_Nshaft,mesh,8P_Nshaft,,,external,,,,,,,,,,,,543
-,,,,,,,,,,,,,,,,,"83,686"
+camera_animation01,camera,,,,,,,,,,,,,,,,
+visitor_test,mesh,visitor_test,,,,,,,,,,,,,,,
+animation name,number of items,frame start,frame end,,,,,,,,,,,,,,
+animation01,2,1,1350,,,,,,,,,,,,,,"83,686"
+stencil_on,644,,,,,,,,,,,,,,,,
+stencil_off,1157,,,,,,,,,,,,,,,,

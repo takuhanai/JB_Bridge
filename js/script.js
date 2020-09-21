@@ -9,12 +9,13 @@ window.onload = function(){
 	//const OPENING_LENGTH = 10.0 / OPENING_SPEED * FPS;
 	const OPENING_LENGTH = 0.0;
 	// test
+	const ANIMATION_SPEED_MULTIPLIER = 1.0;
 
   // variables
 	let resourcePath = './resource/';
 	let title = 'jb_bridge';
-	let scene_name = 'hsbe';
-	//let scene_name = 'kurushima_bridges';
+	//let scene_name = 'hsbe';
+	let scene_name = 'kurushima_bridges';
 	//let scene_name = 'oshima_bridge';
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
@@ -29,6 +30,7 @@ window.onload = function(){
 	let selectedAnnotation = null;
 	let drawInternal = false;
 	let scrutinyMode = false;
+	let stencilMode = false;
 	let navigatable = true;
 
 	let text01 = 'JB Bridges';
@@ -60,6 +62,8 @@ window.onload = function(){
 	let cameraOriginZSpeed;
 	let cameraOriginZDest;
 
+	let animationPosed = false;
+
 	buttons = {
 		revert:'UI_revert_button',
 		terrain:'UI_terrain_button',
@@ -90,7 +94,7 @@ window.onload = function(){
   //c.width = 900;
   //c.height = 540;
 
-	let camMode = 0;
+	//let camMode = 0;
     // webglコンテキストを取得
 	//let gl = c.getContext('webgl') || c.getContext('experimental-webgl');
 	let gl = c.getContext('webgl', {stencil: true}) || c.getContext('experimental-webgl', {stencil: true});
@@ -162,7 +166,9 @@ window.onload = function(){
 
   let obNames = []; // Not used
 
-	let obCamera = []; // List of camera objects
+	//let obCamera = []; // List of camera objects
+	let activeCamera = 'camera_main'; //Name of active camera
+	//let activeCamera = 'camera_animation01'; //Name of active camera
 
 	let obLoading = []; // List of objects used for loading screen
 
@@ -432,8 +438,11 @@ window.onload = function(){
 				mouseUpdate();
 			}
 
-      // objects の更新
-      actionUpdate();
+			if (!animationPosed) {
+				sceneAnimationUpdate();
+	      // objects の更新
+	      actionUpdate();
+			}
 
 			// UI の更新
 			//UIUpdate();
@@ -461,7 +470,7 @@ window.onload = function(){
 			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
       // objects の描画
 
-			if (!scrutinyMode) {
+			if (!scrutinyMode && !stencilMode) {
 				objectRender(drawInternal);
 			} else {
 				gl.enable(gl.STENCIL_TEST);
@@ -491,10 +500,11 @@ window.onload = function(){
 
       // hud 関連
 			//gl.disable(gl.DEPTH_TEST);
-			camMode = 1;
+			//camMode = 1;
 			cameraUpdate();
 			UI3DRender();
-			camMode = 0;
+			//camMode = 0;
+			//console.log(obCamera[camMode]);
 			gl.disable(gl.DEPTH_TEST);
 			cameraUpdate();
 			textRender();
@@ -571,6 +581,7 @@ window.onload = function(){
 			let curPressedTime = new Date().getTime();
 			if (curPressedTime - statPressedTime > 700) {
 				scrutinyMode = true;
+				navigatable = false;
 				staticallyPressed = false;
 			}
 		}
@@ -585,7 +596,8 @@ window.onload = function(){
 				}
 			}
 		}
-		if (mousePressed && navigatable && !scrutinyMode) {
+		//if (mousePressed && navigatable && !scrutinyMode) {
+		if (mousePressed && navigatable) {
 			let deltaX = currentMouseLocation.x - prevMouseLocation.x;
 			let deltaY = currentMouseLocation.y - prevMouseLocation.y;
 			cameraInteractionUpdate(deltaX, deltaY);
@@ -599,6 +611,7 @@ window.onload = function(){
 			let curPressedTime = new Date().getTime();
 			if (curPressedTime - statPressedTime > 700) {
 				scrutinyMode = true;
+				navigatable = false;
 				staticallyPressed = false;
 			}
 		}
@@ -613,7 +626,8 @@ window.onload = function(){
 				}
 			}
 		}
-		if (touched && navigatable && !scrutinyMode) {
+		//if (touched && navigatable && !scrutinyMode) {
+		if (touched && navigatable) {
 			if (currentTouchLocations.length === 1) {//rotation
 				let deltaX = currentTouchLocations[0].x - prevTouchLocations[0].x;
 				let deltaY = currentTouchLocations[0].y - prevTouchLocations[0].y;
@@ -636,11 +650,13 @@ window.onload = function(){
 					let prevDist = Math.sqrt((pt1.x - pt0.x) * (pt1.x - pt0.x) + (pt1.y - pt0.y) * (pt1.y - pt0.y));
 
 					//let ay = objects[obCamera[camMode]].angle_y;
-					let ay = objects.name(obCamera[camMode]).angle_y;
+					//let ay = objects.name(obCamera[camMode]).angle_y;
+					let ay = objects.name(activeCamera).angle_y;
 					ay -= 0.001 * (currentDist - prevDist);
 					if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
 						//objects[obCamera[camMode]].angle_y = ay;
-						objects.name(obCamera[camMode]).angle_y = ay;
+						//objects.name(obCamera[camMode]).angle_y = ay;
+						objects.name(activeCamera).angle_y = ay;
 					}
 				}
 				prevTouchLocations = currentTouchLocations;
@@ -660,11 +676,13 @@ window.onload = function(){
 	}
 
 	function cameraInteractionUpdate(dX, dY) {
-		if (camMode == 0) {
+		if (navigatable) {
+		//if (camMode == 0) {
 			//let _cam_o = objects['camera_orbit_origin'];
 			//let _cam = objects['camera_orbit'];
 			let _cam_o = objects.name('camera_orbit_origin');
-			let _cam = objects.name('camera_orbit');
+			//let _cam = objects.name('camera_orbit');
+			let _cam = objects.name('camera_main');
 			let _cam_UI3D = objects.name('camera_UI3D');
 			if (shiftKeyPressed || mouseButton === 1) {
 				//m.translate(objects['camera_whole_origin'].mMatrix0, [-1.0 * dX, 0, 1.0 * dY],
@@ -755,8 +773,9 @@ window.onload = function(){
 	function cameraUpdate() {
   //function cameraUpdate(_UI3D){
 			//let _obCamera = objects[obCamera[camMode]];
-			let _obCamera = objects.name(obCamera[camMode]);
-			//console.log(camMode);
+			//let _obCamera = objects.name(obCamera[camMode]);
+			let _obCamera = objects.name(activeCamera);
+			//console.log(obCamera[camMode]);
 			switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
 				case 0: //PERSP
 					//eText.textContent = _obCamera.angle_y;
@@ -776,14 +795,40 @@ window.onload = function(){
 	    m.multiply(_obCamera.pMatrix, vMatrix, vpMatrix);
   }
 
+	function sceneAnimationUpdate() {
+		for (var i in scene.sceneAnimations) {
+			let _anim = scene.sceneAnimations[i];
+			if (_anim.active && _anim.play != 0) {
+				if (_anim.animation_count > _anim.stencil_on && _anim.animation_count < _anim.stencil_off) {
+					//drawInternal = true;
+					stencilMode = true;
+				} else {
+					//drawInternal = false;
+					stencilMode = false;
+				}
+				actionIncrement(_anim);
+			}
+		}
+	}
+
   function actionUpdate(){
     for (var i in objects) {
 			let _ob = objects[i];
+			if (_ob.hasOwnProperty('animationData')) {
+				for (var j in _ob.animationData) {
+					if (_ob.animationData[j].play != 0) {
+						evaluateAction(_ob.name, _ob.animationData[j]);
+						actionIncrement(_ob.animationData[j]);
+					}
+				}
+			}
+			/*
 			if (_ob.hasOwnProperty('objectAction') && _ob.objectAction.play != 0) {
 				//_ob.mMatrix0 = evaluateAction(_ob.objectAction, _ob.objectAction.animation_count, _ob.location_o, _ob.rotation_o, _ob.scale_o, _ob.rotation_mode);
 				evaluateAction(_ob.name);
 				actionIncrement(_ob.objectAction);
 			}
+			*/
 			if (_ob.hasOwnProperty('materialAction') && _ob.materialAction.play != 0) {
 				_ob.alpha = evaluateMaterialAction(actions[i].materialAction, actions[i].materialAction.animation_count).alpha;
 			}
@@ -933,7 +978,8 @@ window.onload = function(){
 		for (var i in objects) {
 			let _ob = objects[i];
 			if (_ob.one_sided) {
-				let _ray = vecSub(_ob.center, objects.name(obCamera[camMode]).mMatrix.slice(12, 15));
+				//let _ray = vecSub(_ob.center, objects.name(obCamera[camMode]).mMatrix.slice(12, 15));
+				let _ray = vecSub(_ob.center, objects.name(activeCamera).mMatrix.slice(12, 15));
 				if (dot(_ob.normal, _ray) < 0.0) {
 					_ob.draw = true;
 				} else {
@@ -1041,7 +1087,8 @@ window.onload = function(){
 		function textRender() {
 			let _drawLevel = -1;
 			for (let i = 0; i < scene.textZoomAngle.length; i++) {
-				if (scene.textZoomAngle[i] > objects.name(obCamera[camMode]).angle_y) {
+				if (scene.textZoomAngle[i] > objects.name(activeCamera).angle_y) {
+				//if (scene.textZoomAngle[i] > objects.name(obCamera[camMode]).angle_y) {
 					_drawLevel = i;
 				}
 			}
@@ -1108,7 +1155,8 @@ window.onload = function(){
 				//if (objects[annotations[i].ob].draw) {
 				if (objects.name(annotations[i].ob).draw) {
 					//let _ray = vecSub(annotations[i].loc, objects[obCamera[camMode]].mMatrix.slice(12, 15));
-					let _ray = vecSub(annotations[i].loc, objects.name(obCamera[camMode]).mMatrix.slice(12, 15));
+					//let _ray = vecSub(annotations[i].loc, objects.name(obCamera[camMode]).mMatrix.slice(12, 15));
+					let _ray = vecSub(annotations[i].loc, objects.name(activeCamera).mMatrix.slice(12, 15));
 					if (dot(annotations[i].normal, _ray) < 0.0) {
 						_color = [1.0, 0.0, 0.0, 1.0];
 					} else {
@@ -1130,7 +1178,7 @@ window.onload = function(){
 			for (var i = 0 in obUI) {
 				//if (obUI[i].draw && obUI[i].fix) {
 				//if (obUI[i].draw && obUI[i].UItype === 'fix') {
-				if (obUI[i].draw && (obUI[i].UItype === 'fix' || (obUI[i].UItype === 'stencil' && scrutinyMode))) {
+				if (obUI[i].draw && (obUI[i].UItype === 'fix' || (obUI[i].UItype === 'stencil' && (scrutinyMode || stencilMode)))) {
 					UIRendergl(obUI[i], [1.0, 1.0, 1.0, 0.0]);
 				}
       }
@@ -1426,6 +1474,7 @@ window.onload = function(){
 		selectedAnnotation = null;
 		drawInternal = false;
 		scrutinyMode = false;
+		stencilMode = false;
 		navigatable = true;
 
 		scene = new Scene(_scene_name);
@@ -1434,6 +1483,11 @@ window.onload = function(){
 		obUI = new obArray();
 		obTexts = new obArray();
 		obTextures = new obArray();
+
+		//camMode = 0;
+		//obCamera = [];
+		//activeCamera = 'camera_main';
+		activeCamera = 'camera_animation01';
 
 		allDataReady = false;
 		numDataReady = 0;
@@ -1487,7 +1541,8 @@ window.onload = function(){
 
 		let LF = String.fromCharCode(10); //改行ｺｰﾄﾞ
 		let lines = data.responseText.split(LF);
-		let _sceneData = lines[1].split(',');
+		let _off = 1;
+		let _sceneData = lines[_off].split(',');
 		let sdIndex = 0;
 		scene.num_object = Number(_sceneData[sdIndex++]);
 		scene.parent = _sceneData[sdIndex++];
@@ -1503,6 +1558,7 @@ window.onload = function(){
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
+		scene.num_sceneAnimation = Number(_sceneData[sdIndex++]);
 		/*
 		scene.textZoomAngle = {};
 		scene.textZoomAngle.level0 = Number(_sceneData[sdIndex++]);
@@ -1510,8 +1566,9 @@ window.onload = function(){
 		scene.textZoomAngle.level2 = Number(_sceneData[sdIndex++]);
 		*/
 		console.log(scene);
-		for (var i = 3; i < scene.num_object + 3; i++) {
-			let _line = lines[i].split(',');
+		_off += 2;
+		for (var i = 0; i < scene.num_object; i++) {
+			let _line = lines[_off].split(',');
 			let lIndex = 0;
 			let _name = _line[lIndex++];
 			let _kind = _line[lIndex++];
@@ -1566,10 +1623,12 @@ window.onload = function(){
 	    //objects[_name] = ob;
 			//console.log(ob.name);
 			objects.push(ob);
-
+			/*
 			if (_kind === 'camera') {
 				obCamera.push(_name);
+				console.log(_name);
 			}
+			*/
 			if (_selectMesh != '') {
 				obResp.push(_name);
 			}
@@ -1578,11 +1637,74 @@ window.onload = function(){
 				obUI.push(_name);
 			}
 			*/
+			_off += 1;
 		}
 
+		scene.sceneAnimations = new obArray();
+		for (var i = 0; i < scene.num_sceneAnimation; i++) {
+			_off += 1;
+			let _animData = lines[_off].split(',');
+			_off += 1;
+			let _animation = {
+				name: _animData[0],
+				numItems: Number(_animData[1]),
+				frame_start: Number(_animData[2]),
+				frame_end: Number(_animData[3])
+			};
+			for (var j = 0; j < _animation.numItems; j++) {
+				let _line = lines[_off].split(',');
+				_animation[_line[0]] = Number(_line[1]);
+				_off += 1;
+			}
+			_animation.animation_count = 0;
+			if (_animation.name === 'animation01') {
+				_animation.active = true;
+				_animation.play = 1;
+			} else {
+				_animation.active = false;
+				_animation.play = 0;
+			} //0: stop, 1: play loop, 2: play once (return to first frame), 3: play once (stay at last frame)
+			_animation.forward = true;
+			//_animation.speed = 0.4;
+			_animation.speed = FPS_blender / FPS * ANIMATION_SPEED_MULTIPLIER;
+			console.log(_animation);
+			scene.sceneAnimations.push(_animation);
+		}
 	}
 
-	function readString(_dv, _off) {
+	function readInt32(_dv, _counter) {
+		let _val = _dv.getInt32(_counter.off, true);
+		_counter.off += 4;
+		return _val;
+	}
+
+	function readInt8(_dv, _counter) {
+		let _val = _dv.getInt8(_counter.off, true);
+		_counter.off += 1;
+		return _val;
+	}
+
+	function readFloat32(_dv, _counter) {
+		let _val = _dv.getFloat32(_counter.off, true);
+		_counter.off += 4;
+		return _val;
+	}
+
+	function readString(_dv, _counter) {
+		//Read string from binary data
+		//Format: number of characters (Int32), string (Int8 x N)
+		let _len = _dv.getInt32(_counter.off, true);
+		let _nameArray = [];
+		_counter.off += 4;
+		for (var i = 0; i < _len; i++) {
+			_nameArray.push(_dv.getUint8(_counter.off));
+			_counter.off += 1;
+		}
+		let text_decoder = new TextDecoder('utf-8');
+		return text_decoder.decode(Uint8Array.from(_nameArray).buffer);
+	}
+
+	function readString_back(_dv, _off) {
 		//Read string from binary data
 		//Format: number of characters (Int32), string (Int8 x N)
 		let _strOb = {};
@@ -1684,7 +1806,10 @@ window.onload = function(){
 			var scale = [];
 			var dimensions = [];
 			var bound_box = [];
-			var off = 0;
+			//* var off = 0;
+			let _counter = { //to increment bit offset inside functions
+				off: 0
+			}
 			if (_type === 'object') {
 				//var ob = objects[_objectName];
 				var ob = objects.name(_objectName);
@@ -1693,21 +1818,29 @@ window.onload = function(){
 				var ob = obUI.name(_objectName);
 			}
 
-			let _ns = readString(dv, off);
-			let _name = _ns.string;
-			off += 4 + _ns.length;
-			//let _name = readString(dv, off);
-			//off += 4 + _name.length;
-			//console.log(ob);
+			//* console.log('readString_new:', readString_new(dv, _counter));
+			let _ns = readString(dv, _counter);
+			//* let _ns = readString(dv, off);
+			//* let _name = _ns.string;
+			//* off += 4 + _ns.length;
+			//* let _name = readString(dv, off);
+			//* off += 4 + _name.length;
+			//* console.log(ob);
 
-			ob.type = dv.getInt32(off, true); //0:MESH, 1:CURVE, 7:EMPTY, 8:CAMERA
-			off += 4;
-			ob.rotation_mode = dv.getInt32(off, true);
-			off += 4;
+			//* ob.type = dv.getInt32(off, true); //0:MESH, 1:CURVE, 7:EMPTY, 8:CAMERA
+			//* _counter.off = off;
+			//* console.log('before readInt32', _counter.off);
+			ob.type = readInt32(dv, _counter); //0:MESH, 1:CURVE, 7:EMPTY, 8:CAMERA
+			//* console.log('after readInt32', _counter.off);
+			//* off += 4;
+			ob.rotation_mode = readInt32(dv, _counter);
+			//* ob.rotation_mode = dv.getInt32(off, true);
+			//* off += 4;
 
 			for (var i = 0; i < 3; i++) {
-				location.push(dv.getFloat32(off, true));
-				off += 4;
+				location.push(readFloat32(dv, _counter));
+				//* location.push(dv.getFloat32(off, true));
+				//* off += 4;
 			}
 			ob.location_o = location; //original location
 			ob.location = location.slice(); //location
@@ -1717,15 +1850,17 @@ window.onload = function(){
 				rotation_comp = 3;
 			}
 			for (var i = 0; i < rotation_comp; i++) {
-				rotation.push(dv.getFloat32(off, true));
-				off += 4;
+				rotation.push(readFloat32(dv, _counter));
+				//* rotation.push(dv.getFloat32(off, true));
+				//* off += 4;
 			}
 			ob.rotation_o = rotation; //original rotation
 			ob.rotation = rotation.slice(); //rotation
 
 			for (var i = 0; i < 3; i++) {
-				scale.push(dv.getFloat32(off, true));
-				off += 4;
+				scale.push(readFloat32(dv, _counter));
+				//* scale.push(dv.getFloat32(off, true));
+				//* off += 4;
 			}
 			ob.scale_o = scale; //original scale
 			ob.scale = scale.slice(); //scale
@@ -1733,69 +1868,191 @@ window.onload = function(){
 			//console.log(ob.name, ob.location, ob.rotation, ob.scale);
 
 			for (var i = 0; i < 3; i++) {
-				dimensions.push(dv.getFloat32(off, true));
-				off += 4;
+				dimensions.push(readFloat32(dv, _counter));
+				//* dimensions.push(dv.getFloat32(off, true));
+				//* off += 4;
 			}
 			ob.dimensions = dimensions;
 
 			ob.mMatrix0 = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Local coordinate
 			ob.mMatrix = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Global coordinate
 
+			let _hasAnimationData = readInt8(dv, _counter);
+			//* let _hasAnimationData = dv.getInt8(off, true);
+			//* off += 1;
+			if (_hasAnimationData) {
+				ob.animationData = new obArray();
+				let _numTracks = readInt32(dv, _counter);
+				//* let _numTracks= dv.getInt32(off, true);
+				//* off += 4;
+				for (var i = 0; i < _numTracks; i++) {
+					let _tn = readString(dv, _counter);
+					//* let _tn = readString(dv, off);
+					//* let _trackName = _tn.string;
+					//* off += 4 + _tn.length;
+					let _hasStrip = readInt8(dv, _counter);
+					//* let _hasStrip = dv.getInt8(off, true);
+					//* off += 1;
+					if (_hasStrip) {
+						let _action = new object();
+						_action.name = _tn;
+						_action.frame_start = readFloat32(dv, _counter);
+						//* let _afStart = dv.getFloat32(off, true);
+						//* off += 4;
+						_action.frame_end = readFloat32(dv, _counter);
+						//* let _afEnd = dv.getFloat32(off, true);
+						//* off += 4;
+						_action.numFCurves = readInt32(dv, _counter);
+						//* let _numCurves = dv.getInt32(off, true);
+						//* off += 4;
+						//console.log(ob.name, _afStart, _afEnd, _numCurves);
+						/*
+						_action.frame_start = _dv.getFloat32(_off, true);
+						_off += 4;
+						_action.frame_end = _dv.getFloat32(_off, true);
+						_off += 4;
+
+						_action.numFCurves = _dv.getInt32(_off, true);
+						_off += 4;
+						*/
+						//_action.fCurves = new obArray();
+						_action.fCurves = [];
+						for (var ii = 0; ii < _action.numFCurves; ++ii) {
+							let _fCurve = new object();
+							_fCurve.dataPath = readString(dv, _counter);
+							//* let _fdp = readString(_dv, _off);
+							//* _fCurve.dataPath = _fdp.string;
+							//* _off += 4 + _fdp.length;
+							//_fCurve.dataPath = readString(_dv, _off);
+							//_off += 4 + _fCurve.dataPath.length;
+							_fCurve.arrayIndex = readInt32(dv, _counter);
+							//* _fCurve.arrayIndex = _dv.getInt32(_off, true);
+							console.log('dataPath: ' + _fCurve.dataPath + ', ' + _fCurve.arrayIndex);
+							//* _off += 4;
+							_fCurve.numKP = readInt32(dv, _counter);
+							//* _fCurve.numKP = _dv.getInt32(_off, true);
+							//* _off += 4;
+
+							_fCurve.handles = [];
+							for (var jj = 0; jj < _fCurve.numKP; ++jj) {
+								let _point = new object();
+								_point.interpolation = readInt32(dv, _counter);
+								//Interpolation Mode 0: constant, 2: bezier
+								_point.handle_left = {
+									x: readFloat32(dv, _counter),
+									y: readFloat32(dv, _counter)
+								}
+								_point.co = {
+									x: readFloat32(dv, _counter),
+									y: readFloat32(dv, _counter)
+								}
+								_point.handle_right = {
+									x: readFloat32(dv, _counter),
+									y: readFloat32(dv, _counter)
+								}
+								/*
+								_point.handle_left = new object();
+								_point.handle_left.x = _dv.getFloat32(_off, true);
+								_off += 4;
+								_point.handle_left.y = _dv.getFloat32(_off, true);
+								_off += 4;
+								_point.co = new object();
+								_point.co.x = _dv.getFloat32(_off, true);
+								_off += 4;
+								_point.co.y = _dv.getFloat32(_off, true);
+								_off += 4;
+								_point.handle_right = new object();
+								_point.handle_right.x = _dv.getFloat32(_off, true);
+								_off += 4;
+								_point.handle_right.y = _dv.getFloat32(_off, true);
+								_off += 4;
+								*/
+								_fCurve.handles.push(_point);
+							}
+							_action.fCurves.push(_fCurve);
+						}
+						//_action.off = _off;
+						_action.animation_count = _action.frame_start;
+						if (_action.name === 'opening' || _action.name === 'animation01') {
+						//if (_openingAnimation) {
+							_action.play = 1;
+						} else {
+							_action.play = 0;
+						} //0: stop, 1: play loop, 2: play once (return to first frame), 3: play once (stay at last frame)
+						_action.forward = true;
+						//_action.speed = 0.4;
+						_action.speed =  FPS_blender / FPS * ANIMATION_SPEED_MULTIPLIER;
+						ob.animationData.push(_action);
+					}
+				}
+			}
+			/*
 			let _hasObjectAction = dv.getInt8(off, true);
 			off += 1;
 			if (_hasObjectAction) {
 				ob.objectAction = readAction(dv, off, ob.openingAnimation);
 				off = ob.objectAction.off;
 			}
-
+			*/
 			ob.constraints = [];
-			let _numConstraints = dv.getInt32(off, true);
-			off += 4;
+			let _numConstraints = readInt32(dv, _counter);
+			//* let _numConstraints = dv.getInt32(off, true);
+			//* off += 4;
 			for (var i = 0; i < _numConstraints; ++i) {
 				let _constraint = new object();
-				_constraint.type = dv.getInt32(off, true);
-				off += 4;
+				_constraint.type = readInt32(dv, _counter);
+				//* _constraint.type = dv.getInt32(off, true);
+				//* off += 4;
 				let _cts;
 				switch (_constraint.type) {
 					case 20: //TRACK_TO
-						_cts = readString(dv, off);
-						_constraint.target = _cts.string;
-						off += 4 + _cts.length;
+						_constraint.target = readString(dv, _counter);
+						//* _cts = readString(dv, off);
+						//* _constraint.target = _cts.string;
+						//* off += 4 + _cts.length;
 						//_constraint.target = readString(dv, off);
 						//off += 4 + _constraint.target.length;
-						_constraint.trackAxis = dv.getInt32(off, true);
+						_constraint.trackAxis = readInt32(dv, _counter);
+						//* _constraint.trackAxis = dv.getInt32(off, true);
 						//0: 'TRACK_X', 1: 'TRACK_Y', 2: 'TRACK_Z', 3: 'TRACK_NEGATIVE_X', 4: 'TRACK_NEGATIVE_Y', 5: 'TRACK_NEGATIVE_Z'
-						off += 4;
-						_constraint.upAxis = dv.getInt32(off, true);
+						//* off += 4;
+						_constraint.upAxis = readInt32(dv, _counter);
+						//* _constraint.upAxis = dv.getInt32(off, true);
 						//0: 'UP_X', 1: 'UP_Y', 2: 'UP_Z'
-						off += 4;
+						//* off += 4;
 						break;
 					case 23: //CHILD_OF
-						_cts = readString(dv, off);
-						_constraint.target = _cts.string;
-						off += 4 + _cts.length;
+						_constraint.target = readString(dv, _counter);
+						//* _cts = readString(dv, off);
+						//* _constraint.target = _cts.string;
+						//* off += 4 + _cts.length;
 						//_constraint.target = readString(dv, off);
 						//off += 4 + _constraint.target.length;
 						_constraint.useGeometries = [];
 						for (var j = 0; j < 9; ++j) {
-							_constraint.useGeometries.push(dv.getInt8(off, true) === 1 ? true: false);
-							off += 1;
+							_constraint.useGeometries.push(readInt8(dv, _counter) === 1 ? true: false);
+							//* _constraint.useGeometries.push(dv.getInt8(off, true) === 1 ? true: false);
+							//* off += 1;
 						}
 						break;
 					case 25: //FOLLOW_PATH
-						_cts = readString(dv, off);
-						_constraint.target = _cts.string;
-						off += 4 + _cts.length;
+						_constraint.target = readString(dv, _counter);
+						//* _cts = readString(dv, off);
+						//* _constraint.target = _cts.string;
+						//* off += 4 + _cts.length;
 						//_constraint.target = readString(dv, off);
 						//off += 4 + _constraint.target.length;
-						_constraint.useCurveFollow = dv.getInt8(off, true) === 1 ? true: false;
-						off += 1;
-						_constraint.forwardAxis = dv.getInt32(off, true);
+						_constraint.useCurveFollow = readInt8(dv, _counter) === 1 ? true: false;
+						//* _constraint.useCurveFollow = dv.getInt8(off, true) === 1 ? true: false;
+						//* off += 1;
+						_constraint.forwardAxis = readInt32(dv, _counter);
+						//* _constraint.forwardAxis = dv.getInt32(off, true);
 						//0: 'FORWARD_X', 1: 'FORWARD_Y', 2: 'FORWARD_Z', 3: 'TRACK_NEGATIVE_X', 4: 'TRACK_NEGATIVE_Y', 5: 'TRACK_NEGATIVE_Z'
-						off += 4;
-						_constraint.upAxis = dv.getInt32(off, true);
+						//* off += 4;
+						_constraint.upAxis = readInt32(dv, _counter);
+						//* _constraint.upAxis = dv.getInt32(off, true);
 						//0: 'UP_X', 1: 'UP_Y', 2: 'UP_Z'
-						off += 4;
+						//* off += 4;
 						break;
 					default:
 						return;
@@ -1818,14 +2075,16 @@ window.onload = function(){
 				//console.log(ob.name);
 				let im = m.identity(m.create());
 				m.transpose(ob.mMatrix, im);
-				ob.numLoop = dv.getInt32(off, true);
-				off += 4;
-				console.log(ob.name, ob.numLoop);
+				ob.numLoop = readInt32(dv, _counter);
+				//* ob.numLoop = dv.getInt32(off, true);
+				//* off += 4;
+				//console.log(ob.name, ob.numLoop);
 
 				for	(var i = 0; i < ob.numLoop; ++i) {
 					for (var j = 0; j < 3; ++ j) {
-						coord.push(dv.getFloat32(off, true));
-						off += 4;
+						coord.push(readFloat32(dv, _counter));
+						//* coord.push(dv.getFloat32(off, true));
+						//* off += 4;
 					}
 				}
 				if (ob.kind === 'selection_mesh' || ob.name === ob.selectMesh || ob.name === ob.pointMesh) {
@@ -1844,16 +2103,18 @@ window.onload = function(){
 
 				for	(var i = 0; i < ob.numLoop; ++i) {
 					for (var j = 0; j < 2; ++ j) {
-						uv_coord.push(dv.getFloat32(off, true));
-						off += 4;
+						uv_coord.push(readFloat32(dv, _counter));
+						//* uv_coord.push(dv.getFloat32(off, true));
+						//* off += 4;
 					}
 				}
 
 				for (var i = 0; i < 8; ++i) {
 					let tb = [];
 					for (var j = 0; j < 3; ++j) {
-						tb.push(dv.getFloat32(off,true));
-						off += 4;
+						tb.push(readFloat32(dv, _counter));
+						//* tb.push(dv.getFloat32(off,true));
+						//* off += 4;
 					}
 					m.multiplyV(im, tb.concat(1), tb);
 					bound_box.push(tb);
@@ -1895,23 +2156,27 @@ window.onload = function(){
 					create_texture(_path + '/textures/', ob.textureList[i]);
 				}
 			} else if (ob.type === 1) {//object type 'CURVE'
-				let _numSplines = dv.getInt32(off, true);
-				off += 4;
+				let _numSplines = readInt32(dv, _counter);
+				//* let _numSplines = dv.getInt32(off, true);
+				//* off += 4;
 				ob.splines = [];
 				for (var ii = 0; ii < _numSplines; ++ii) {
 					let _spline = new object();
-					_spline.numP = dv.getInt32(off, true);
-					off += 4;
+					_spline.numP = readInt32(dv, _counter);
+					//* _spline.numP = dv.getInt32(off, true);
+					//* off += 4;
 					_spline.points = [];
 					for (var jj = 0; jj < _spline.numP * 9; ++jj) {
-						_spline.points.push(dv.getFloat32(off, true));
-						off += 4;
+						_spline.points.push(readFloat32(dv, _counter));
+						//* _spline.points.push(dv.getFloat32(off, true));
+						//* off += 4;
 					}
 					ob.splines.push(_spline);
 				}
 
-				let _hasCurveAction = dv.getInt8(off, true);
-				off += 1;
+				let _hasCurveAction = readInt8(dv, _counter);
+				//* let _hasCurveAction = dv.getInt8(off, true);
+				//* off += 1;
 				if (_hasCurveAction) {
 					console.log(ob.name);
 					ob.curveAction = readAction(dv, off, ob.openingAnimation);
@@ -1920,20 +2185,25 @@ window.onload = function(){
 
 			} else if (ob.type == 8) {//object type 'CAMERA'
 				var _pMatrix = m.identity(m.create());
-				ob.camera_type = dv.getInt32(off, true);
-				off += 4;
-				ob.clip_start = dv.getFloat32(off, true);
-				off += 4;
-				ob.clip_end = dv.getFloat32(off, true);
-				off += 4;
+				ob.camera_type = readInt32(dv, _counter);
+				//* ob.camera_type = dv.getInt32(off, true);
+				//* off += 4;
+				ob.clip_start = readFloat32(dv, _counter);
+				//* ob.clip_start = dv.getFloat32(off, true);
+				//* off += 4;
+				ob.clip_end = readFloat32(dv, _counter);
+				//* ob.clip_end = dv.getFloat32(off, true);
+				//* off += 4;
 				switch (ob.camera_type) {// 0: PERSP, 1: ORTHO
 					case 0: //PERSP
-						ob.angle_y = dv.getFloat32(off, true);
+						ob.angle_y = readFloat32(dv, _counter);
+						//* ob.angle_y = dv.getFloat32(off, true);
 						ob.angle_y0 = ob.angle_y; //initial value. Do not change!
 						m.perspective(ob.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, ob.clip_start, ob.clip_end, _pMatrix);
 						break;
 					case 1: //ORTHO
-						ob.ortho_scale = dv.getFloat32(off, true);
+						ob.ortho_scale = readFloat32(dv, _counter);
+						//* ob.ortho_scale = dv.getFloat32(off, true);
 						m.ortho(-ob.ortho_scale * c.width, ob.ortho_scale * c.width, ob.ortho_scale * c.height, -ob.ortho_scale * c.height, ob.clip_start, ob.clip_end, _pMatrix);
 						break;
 				}
@@ -2003,19 +2273,25 @@ window.onload = function(){
 		data.onload = function(e) {
 			let arrayBuffer = data.response;
 			let dv = new DataView(arrayBuffer);
-			let off = 0;
+			//* let off = 0;
+			let _counter = { //to increment bit offset inside functions
+				off: 0
+			}
 
-			let _numOb = dv.getInt32(off, true);
-			off += 4;
+			let _numOb = readInt32(dv, _counter);
+			//* let _numOb = dv.getInt32(off, true);
+			//* off += 4;
 			for (let i = 0; i < _numOb; i++) {
 				let _ot = new obText();
-				let _numColl = dv.getInt32(off, true);
-				off += 4;
+				let _numColl = readInt32(dv, _counter);
+				//* let _numColl = dv.getInt32(off, true);
+				//* off += 4;
 				_ot.attributes = {};
 				for (let j = 0; j < _numColl; j++) {
-					let _cs = readString(dv, off);
-					let _col = _cs.string;
-					off += 4 + _cs.length;
+					let _col = readString(dv, _counter);
+					//* let _cs = readString(dv, off);
+					//* let _col = _cs.string;
+					//* off += 4 + _cs.length;
 					//let _col = readString(dv, off);
 					//off += 4 + _col.length;
 					_ot.attributes[_col] = true;
@@ -2023,25 +2299,29 @@ window.onload = function(){
 				//console.log(_ot.collections);
 				//_ot.level = dv.getInt32(off, true);
 				//off += 4;
-				let _ons = readString(dv, off);
-				_ot.name = _ons.string;
-				off += 4 + _ons.length;
+				_ot.name = readString(dv, _counter);
+				//* let _ons = readString(dv, off);
+				//* _ot.name = _ons.string;
+				//* off += 4 + _ons.length;
 				//_ot.name = readString(dv, off);
 				//off += 4 + _ot.name.length;
 				//console.log(_ot.name);
-				let _ofs = readString(dv, off);
-				_ot.font = _ofs.string;
-				off += 4 + _ofs.length;
+				_ot.font = readString(dv, _counter);
+				//* let _ofs = readString(dv, off);
+				//* _ot.font = _ofs.string;
+				//* off += 4 + _ofs.length;
 				//_ot.font = readString(dv, off);
 				//console.log(_ot.font, unescape(_ot.font));
 				//off += 4 + _ot.font.length;
 				_ot.location = [];
 				for (let j = 0; j < 3; j++) {
-					_ot.location.push(dv.getFloat32(off, true));
-					off += 4;
+					_ot.location.push(readFloat32(dv, _counter));
+					//* _ot.location.push(dv.getFloat32(off, true));
+					//* off += 4;
 				}
-				_ot.ratio = dv.getFloat32(off, true);
-				off += 4;
+				_ot.ratio = readFloat32(dv, _counter);
+				//* _ot.ratio = dv.getFloat32(off, true);
+				//* off += 4;
 
 				let _sizeX = 6.0 * _ot.ratio;
 				let _sizeY = 6.0;
@@ -2089,6 +2369,7 @@ window.onload = function(){
 			}
 		}
 		if (ready) {
+			console.log(activeCamera);
 			//console.log(obTextures);
 			for (let i in objects) {
 				let _order = countOrder(objects[i].name);
@@ -2173,9 +2454,10 @@ window.onload = function(){
 		return action;
 	}
 
-	function evaluateAction(_obName) {
+	function evaluateAction(_obName, _action) {
+	//function evaluateAction(_obName) {
 		let _ob = objects.name(_obName);
-		let _action = _ob.objectAction;
+		//let _action = _ob.objectAction;
 		let _x = _action.animation_count;
 		//let locVec = _ob.location.slice();
 		//let rotVec = _ob.rotation.slice();
@@ -2295,8 +2577,12 @@ window.onload = function(){
 	}
 
 	function bezier2D(_handles, _x) {
-		if ((_handles[0].co.x > _x) || (_handles[_handles.length - 1].co.x < _x)) {
-			return null;
+		if (_handles[0].co.x > _x) {
+			return _handles[0].co.y;
+		} else if (_handles[_handles.length - 1].co.x < _x) {
+			return _handles[_handles.length - 1].co.y;
+		//if ((_handles[0].co.x > _x) || (_handles[_handles.length - 1].co.x < _x)) {
+		//	return null;
 		} else {
 			for (var ir = 0 in _handles) {
 				if (_handles[ir].co.x > _x) {
@@ -2458,7 +2744,8 @@ window.onload = function(){
 		var z = 1.0;
 
 		//let _obCamera = objects[obCamera[camMode]];
-		let _obCamera = objects.name(obCamera[camMode]);
+		//let _obCamera = objects.name(obCamera[camMode]);
+		let _obCamera = objects.name(activeCamera);
 		//let _obCamera = objects.name(obCamera[0]);
 		var invPMatrix = m.identity(m.create());
 		m.transpose(_obCamera.pMatrix, invPMatrix);
@@ -2530,7 +2817,8 @@ window.onload = function(){
 			_p1 = _ob.coord.slice(l + 3, l + 6);
 			_p2 = _ob.coord.slice(l + 6, l + 9);
 			//_o = objects[obCamera[camMode]].mMatrix.slice(12, 15);
-			_o = objects.name(obCamera[camMode]).mMatrix.slice(12, 15);
+			//_o = objects.name(obCamera[camMode]).mMatrix.slice(12, 15);
+			_o = objects.name(activeCamera).mMatrix.slice(12, 15);
 			_d = _ray;
 			_e = vecSub(_o, _p0);
 			_e1 = vecSub(_p1, _p0);
@@ -2601,6 +2889,8 @@ window.onload = function(){
 			drawMap = false;
 			drawInternal = false;
 			scrutinyMode = false;
+			stencilMode = false;
+			navigatable = true;
 			selectedObject = null;
 			selectedAnnotation = null;
 			comment.style.visibility = 'hidden';
@@ -2640,10 +2930,12 @@ window.onload = function(){
 			drawInternal = !drawInternal;
 			obUI.name('UI_ex-in_button').texture_shift[0] = drawInternal ? 0.5: 0.0;
 		}
+		/*
 		if (buttonPressed('UI_scrutiny_button', _location)) {
 			scrutinyMode = !scrutinyMode;
 			drawInternal = false;
 		}
+		*/
 		if (buttonPressed('UI_point_button', _location)) {
 			switch (annotationMode) {
 				case 0:
@@ -2714,9 +3006,17 @@ window.onload = function(){
 	function mouseDown(e) {
 		if (opening_count >= OPENING_LENGTH ) {
 			for (var i in objects) {
+				let _ob = objects[i];
+				if (_ob.hasOwnProperty('animationData')) {
+					for (var j in _ob.animationData) {
+						_ob.animationData[j].play = 0;
+					}
+				}
+				/*
 				if (objects[i].openingAnimation === true) {
 					objects[i].objectAction.play = 0;
 				}
+				*/
 			}
 			mousePressed = true;
 			mouseButton = e.button;
@@ -2789,6 +3089,7 @@ window.onload = function(){
 		if (opening_count >= OPENING_LENGTH) {
 			mousePressed = false;
 			scrutinyMode = false;
+			navigatable = true;
 			staticallyPressed = false;
 			currentMouseLocation = getMouseLocation(e);
 			checkButtons(currentMouseLocation);
@@ -2801,7 +3102,8 @@ window.onload = function(){
 	function wheel(e) {
 		if (opening_count >= OPENING_LENGTH && navigatable) {
 			//wheelDelta = e.deltaY;
-			let _obCam = objects.name(obCamera[camMode]);
+			//let _obCam = objects.name(obCamera[camMode]);
+			let _obCam = objects.name(activeCamera);
 			let ay = _obCam.angle_y;
 			ay += wheelDelta * e.deltaY;
 			if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
@@ -2815,9 +3117,17 @@ window.onload = function(){
 	function touchStart(e) {
 		if (opening_count >= OPENING_LENGTH) {
 			for (var i = 0 in objects) {
+				let _ob = objects[i];
+				if (_ob.hasOwnProperty('animationData')) {
+					for (var j in _ob.animationData) {
+						_ob.animationData[j].play = 0;
+					}
+				}
+				/*
 				if (objects[i].openingAnimation === true) {
 					objects[i].objectAction.play = 0;
 				}
+				*/
 			}
 			touched = true;
 			staticallyPressed = true;
@@ -2887,6 +3197,7 @@ window.onload = function(){
 		if (opening_count >= OPENING_LENGTH) {
 			touched = false;
 			scrutinyMode = false;
+			navigatable = true;
 			staticallyPressed = false;
 			//currentTouchLocations = getTouchLocations(e);
 			//eText.textContent = currentTouchLocations[0].x
@@ -2928,14 +3239,24 @@ window.onload = function(){
 			case 16: //shift key
 				shiftKeyPressed = false;
 				break;
+			case 32: //space key
+					animationPosed = !animationPosed;
+					break;
 			case 48: //0 key
-				camMode = 0;
+				//camMode = 0;
+				activeCamera = 'camera_main';
 				break;
 			case 49: //1 key
+				if (objects.name('camera_animation01') != undefined) {
+					activeCamera = 'camera_animation01'
+				}
+				/*
 				if (obCamera.length > 1) {
 					camMode = 1;
 				}
+				*/
 				break;
+			/*
 			case 50: //2 key
 				if (obCamera.length > 2) {
 					camMode = 2;
@@ -2956,8 +3277,10 @@ window.onload = function(){
 					camMode = 5;
 				}
 				break;
+			*/
 			case 77: //m key
 				drawMap = !drawMap;
+				break;
 			default:
 				return;
 		}
