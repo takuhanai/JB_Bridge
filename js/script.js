@@ -86,6 +86,7 @@ window.onload = function(){
 		browser = 'Safari';
 	}
 	console.log(browser);
+	console.log(document.getElementsByName('scene_name')[0].value);
 	//test();
 
   // canvasエレメントを取得
