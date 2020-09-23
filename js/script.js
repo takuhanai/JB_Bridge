@@ -15,8 +15,9 @@ window.onload = function(){
 	let resourcePath = './resource/';
 	let title = 'jb_bridge';
 	//let scene_name = 'hsbe';
-	let scene_name = 'kurushima_bridges';
+	//let scene_name = 'kurushima_bridges';
 	//let scene_name = 'oshima_bridge';
+	let scene_name = document.getElementsByName('scene_name')[0].value;
 	//let FPS;
 	let drawMode = 0;//0: draw all, 1: omit window, 2: omit window and roof
 	let eText = document.getElementById('text');
@@ -86,7 +87,7 @@ window.onload = function(){
 		browser = 'Safari';
 	}
 	console.log(browser);
-	console.log(document.getElementsByName('scene_name')[0].value);
+	//console.log(document.getElementsByName('scene_name')[0].value);
 	//test();
 
   // canvasエレメントを取得
@@ -168,7 +169,8 @@ window.onload = function(){
   let obNames = []; // Not used
 
 	//let obCamera = []; // List of camera objects
-	let activeCamera = 'camera_main'; //Name of active camera
+	let sceneCamera = 'camera_main';
+	let activeCamera = sceneCamera; //Name of active camera
 	//let activeCamera = 'camera_animation01'; //Name of active camera
 
 	let obLoading = []; // List of objects used for loading screen
@@ -433,17 +435,17 @@ window.onload = function(){
 			}
 
 			//drawUpdate();
-			if (supportTouch) {
-				touchUpdate();
-			} else {
-				mouseUpdate();
+			if (scene.navigatable) {
+				if (supportTouch) {
+					touchUpdate();
+				} else {
+					mouseUpdate();
+				}
 			}
 
-			if (!animationPosed) {
-				sceneAnimationUpdate();
-	      // objects の更新
-	      actionUpdate();
-			}
+			sceneAnimationUpdate();
+    	// objects の更新
+      actionUpdate();
 
 			// UI の更新
 			//UIUpdate();
@@ -501,10 +503,16 @@ window.onload = function(){
 
       // hud 関連
 			//gl.disable(gl.DEPTH_TEST);
+
 			//camMode = 1;
-			cameraUpdate();
-			UI3DRender();
+			if (sceneCamera === 'camera_main') {
+				activeCamera = 'camera_UI3D';
+				cameraUpdate();
+				UI3DRender();
+			}
 			//camMode = 0;
+			//activeCamera = 'camera_main';
+			activeCamera = sceneCamera;
 			//console.log(obCamera[camMode]);
 			gl.disable(gl.DEPTH_TEST);
 			cameraUpdate();
@@ -715,6 +723,7 @@ window.onload = function(){
 
 				let deltaRotY = -0.003 * dY;
 				if (cameraVertAngle + deltaRotY < scene.cameraVertAngleMax && cameraVertAngle + deltaRotY > scene.cameraVertAngleMin) {
+					//console.log(_cam.mMatrix0, _cam_UI3D.mMatrix0);
 					let rMatrix = m.identity(m.create());
 					m.rotate(rMatrix, deltaRotY, [1, 0, 0], rMatrix);
 					m.multiply(rMatrix, _cam.mMatrix0, _cam.mMatrix0);
@@ -799,7 +808,7 @@ window.onload = function(){
 	function sceneAnimationUpdate() {
 		for (var i in scene.sceneAnimations) {
 			let _anim = scene.sceneAnimations[i];
-			if (_anim.active && _anim.play != 0) {
+			if (_anim.active && _anim.play != 0 && !animationPosed) {
 				if (_anim.animation_count > _anim.stencil_on && _anim.animation_count < _anim.stencil_off) {
 					//drawInternal = true;
 					stencilMode = true;
@@ -817,7 +826,7 @@ window.onload = function(){
 			let _ob = objects[i];
 			if (_ob.hasOwnProperty('animationData')) {
 				for (var j in _ob.animationData) {
-					if (_ob.animationData[j].play != 0) {
+					if (_ob.animationData[j].play != 0 && !animationPosed) {
 						evaluateAction(_ob.name, _ob.animationData[j]);
 						actionIncrement(_ob.animationData[j]);
 					}
@@ -1487,8 +1496,8 @@ window.onload = function(){
 
 		//camMode = 0;
 		//obCamera = [];
-		//activeCamera = 'camera_main';
-		activeCamera = 'camera_animation01';
+		sceneCamera = 'camera_main';
+		//activeCamera = 'camera_animation01';
 
 		allDataReady = false;
 		numDataReady = 0;
@@ -1497,7 +1506,8 @@ window.onload = function(){
 		//console.log(objects);
 		for (let i in objects) {
 			//console.log(objects[i].name);
-			read3DModelData(resourcePath + scene.name, objects[i].name, 'object');
+			//read3DModelData(resourcePath + scene.name, objects[i].name, 'object');
+			read3DModelData(resourcePath + scene.directory, objects[i].name, 'object');
 		}
 		/*
 		for (let _name in objects) {
@@ -1546,8 +1556,14 @@ window.onload = function(){
 		let _sceneData = lines[_off].split(',');
 		let sdIndex = 0;
 		scene.num_object = Number(_sceneData[sdIndex++]);
+		scene.directory = _sceneData[sdIndex++];
 		scene.parent = _sceneData[sdIndex++];
 		scene.UI = _sceneData[sdIndex++];
+		scene.num_sceneAnimation = Number(_sceneData[sdIndex++]);
+		scene.navigatable = (_sceneData[sdIndex++] === 'yes') ? true : false;
+		_off += 2;
+		sdIndex = 0;
+		_sceneData = lines[_off].split(',');
 		scene.cameraTranslationDelta = Number(_sceneData[sdIndex++]);
 		scene.cameraTranslationRange = _sceneData.slice(sdIndex, sdIndex + 6).map(Number);
 		sdIndex += 6;
@@ -1559,7 +1575,7 @@ window.onload = function(){
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
-		scene.num_sceneAnimation = Number(_sceneData[sdIndex++]);
+		//scene.num_sceneAnimation = Number(_sceneData[sdIndex++]);
 		/*
 		scene.textZoomAngle = {};
 		scene.textZoomAngle.level0 = Number(_sceneData[sdIndex++]);
@@ -1650,7 +1666,8 @@ window.onload = function(){
 				name: _animData[0],
 				numItems: Number(_animData[1]),
 				frame_start: Number(_animData[2]),
-				frame_end: Number(_animData[3])
+				frame_end: Number(_animData[3]),
+				camera: _animData[4]
 			};
 			for (var j = 0; j < _animation.numItems; j++) {
 				let _line = lines[_off].split(',');
@@ -1658,13 +1675,17 @@ window.onload = function(){
 				_off += 1;
 			}
 			_animation.animation_count = 0;
+			_animation.active = false;
+			//0: stop, 1: play loop, 2: play once (return to first frame), 3: play once (stay at last frame)
+			//_animation.play = 0;
 			if (_animation.name === 'animation01') {
 				_animation.active = true;
 				_animation.play = 1;
 			} else {
 				_animation.active = false;
 				_animation.play = 0;
-			} //0: stop, 1: play loop, 2: play once (return to first frame), 3: play once (stay at last frame)
+			}
+
 			_animation.forward = true;
 			//_animation.speed = 0.4;
 			_animation.speed = FPS_blender / FPS * ANIMATION_SPEED_MULTIPLIER;
@@ -1974,6 +1995,7 @@ window.onload = function(){
 						}
 						//_action.off = _off;
 						_action.animation_count = _action.frame_start;
+						//if (_action.name === 'opening') {
 						if (_action.name === 'opening' || _action.name === 'animation01') {
 						//if (_openingAnimation) {
 							_action.play = 1;
@@ -2964,6 +2986,16 @@ window.onload = function(){
 		if (buttonPressed('UI_whole_button', _location)) {
 			loadScene(scene.parent);
 		}
+		if (buttonPressed('UI_play_pause_button', _location)) {
+			if (animationPosed) {
+				animationPosed = false;
+				obUI.name('UI_play_pause_button').texture_shift[0] = 0.0;
+				sceneCamera = scene.sceneAnimations.name('animation01').camera;
+			} else {
+				animationPosed = true;
+				obUI.name('UI_play_pause_button').texture_shift[0] = 0.5;
+			}
+		}
 	}
 
 	function checkAnnotations(_location) {
@@ -3006,6 +3038,11 @@ window.onload = function(){
 
 	function mouseDown(e) {
 		if (opening_count >= OPENING_LENGTH ) {
+
+			if (!animationPosed && scene.navigatable) {
+				animationPosed = true;
+			}
+			/*
 			for (var i in objects) {
 				let _ob = objects[i];
 				if (_ob.hasOwnProperty('animationData')) {
@@ -3013,12 +3050,8 @@ window.onload = function(){
 						_ob.animationData[j].play = 0;
 					}
 				}
-				/*
-				if (objects[i].openingAnimation === true) {
-					objects[i].objectAction.play = 0;
-				}
-				*/
 			}
+			*/
 			mousePressed = true;
 			mouseButton = e.button;
 			staticallyPressed = true;
@@ -3104,11 +3137,13 @@ window.onload = function(){
 		if (opening_count >= OPENING_LENGTH && navigatable) {
 			//wheelDelta = e.deltaY;
 			//let _obCam = objects.name(obCamera[camMode]);
-			let _obCam = objects.name(activeCamera);
-			let ay = _obCam.angle_y;
-			ay += wheelDelta * e.deltaY;
-			if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
-				_obCam.angle_y = ay;
+			if (scene.navigatable) {
+				let _obCam = objects.name(activeCamera);
+				let ay = _obCam.angle_y;
+				ay += wheelDelta * e.deltaY;
+				if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
+					_obCam.angle_y = ay;
+				}
 			}
 			//UIInteractionUpdate();
 			//eText.textContent = ay;
@@ -3117,6 +3152,10 @@ window.onload = function(){
 
 	function touchStart(e) {
 		if (opening_count >= OPENING_LENGTH) {
+			if (!animationPosed) {
+				animationPosed = !animationPosed;
+			}
+			/*
 			for (var i = 0 in objects) {
 				let _ob = objects[i];
 				if (_ob.hasOwnProperty('animationData')) {
@@ -3124,12 +3163,8 @@ window.onload = function(){
 						_ob.animationData[j].play = 0;
 					}
 				}
-				/*
-				if (objects[i].openingAnimation === true) {
-					objects[i].objectAction.play = 0;
-				}
-				*/
 			}
+			*/
 			touched = true;
 			staticallyPressed = true;
 			statPressedTime = new Date().getTime();
@@ -3240,9 +3275,11 @@ window.onload = function(){
 			case 16: //shift key
 				shiftKeyPressed = false;
 				break;
+			/*
 			case 32: //space key
 					animationPosed = !animationPosed;
 					break;
+			*/
 			case 48: //0 key
 				//camMode = 0;
 				activeCamera = 'camera_main';

@@ -1,0 +1,5 @@
+number of objects,,,
+2,,,
+object,texture01,type,description
+UI_play_pause_button,UI_play_pause_button,fix,
+UI_stencil_circle,UI_stencil_circle,stencil,
