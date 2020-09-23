@@ -3152,7 +3152,7 @@ window.onload = function(){
 
 	function touchStart(e) {
 		if (opening_count >= OPENING_LENGTH) {
-			if (!animationPosed) {
+			if (!animationPosed && scene.navigatable) {
 				animationPosed = !animationPosed;
 			}
 			/*
