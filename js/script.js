@@ -1486,6 +1486,7 @@ window.onload = function(){
 		scrutinyMode = false;
 		stencilMode = false;
 		navigatable = true;
+		animationPosed = false;
 
 		scene = new Scene(_scene_name);
 
@@ -1496,12 +1497,13 @@ window.onload = function(){
 
 		//camMode = 0;
 		//obCamera = [];
-		sceneCamera = 'camera_main';
+		//sceneCamera = 'camera_main';
 		//activeCamera = 'camera_animation01';
 
 		allDataReady = false;
 		numDataReady = 0;
 		annotations = [];
+		console.log('scene:', scene.name);
 		readSceneData();
 		//console.log(objects);
 		for (let i in objects) {
@@ -1559,7 +1561,8 @@ window.onload = function(){
 		scene.directory = _sceneData[sdIndex++];
 		scene.parent = _sceneData[sdIndex++];
 		scene.UI = _sceneData[sdIndex++];
-		scene.num_sceneAnimation = Number(_sceneData[sdIndex++]);
+		scene.num_sceneAnimations = Number(_sceneData[sdIndex++]);
+		scene.mainAnimation = _sceneData[sdIndex++];
 		scene.navigatable = (_sceneData[sdIndex++] === 'yes') ? true : false;
 		_off += 2;
 		sdIndex = 0;
@@ -1575,7 +1578,7 @@ window.onload = function(){
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
 		scene.textZoomAngle.push(Number(_sceneData[sdIndex++]));
-		//scene.num_sceneAnimation = Number(_sceneData[sdIndex++]);
+		//scene.num_sceneAnimations = Number(_sceneData[sdIndex++]);
 		/*
 		scene.textZoomAngle = {};
 		scene.textZoomAngle.level0 = Number(_sceneData[sdIndex++]);
@@ -1657,11 +1660,12 @@ window.onload = function(){
 			_off += 1;
 		}
 
+		_off += 1;
 		scene.sceneAnimations = new obArray();
-		for (var i = 0; i < scene.num_sceneAnimation; i++) {
-			_off += 1;
+		for (var i = 0; i < scene.num_sceneAnimations; i++) {
+			//_off += 1;
 			let _animData = lines[_off].split(',');
-			_off += 1;
+			//_off += 1;
 			let _animation = {
 				name: _animData[0],
 				numItems: Number(_animData[1]),
@@ -1669,6 +1673,8 @@ window.onload = function(){
 				frame_end: Number(_animData[3]),
 				camera: _animData[4]
 			};
+			_off += 1;
+			console.log(_animation.name);
 			for (var j = 0; j < _animation.numItems; j++) {
 				let _line = lines[_off].split(',');
 				_animation[_line[0]] = Number(_line[1]);
@@ -1678,7 +1684,7 @@ window.onload = function(){
 			_animation.active = false;
 			//0: stop, 1: play loop, 2: play once (return to first frame), 3: play once (stay at last frame)
 			//_animation.play = 0;
-			if (_animation.name === 'animation01') {
+			if (_animation.name === scene.mainAnimation) {
 				_animation.active = true;
 				_animation.play = 1;
 			} else {
@@ -1691,6 +1697,12 @@ window.onload = function(){
 			_animation.speed = FPS_blender / FPS * ANIMATION_SPEED_MULTIPLIER;
 			console.log(_animation);
 			scene.sceneAnimations.push(_animation);
+
+		}
+		if (scene.num_sceneAnimations > 0) {
+			sceneCamera = scene.sceneAnimations.name(scene.mainAnimation).camera;
+		} else {
+			sceneCamera = 'camera_main';
 		}
 	}
 
@@ -1949,7 +1961,7 @@ window.onload = function(){
 							//_off += 4 + _fCurve.dataPath.length;
 							_fCurve.arrayIndex = readInt32(dv, _counter);
 							//* _fCurve.arrayIndex = _dv.getInt32(_off, true);
-							console.log('dataPath: ' + _fCurve.dataPath + ', ' + _fCurve.arrayIndex);
+							//console.log('dataPath: ' + _fCurve.dataPath + ', ' + _fCurve.arrayIndex);
 							//* _off += 4;
 							_fCurve.numKP = readInt32(dv, _counter);
 							//* _fCurve.numKP = _dv.getInt32(_off, true);
@@ -1995,8 +2007,9 @@ window.onload = function(){
 						}
 						//_action.off = _off;
 						_action.animation_count = _action.frame_start;
+						if (_action.name === scene.mainAnimation) {
 						//if (_action.name === 'opening') {
-						if (_action.name === 'opening' || _action.name === 'animation01') {
+						//if (_action.name === 'opening' || _action.name === 'animation01') {
 						//if (_openingAnimation) {
 							_action.play = 1;
 						} else {

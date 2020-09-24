@@ -1,5 +1,5 @@
-number of objects,directory,parent scene,UI,number of scene animations,navigatable,,,,,,,,,,,,
-54,kurushima_bridges,hsbe,second_layer,1,yes,,,,,,,,,,,,
+number of objects,directory,parent scene,UI,number of scene animations,main scene animation,navigatable,,,,,,,,,,,
+54,kurushima_bridges,hsbe,second_layer,1,opening,yes,,,,,,,,,,,
 translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,,,,
 1.2,800,-3400,200,-200,200,2,10.0,-80.0,1.2,0.05,1.2,0.8,0.4,,,,
 object,kind,texture01,texture02,opening animation,internal,terrain,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
@@ -58,6 +58,4 @@ camera_animation01,camera,,,,,,,,,,,,,,,,
 visitor_test,mesh,visitor_test,,,,,,,,,,,,,,,
 elevator_wall,mesh,elevator_wall,,,,,,,,,,,,,,,
 animation name,number of items,frame start,frame end,camera,,,,,,,,,,,,,
-animation01,2,1,1350,camera_animation01,,,,,,,,,,,,,"83,686"
-stencil_on,644,,,,,,,,,,,,,,,,
-stencil_off,1157,,,,,,,,,,,,,,,,
+opening,0,1,600,camera_main,,,,,,,,,,,,,"83,686"

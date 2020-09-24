@@ -1,13 +1,12 @@
-number of objects,parent scene,UI,translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,number of scene animations
-34,oshima_bridge,third_layer,0.2,20.0,-20.0,20.0,-20.0,90.0,2.0,30.0,-30.0,0.9,0.06,0.9,0.6,0.3,0
+number of objects,directory,parent scene,UI,number of scene animations,main scene animation,navigatable,,,,,,,,,,,number of scene animations
+31,5P_tower,oshima_bridge,third_layer,1,opening,yes,,,,,,,,,,,0
+translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,,,,
+0.2,20.0,-20.0,20.0,-20.0,90.0,2.0,30.0,-30.0,0.9,0.06,0.9,0.6,0.3,,,,
 object,kind,texture01,texture02,opening animation,internal,terrain,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
 camera_main,camera,,,,,,,,,,,,,,,,
 camera_UI3D,camera,,,,,,,,,,,,,,,,
 camera_orbit_origin,empty,,,yes,,,,,,,,,,,,,
-camera_fly,camera,,,,,,,,,,,,,,,,
-camera_fly_origin,empty,,,,,,,,,,,,,,,,
 UI_compass,UI3D,UI_compass,,,,,,,,,,,,,,,2
-camera_fly_path,path,,,,,,,,,,,,,,,,
 shaftL_dia,mesh,shaftL_dia,,,internal,,,shaftL_dia,,,,,,,,,"2,768"
 shaftL_wall_E,mesh,shaftL_wall_E,,,internal,,,shaftL_wall_E,,,,yes,-0.9997379183769230,0.0,0.022890908643603300,,"2,181"
 shaftL_wall_N,mesh,shaftL_wall_N,,,internal,,,shaftL_wall_N,,,,yes,0.0,-1.0,0.0,,"2,688"
@@ -35,4 +34,5 @@ suddleR,mesh,suddleR,,,external,,,suddleR,,,,,,,,,518
 suddle_cover,mesh,suddle_cover,,,external,,suddle_cover,suddle_cover,,,yes,,,,,,"1,352"
 top_strat_wall,mesh,top_strat_wall,,,external,,,top_strat_wall,,,,,,,,,486
 lower_strat_wall,mesh,lower_strat_wall,,,external,,,lower_strat_wall,,,,,,,,,"1,156"
-,stenciled_mesh,,,,,,,,,,,,,,,,"37,955"
+animation name,number of items,frame start,frame end,camera,,,,,,,,,,,,,"37,955"
+opening,0,1,600,camera_main,,,,,,,,,,,,,

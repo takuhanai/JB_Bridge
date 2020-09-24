@@ -1,5 +1,5 @@
-number of objects,directory,parent scene,UI,number of scene animations,navigatable,,,,,,,,,,,,
-16,hsbe,root,first_layer,0,yes,,,,,,,,,,,,
+number of objects,directory,parent scene,UI,number of scene animations,main scene animation,navigatable,,,,,,,,,,,
+16,hsbe,root,first_layer,0,opening,yes,,,,,,,,,,,
 translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,,,,
 0.0002,0.09,-0.09,0.045,-0.045,0,0,25.0,-5,0.7,0.4,1.2,0.8,0.4,,,,
 object,kind,texture01,texture02,opening animation,internal,terrain,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons
