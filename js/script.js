@@ -149,8 +149,10 @@ window.onload = function(){
 	let q = new qtnIV();
 
 	//m.ortho(0.0, 0.02 * c.width, 0.02 * c.height, 0.0, 0.1, 300, vpoMatrix);
-	m.ortho(0.0, c.width, c.height, 0.0, 0.1, 300, vpoMatrix);
-	m.translate(vpoMatrix, [0, 0, -300], vpoMatrix);
+	//m.ortho(0.0, c.width, c.height, 0.0, 0.1, 300, vpoMatrix);
+	m.ortho(0.0, c.width, c.height, 0.0, 0.1, 5000, vpoMatrix);
+	//m.translate(vpoMatrix, [0, 0, -300], vpoMatrix);
+	m.translate(vpoMatrix, [0, 0, -5000], vpoMatrix);
 
 	class obArray extends Array {
 		constructor() {
@@ -513,7 +515,7 @@ window.onload = function(){
 			//camMode = 0;
 			//activeCamera = 'camera_main';
 			activeCamera = sceneCamera;
-			//console.log(obCamera[camMode]);
+			//console.log(activeCamera);
 			gl.disable(gl.DEPTH_TEST);
 			cameraUpdate();
 			textRender();
@@ -1104,6 +1106,7 @@ window.onload = function(){
 			}
 			for (let i in obTexts) {
 				let _ot = obTexts[i];
+				//console.log('obText:', _ot.name);
 				if (
 					drawText &&
 					_ot.attributes.hasOwnProperty('level' + _drawLevel) &&
@@ -1114,6 +1117,8 @@ window.onload = function(){
 				//if (scene.textZoomAngle[_ot.level] > objects.name(obCamera[camMode]).angle_y) {
 					let _tMatrix = m.identity(m.create());
 					let _v = from3DPointTo2D(_ot.location.concat(1.0));
+					//_v[2] = 10;
+					//console.log(_v);
 					//eText.textContent = _v[2];
 					m.translate(_tMatrix, _v.slice(0, 3), _tMatrix);
 					_ot.mMatrix = _tMatrix;
@@ -1450,6 +1455,7 @@ window.onload = function(){
 
 	//function create_texture(_path, source, i_source, _type){
 	function create_texture(_path, i_source){
+		//console.log('path:', _path, 'i_source:', i_source);
 		if (!obTextures.find(o => o.name === i_source)) {
 			var img = new Image();
 			//img.src = _path + '/textures/' + i_source + '.png';
@@ -1522,7 +1528,8 @@ window.onload = function(){
 		hiddenObjects = [];
 		readUIData();
 
-		readTextData(resourcePath + scene.name);
+		//readTextData(resourcePath + scene.name);
+		readTextData(resourcePath + scene.directory);
 
 		comment.style.visibility = 'hidden';
 		buttonContainerElement.style.visibility = 'hidden';
@@ -2379,7 +2386,7 @@ window.onload = function(){
 				obTexts.push(_ot);
 				create_texture(_path + '/text/', _ot.font);
 			}
-			console.log(obTexts);
+			//console.log('obTexts:', obTexts);
 		}
 	}
 
@@ -3003,7 +3010,7 @@ window.onload = function(){
 			if (animationPosed) {
 				animationPosed = false;
 				obUI.name('UI_play_pause_button').texture_shift[0] = 0.0;
-				sceneCamera = scene.sceneAnimations.name('animation01').camera;
+				//sceneCamera = scene.sceneAnimations.name('animation01').camera;
 			} else {
 				animationPosed = true;
 				obUI.name('UI_play_pause_button').texture_shift[0] = 0.5;
