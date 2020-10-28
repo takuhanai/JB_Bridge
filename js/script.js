@@ -1,4 +1,3 @@
-
 window.onload = function(){
 
 	// constant
@@ -107,14 +106,20 @@ window.onload = function(){
   let prg = create_program(v_shader, f_shader);
 	VBOEnum = {
 		position: 0,
-		textureCoord: 1
+		textureCoord: 1,
+		boneIndices: 2,
+		boneWeights: 3
 	}
   let attLocation = new Array();
   attLocation[VBOEnum.position] = gl.getAttribLocation(prg, 'position');
   attLocation[VBOEnum.textureCoord] = gl.getAttribLocation(prg, 'textureCoord');
+	attLocation[VBOEnum.boneIndices] = gl.getAttribLocation(prg, 'boneIndices');
+	attLocation[VBOEnum.boneWeights] = gl.getAttribLocation(prg, 'boneWeights');
   let attStride = new Array();
   attStride[VBOEnum.position] = 3;
   attStride[VBOEnum.textureCoord] = 2;
+	attStride[VBOEnum.boneIndices] = 2;
+	attStride[VBOEnum.boneWeights] = 2;
 
 	uniEnum = {
 		color: 0,
@@ -124,6 +129,8 @@ window.onload = function(){
 		alpha: 4,
 		tex_shift: 5,
 		drawMap: 6,
+		useBone: 7,
+		bonemvpMatrix: 8
 	}
   let uniLocation = new Array();
   uniLocation[uniEnum.color] = gl.getUniformLocation(prg, 'color');
@@ -133,6 +140,14 @@ window.onload = function(){
 	uniLocation[uniEnum.alpha] = gl.getUniformLocation(prg, 'alpha');
   uniLocation[uniEnum.tex_shift] = gl.getUniformLocation(prg, 'tex_shift');
   uniLocation[uniEnum.drawMap] = gl.getUniformLocation(prg, 'drawMap');
+	uniLocation[uniEnum.useBone] = gl.getUniformLocation(prg, 'useBone');
+	uniLocation[uniEnum.bonemvpMatrix] = gl.getUniformLocation(prg, 'bonemvpMatrix');
+	/*
+	for (let i = 0; i < 20; i++) {
+		uniLocation[uniEnum.bonemvpMatrix + i] = gl.getUniformLocation(prg, 'useBone[' + i.toString() + ']' );
+		//console.log('useBone[' + i.toString() + ']');
+	}
+	*/
 
   gl.useProgram(prg);
 
@@ -447,7 +462,7 @@ window.onload = function(){
 
 			sceneAnimationUpdate();
     	// objects の更新
-      actionUpdate();
+      animationUpdate();
 
 			// UI の更新
 			//UIUpdate();
@@ -475,9 +490,12 @@ window.onload = function(){
 			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
       // objects の描画
 
+			//eText.textContent = 'stencil mode: ' + stencilMode.toString() + ', scrutiny mode: ' + scrutinyMode.toString();
 			if (!scrutinyMode && !stencilMode) {
+				//eText.textContent = 'normal mode';
 				objectRender(drawInternal);
 			} else {
+				//eText.textContent = 'stencil mode';
 				gl.enable(gl.STENCIL_TEST);
 				gl.clearStencil(0);
 
@@ -507,7 +525,7 @@ window.onload = function(){
 			//gl.disable(gl.DEPTH_TEST);
 
 			//camMode = 1;
-			if (sceneCamera === 'camera_main') {
+			if (sceneCamera === 'camera_main' && objects.indexOf('camera_UI3D') != -1) {
 				activeCamera = 'camera_UI3D';
 				cameraUpdate();
 				UI3DRender();
@@ -787,7 +805,6 @@ window.onload = function(){
 			//let _obCamera = objects[obCamera[camMode]];
 			//let _obCamera = objects.name(obCamera[camMode]);
 			let _obCamera = objects.name(activeCamera);
-			//console.log(obCamera[camMode]);
 			switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
 				case 0: //PERSP
 					//eText.textContent = _obCamera.angle_y;
@@ -808,89 +825,58 @@ window.onload = function(){
   }
 
 	function sceneAnimationUpdate() {
-		for (var i in scene.sceneAnimations) {
-			let _anim = scene.sceneAnimations[i];
-			if (_anim.active && _anim.play != 0 && !animationPosed) {
+		if (scene.sceneAnimations.length > 0) {
+			let _anim = scene.sceneAnimations.name(scene.activeAnimation);
+			if (_anim.play != 0 && !animationPosed) {
+				//eText.textContent = _anim.stencil_on.toString() + ', ' + _anim.stencil_off.toString() + ', ' + _anim.animation_count.toString();
 				if (_anim.animation_count > _anim.stencil_on && _anim.animation_count < _anim.stencil_off) {
-					//drawInternal = true;
+					//eText.textContent = stencilMode.toString();
 					stencilMode = true;
+					//console.log(_anim.animation_count, stencilMode);
 				} else {
-					//drawInternal = false;
+					//eText.textContent = stencilMode.toString();
 					stencilMode = false;
 				}
+				//eText.textContent = _anim.animation_count;
+				//console.log(_anim.animation_count, _anim.stencil_on, _anim.stencil_off);
 				actionIncrement(_anim);
 			}
 		}
 	}
 
-  function actionUpdate(){
+  function animationUpdate(){
     for (var i in objects) {
 			let _ob = objects[i];
-			if (_ob.hasOwnProperty('animationData')) {
-				for (var j in _ob.animationData) {
-					if (_ob.animationData[j].play != 0 && !animationPosed) {
-						evaluateAction(_ob.name, _ob.animationData[j]);
-						actionIncrement(_ob.animationData[j]);
+			if (_ob.hasOwnProperty('nLATracks')) {
+				for (var j in _ob.nLATracks) {
+					if (_ob.nLATracks[j].play != 0 && !animationPosed) {
+						evaluateNLATrack(_ob.name, _ob.nLATracks[j]);
+						actionIncrement(_ob.nLATracks[j]);
 					}
 				}
 			}
-			/*
-			if (_ob.hasOwnProperty('objectAction') && _ob.objectAction.play != 0) {
-				//_ob.mMatrix0 = evaluateAction(_ob.objectAction, _ob.objectAction.animation_count, _ob.location_o, _ob.rotation_o, _ob.scale_o, _ob.rotation_mode);
-				evaluateAction(_ob.name);
-				actionIncrement(_ob.objectAction);
-			}
-			*/
 			if (_ob.hasOwnProperty('materialAction') && _ob.materialAction.play != 0) {
 				_ob.alpha = evaluateMaterialAction(actions[i].materialAction, actions[i].materialAction.animation_count).alpha;
 			}
 
-      var mMatrixLocal = m.identity(m.create());
-      m.multiply(_ob.mMatrix0, mMatrixLocal, mMatrixLocal);
+      //var mMatrixLocal = m.identity(m.create());
+      //m.multiply(_ob.mMatrix0, mMatrixLocal, mMatrixLocal);
 
-			_ob.mMatrix = mMatrixLocal;
+			//_ob.mMatrix = mMatrixLocal;
+			_ob.mMatrix = _ob.mMatrix0.slice();
 
 			for (let ii in _ob.constraints) {
 				if (_ob.constraints[ii].type == 23) {
 					if (_ob.kind === 'UI3D') {
 						_ob.mMatrix = evaluateUI3DOb(_ob.name, _ob.constraints[ii].target);
 					} else {
+						//console.log(_ob.name + ' has parent');
 						let uimMatrix = evaluateParent(_ob.constraints[ii], false);
-						m.multiply(uimMatrix, mMatrixLocal, _ob.mMatrix);
+						//m.multiply(uimMatrix, mMatrixLocal, _ob.mMatrix);
+						m.multiply(uimMatrix, _ob.mMatrix0, _ob.mMatrix);
 					}
 				}
 			}
-
-			/*
-			let _indexChildOf = -1;
-			for (var ii = 0; ii < _ob.constraints.length; ii++) {
-				if (_ob.constraints[ii].type === 23) {
-					_indexChildOf = ii;
-					break;
-				}
-			}
-			if (_indexChildOf != -1) {
-				//var po = objects[_ob.constraints[_indexChildOf].target];
-				var po = objects.name(_ob.constraints[_indexChildOf].target);
-
-				if (po.dataReady) {
-					m.multiply(po.mMatrix, mMatrixLocal, _ob.mMatrix);
-
-					if (_ob.kind != 'UI3D') {
-            m.multiply(po.mMatrix, mMatrixLocal, _ob.mMatrix);
-					} else {
-						let uimMatrix = m.identity(m.create());
-						uimMatrix[12] = po.mMatrix[12];
-						uimMatrix[13] = po.mMatrix[13];
-						uimMatrix[14] = po.mMatrix[14];
-						m.multiply(uimMatrix, mMatrixLocal, _ob.mMatrix);
-					}
-
-        }
-      } else {
-          _ob.mMatrix = mMatrixLocal;
-      }
-			*/
     }
   }
 
@@ -948,37 +934,41 @@ window.onload = function(){
 	}
 
 	function actionIncrement(_ac) {
+		let _frameStart = scene.sceneAnimations.name(scene.activeAnimation).frame_start;
+		let _frameEnd =  scene.sceneAnimations.name(scene.activeAnimation).frame_end;
 		if (_ac.forward) {
 			_ac.animation_count += _ac.speed;
 		} else {
 			_ac.animation_count -= _ac.speed;
 		}
-		if (_ac.animation_count > _ac.frame_end) {
+		if (_ac.animation_count > _frameEnd) {
+		//if (_ac.animation_count > _ac.frame_end) {
 			if (_ac.play == 1) {
-				_ac.animation_count = _ac.frame_start;
+				_ac.animation_count = _frameStart;
+				//_ac.animation_count = _ac.frame_start;
 			} else if (_ac.play == 2) {
 				_ac.play = 0;
-				_ac.animation_count = _ac.frame_start;
-				/*
-				if (ob.nextAction !== undefined) {
-					ob.nextAction();
-					delete ob.nextAction;
-				}
-				*/
+				_ac.animation_count = _frameStart;
+				//_ac.animation_count = _ac.frame_start;
 			} else if (_ac.play == 3) {
 				_ac.play = 0;
-				_ac.animation_count = _ac.frame_end;
+				_ac.animation_count = _frameEnd;
+				//_ac.animation_count = _ac.frame_end;
 			}
 		}
-		if (_ac.animation_count < _ac.frame_start) {
+		if (_ac.animation_count < _frameStart) {
+		//if (_ac.animation_count < _ac.frame_start) {
 			if (_ac.play == 1) {
-				_ac.animation_count = _ac.frame_end;
+				_ac.animation_count = _frameEnd;
+				//_ac.animation_count = _ac.frame_end;
 			} else if (_ac.play == 2) {
-				_ac.animation_count = _ac.frame_end;
+				_ac.animation_count = _frameEnd;
+				//_ac.animation_count = _ac.frame_end;
 				_ac.play = 0;
 			} else if (_ac.play == 3) {
 				_ac.play = 0;
-				_ac.animation_count = _ac.frame_start;
+				_ac.animation_count = _frameStart;
+				//_ac.animation_count = _ac.frame_start;
 			}
 		}
 		//eText.textContent = _ac.animation_count;
@@ -986,11 +976,9 @@ window.onload = function(){
 
   // objects rendering
 	function objectRender(_internal){
-  //function objectRender(_obKind){
 		for (var i in objects) {
 			let _ob = objects[i];
 			if (_ob.one_sided) {
-				//let _ray = vecSub(_ob.center, objects.name(obCamera[camMode]).mMatrix.slice(12, 15));
 				let _ray = vecSub(_ob.center, objects.name(activeCamera).mMatrix.slice(12, 15));
 				if (dot(_ob.normal, _ray) < 0.0) {
 					_ob.draw = true;
@@ -1001,23 +989,18 @@ window.onload = function(){
       if (
           _ob.type === 0 &&
 					_ob.kind === 'mesh' &&
-					//_ob.kind === _obKind &&
-          _ob.draw === true &&
-					//_ob.internal === drawInternal &&
-					//_ob.internal === _internal &&
+					_ob.draw === true &&
 					((_internal && _ob.internal != 'external') || (!_internal && _ob.internal != 'internal')) &&
 					!(_ob.terrain && !drawTerrain) &&
           obLoading.indexOf(i) === -1
       ) {
 				let _color = [];
 				if (_ob.name === selectedObject) {
-				//if (i === selectedObject) {
 					_color = [1.0, 0.0, 0.0, 0.3];
 				} else {
 					_color = [1.0, 1.0, 1.0, 0.0];
 				}
 
-				//objectRendergl(i, _color);
 				objectRendergl(_ob.name, _color);
       }
     }
@@ -1025,12 +1008,14 @@ window.onload = function(){
 
 	function stencilRender() {
 		//gl.disable(gl.DEPTH_TEST);
+		//eText.textContent = 'stencilRender';
 
 		gl.stencilFunc(gl.EQUAL, 0, ~0);
 		gl.stencilOp(gl.KEEP, gl.INCR, gl.INCR);
 
 		for (var i = 0 in obUI) {
 			if (obUI[i].draw && obUI[i].UItype === 'stencil') {
+				//console.log(obUI[i].name);
 				UIRendergl(obUI[i], [1.0, 1.0, 1.0, 0.0]);
 			}
 		}
@@ -1059,7 +1044,6 @@ window.onload = function(){
 	}
 
 		function objectRendergl(_obName, _color){
-			//let _ob = objects[_obName];
 			let _ob = objects.name(_obName);
 			gl.uniform1i(uniLocation[uniEnum.texture], 0);
 			gl.uniform1i(uniLocation[uniEnum.texture2], 1);
@@ -1067,7 +1051,6 @@ window.onload = function(){
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, _ob.iIndex);
 
 			gl.activeTexture(gl.TEXTURE0);
-			//gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_obName]);
 			gl.bindTexture(gl.TEXTURE_2D, obTextures.name(_ob.textureList[0]));
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
@@ -1077,7 +1060,6 @@ window.onload = function(){
 			if (drawMap && _ob.mappable) {
 				gl.uniform1i(uniLocation[uniEnum.drawMap], drawMap);
 				gl.activeTexture(gl.TEXTURE1);
-				//gl.bindTexture(gl.TEXTURE_2D, _ob.texture[_obName + '_map']);
 				gl.bindTexture(gl.TEXTURE_2D, obTextures.name(_ob.textureList[1]));
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
@@ -1089,9 +1071,25 @@ window.onload = function(){
 			gl.uniform4fv(uniLocation[uniEnum.color], _color);
 			gl.uniform1f(uniLocation[uniEnum.alpha], _ob.alpha);
 			gl.uniform2fv(uniLocation[uniEnum.tex_shift], _ob.texture_shift);
-			m.multiply(vpMatrix, _ob.mMatrix, mvpMatrix);
-
-			gl.uniformMatrix4fv(uniLocation[uniEnum.mvpMatrix], false, mvpMatrix);
+			gl.uniform1i(uniLocation[uniEnum.useBone], _ob.armature != '' ? true : false);
+			if (_ob.armature === '') {
+				m.multiply(vpMatrix, _ob.mMatrix, mvpMatrix);
+				gl.uniformMatrix4fv(uniLocation[uniEnum.mvpMatrix], false, mvpMatrix);
+			} else {
+				let _matArray = [];
+				for (let i = 0; i < _ob.vertexGroups.length; i++) {
+					//eText.textContent = 'i: ' + i.toString() + ', name: ' + _ob.vertexGroups[i].name.toString() + ', index: ' + _ob.vertexGroups[i].index.toString()
+					//console.log('i: ' + i.toString() + ', name: ' + _ob.vertexGroups[i].name.toString() + ', index: ' + _ob.vertexGroups[i].index.toString());
+					let _mBoneMatrix = m.identity(m.create());
+					let _armature = objects.name(_ob.armature);
+					m.multiply(_armature.mMatrix, _armature.bones.name(_ob.vertexGroups[i].name).matrixV, _mBoneMatrix);
+					m.multiply(vpMatrix, _mBoneMatrix, _mBoneMatrix);
+					//m.multiply(vpMatrix, _armature.bones.name(_ob.vertexGroups[i].name).matrixV, _mBoneMatrix);
+					//m.multiply(_armature.mMatrix, _mBoneMatrix, _mBoneMatrix);
+					_matArray = _matArray.concat(Array.from(_mBoneMatrix));
+				}
+				gl.uniformMatrix4fv(uniLocation[uniEnum.bonemvpMatrix], false, _matArray);
+			}
 
 			gl.drawElements(gl.TRIANGLES, _ob.numLoop, gl.UNSIGNED_SHORT, 0);
 		}
@@ -1146,6 +1144,7 @@ window.onload = function(){
 			m.multiply(vpoMatrix, _ot.mMatrix, mvpMatrix);
 			gl.uniformMatrix4fv(uniLocation[uniEnum.mvpMatrix], false, mvpMatrix);
 			gl.uniform1f(uniLocation[uniEnum.alpha], 1.0);
+			gl.uniform1i(uniLocation[uniEnum.useBone], false);
 
 			gl.drawElements(gl.TRIANGLES, _ot.numLoop, gl.UNSIGNED_SHORT, 0);
 		}
@@ -1230,6 +1229,7 @@ window.onload = function(){
 			m.multiply(vpoMatrix, _ob.mMatrix, mvpMatrix);
 			gl.uniformMatrix4fv(uniLocation[uniEnum.mvpMatrix], false, mvpMatrix);
 			gl.uniform1f(uniLocation[uniEnum.alpha], _ob.alpha);
+			gl.uniform1i(uniLocation[uniEnum.useBone], false);
 
 			gl.drawElements(gl.TRIANGLES, _ob.numLoop, gl.UNSIGNED_SHORT, 0);
 		}
@@ -1540,6 +1540,26 @@ window.onload = function(){
 		//console.log(_obName);
 		let _ob = objects.name(_obName);
 		if (_ob.order == -1) {
+			if (_ob.constraints.length > 0) {
+				for (let i = 0; i < _ob.constraints.length; i++) {
+					let _tempOrder = countOrder(_ob.constraints[i].target) + 1;
+					if (_tempOrder > _ob.order) {
+						_ob.order = _tempOrder;
+					}
+				}
+			} else if (_ob.modifiers.length > 0) {
+				for (let i = 0; i < _ob.modifiers.length; i++) {
+					if (_ob.modifiers[i].type === 27) { //ARMATURE
+						let _tempOrder = countOrder(_ob.modifiers[i].object) + 1;
+						if (_tempOrder > _ob.order) {
+							_ob.order = _tempOrder;
+						}
+					}
+				}
+			} else {
+				_ob.order = 0;
+			}
+			/*
 			if (_ob.constraints.length === 0) {
 				_ob.order = 0;
 			} else {
@@ -1550,6 +1570,7 @@ window.onload = function(){
 					}
 				}
 			}
+			*/
 		}
 		return _ob.order;
 	}
@@ -1570,6 +1591,7 @@ window.onload = function(){
 		scene.UI = _sceneData[sdIndex++];
 		scene.num_sceneAnimations = Number(_sceneData[sdIndex++]);
 		scene.mainAnimation = _sceneData[sdIndex++];
+		scene.activeAnimation = scene.mainAnimation;
 		scene.navigatable = (_sceneData[sdIndex++] === 'yes') ? true : false;
 		_off += 2;
 		sdIndex = 0;
@@ -1688,14 +1710,14 @@ window.onload = function(){
 				_off += 1;
 			}
 			_animation.animation_count = 0;
-			_animation.active = false;
+			//_animation.active = false;
 			//0: stop, 1: play loop, 2: play once (return to first frame), 3: play once (stay at last frame)
 			//_animation.play = 0;
 			if (_animation.name === scene.mainAnimation) {
-				_animation.active = true;
+				//_animation.active = true;
 				_animation.play = 1;
 			} else {
-				_animation.active = false;
+				//_animation.active = false;
 				_animation.play = 0;
 			}
 
@@ -1731,6 +1753,31 @@ window.onload = function(){
 		return _val;
 	}
 
+	function readVec(_dv, _counter, _dim) {
+		let _val = [];
+		for (var i = 0; i < _dim; i++) {
+			_val.push(readFloat32(_dv, _counter));
+		}
+		return _val;
+	}
+
+	function readMat(_dv, _counter, _dim) {
+		let _val = [];
+		for (var i = 0; i < _dim * _dim; i++) {
+			_val.push(readFloat32(_dv, _counter))
+		}
+		/*
+		for (var i = 0; i < _dim; i++) {
+			let _row = [];
+			for (var j = 0; j < _dim; j++) {
+				_row.push(readFloat32(_dv, _counter))
+			}
+			_val.push(_row);
+		}
+		*/
+		return _val;
+	}
+
 	function readString(_dv, _counter) {
 		//Read string from binary data
 		//Format: number of characters (Int32), string (Int8 x N)
@@ -1743,6 +1790,26 @@ window.onload = function(){
 		}
 		let text_decoder = new TextDecoder('utf-8');
 		return text_decoder.decode(Uint8Array.from(_nameArray).buffer);
+	}
+
+	function pathAnalisys(_str) {
+		let _inQuote = false;
+		let _foundIndices = [];
+		let _result = [];
+		for (let i = 0; i < _str.length; i++) {
+			if (_str[i] === '"') {
+				_inQuote = !_inQuote;
+			} else if (_str[i] === '.' && !_inQuote) {
+				_foundIndices.push(i);
+			}
+		}
+		let _startIndex = 0;
+		for (let i in _foundIndices) {
+			_result.push(_str.substring(_startIndex, _foundIndices[i]));
+			_startIndex = _foundIndices[i] + 1;
+		}
+		_result.push(_str.substring(_startIndex, _str.length));
+		return _result;
 	}
 
 	function readString_back(_dv, _off) {
@@ -1830,8 +1897,8 @@ window.onload = function(){
 	}
 
 	function read3DModelData(_path, _objectName, _type) { //csvﾌｧｲﾙﾉ相対ﾊﾟｽor絶対ﾊﾟｽ
-		var coord = new Array();
-		var uv_coord = new Array();
+		//var coord = new Array();
+		//var uv_coord = new Array();
 		var data = new XMLHttpRequest();
 		//data.open("GET", resourcePath + scene.name + '/objects/' + _objectName + '.dat', true); //true:非同期,false:同期
 		data.open("GET", _path + '/objects/' + _objectName + '.dat', true); //true:非同期,false:同期
@@ -1847,41 +1914,22 @@ window.onload = function(){
 			var scale = [];
 			var dimensions = [];
 			var bound_box = [];
-			//* var off = 0;
 			let _counter = { //to increment bit offset inside functions
 				off: 0
 			}
 			if (_type === 'object') {
-				//var ob = objects[_objectName];
 				var ob = objects.name(_objectName);
 			} else if (_type === 'UI') {
-				//var ob = obUI[_objectName];
 				var ob = obUI.name(_objectName);
 			}
 
 			//* console.log('readString_new:', readString_new(dv, _counter));
 			let _ns = readString(dv, _counter);
-			//* let _ns = readString(dv, off);
-			//* let _name = _ns.string;
-			//* off += 4 + _ns.length;
-			//* let _name = readString(dv, off);
-			//* off += 4 + _name.length;
-			//* console.log(ob);
-
-			//* ob.type = dv.getInt32(off, true); //0:MESH, 1:CURVE, 7:EMPTY, 8:CAMERA
-			//* _counter.off = off;
-			//* console.log('before readInt32', _counter.off);
 			ob.type = readInt32(dv, _counter); //0:MESH, 1:CURVE, 7:EMPTY, 8:CAMERA
-			//* console.log('after readInt32', _counter.off);
-			//* off += 4;
 			ob.rotation_mode = readInt32(dv, _counter);
-			//* ob.rotation_mode = dv.getInt32(off, true);
-			//* off += 4;
 
 			for (var i = 0; i < 3; i++) {
 				location.push(readFloat32(dv, _counter));
-				//* location.push(dv.getFloat32(off, true));
-				//* off += 4;
 			}
 			ob.location_o = location; //original location
 			ob.location = location.slice(); //location
@@ -1892,16 +1940,12 @@ window.onload = function(){
 			}
 			for (var i = 0; i < rotation_comp; i++) {
 				rotation.push(readFloat32(dv, _counter));
-				//* rotation.push(dv.getFloat32(off, true));
-				//* off += 4;
 			}
 			ob.rotation_o = rotation; //original rotation
 			ob.rotation = rotation.slice(); //rotation
 
 			for (var i = 0; i < 3; i++) {
 				scale.push(readFloat32(dv, _counter));
-				//* scale.push(dv.getFloat32(off, true));
-				//* off += 4;
 			}
 			ob.scale_o = scale; //original scale
 			ob.scale = scale.slice(); //scale
@@ -1910,69 +1954,65 @@ window.onload = function(){
 
 			for (var i = 0; i < 3; i++) {
 				dimensions.push(readFloat32(dv, _counter));
-				//* dimensions.push(dv.getFloat32(off, true));
-				//* off += 4;
 			}
 			ob.dimensions = dimensions;
 
 			ob.mMatrix0 = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Local coordinate
 			ob.mMatrix = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Global coordinate
 
-			let _hasAnimationData = readInt8(dv, _counter);
-			//* let _hasAnimationData = dv.getInt8(off, true);
-			//* off += 1;
-			if (_hasAnimationData) {
-				ob.animationData = new obArray();
-				let _numTracks = readInt32(dv, _counter);
-				//* let _numTracks= dv.getInt32(off, true);
-				//* off += 4;
-				for (var i = 0; i < _numTracks; i++) {
-					let _tn = readString(dv, _counter);
-					//* let _tn = readString(dv, off);
-					//* let _trackName = _tn.string;
-					//* off += 4 + _tn.length;
-					let _hasStrip = readInt8(dv, _counter);
-					//* let _hasStrip = dv.getInt8(off, true);
-					//* off += 1;
-					if (_hasStrip) {
+			let _hasNLATracks = readInt8(dv, _counter);
+			if (_hasNLATracks) {
+				ob.numNLATracks = readInt32(dv, _counter);
+				ob.nLATracks = new obArray();
+				//console.log('object name:', ob.name);
+				//ob.animationData = new obArray();
+				//let _numTracks = readInt32(dv, _counter);
+				for (var i = 0; i < ob.numNLATracks; i++) {
+				//for (var i = 0; i < _numTracks; i++) {
+					let _track = new object();
+					_track.name = readString(dv, _counter);
+					if (_track.name.split('.')[1] === 'pose') {
+						_track.type = 'pose';
+					} else {
+						_track.type = 'transform';
+					}
+					_track.numStrips = readInt32(dv, _counter);
+					_track.strips = new obArray();
+					//let _tn = readString(dv, _counter);
+					//let _numStrips = readInt32(dv, _counter);
+					//let _hasStrip = readInt8(dv, _counter);
+					//console.log('\ttrack name:', _track.name);
+					for (var j = 0; j < _track.numStrips; j++) {
+					//if (_hasStrip) {
 						let _action = new object();
-						_action.name = _tn;
+						//_action.name = _tn;
+						_action.name = readString(dv, _counter);
+						//console.log('\t\taction name:', _action.name);
+						_action.action_frame_start = readFloat32(dv, _counter);
+						_action.action_frame_end = readFloat32(dv, _counter);
 						_action.frame_start = readFloat32(dv, _counter);
-						//* let _afStart = dv.getFloat32(off, true);
-						//* off += 4;
 						_action.frame_end = readFloat32(dv, _counter);
-						//* let _afEnd = dv.getFloat32(off, true);
-						//* off += 4;
+						_action.repeat = readFloat32(dv, _counter);
+						_action.scale = readFloat32(dv, _counter);
 						_action.numFCurves = readInt32(dv, _counter);
-						//* let _numCurves = dv.getInt32(off, true);
-						//* off += 4;
-						//console.log(ob.name, _afStart, _afEnd, _numCurves);
-						/*
-						_action.frame_start = _dv.getFloat32(_off, true);
-						_off += 4;
-						_action.frame_end = _dv.getFloat32(_off, true);
-						_off += 4;
-
-						_action.numFCurves = _dv.getInt32(_off, true);
-						_off += 4;
-						*/
-						//_action.fCurves = new obArray();
-						_action.fCurves = [];
+						_action.groups = new obArray();
+						//_action.fCurves = [];
 						for (var ii = 0; ii < _action.numFCurves; ++ii) {
 							let _fCurve = new object();
-							_fCurve.dataPath = readString(dv, _counter);
-							//* let _fdp = readString(_dv, _off);
-							//* _fCurve.dataPath = _fdp.string;
-							//* _off += 4 + _fdp.length;
-							//_fCurve.dataPath = readString(_dv, _off);
-							//_off += 4 + _fCurve.dataPath.length;
+							let _dataPath = readString(dv, _counter);
+							let _group;
+							if (_track.type === 'transform') {
+								_fCurve.dataPath = _dataPath;
+								_group = 'transform';
+							} else if (_track.type === 'pose') {
+								let _pathArray = pathAnalisys(_dataPath);
+								_group = _pathArray[1].split('"')[1];
+								//_fCurve.poseBone = _pathArray[1].split('"')[1];
+								_fCurve.dataPath = _pathArray[2];
+								//console.log(_dataPath, _pathArray, _group, _fCurve.dataPath);
+							}
 							_fCurve.arrayIndex = readInt32(dv, _counter);
-							//* _fCurve.arrayIndex = _dv.getInt32(_off, true);
-							//console.log('dataPath: ' + _fCurve.dataPath + ', ' + _fCurve.arrayIndex);
-							//* _off += 4;
 							_fCurve.numKP = readInt32(dv, _counter);
-							//* _fCurve.numKP = _dv.getInt32(_off, true);
-							//* _off += 4;
 
 							_fCurve.handles = [];
 							for (var jj = 0; jj < _fCurve.numKP; ++jj) {
@@ -1991,111 +2031,62 @@ window.onload = function(){
 									x: readFloat32(dv, _counter),
 									y: readFloat32(dv, _counter)
 								}
-								/*
-								_point.handle_left = new object();
-								_point.handle_left.x = _dv.getFloat32(_off, true);
-								_off += 4;
-								_point.handle_left.y = _dv.getFloat32(_off, true);
-								_off += 4;
-								_point.co = new object();
-								_point.co.x = _dv.getFloat32(_off, true);
-								_off += 4;
-								_point.co.y = _dv.getFloat32(_off, true);
-								_off += 4;
-								_point.handle_right = new object();
-								_point.handle_right.x = _dv.getFloat32(_off, true);
-								_off += 4;
-								_point.handle_right.y = _dv.getFloat32(_off, true);
-								_off += 4;
-								*/
 								_fCurve.handles.push(_point);
 							}
-							_action.fCurves.push(_fCurve);
+							//console.log('test:', _action.groups.name(_group).name);
+							if (_action.groups.name(_group) === undefined) {
+								_action.groups.push({
+									name: _group,
+									fCurves: []
+								});
+							}
+							_action.groups.name(_group).fCurves.push(_fCurve);
+							//_action.fCurves.push(_fCurve);
 						}
-						//_action.off = _off;
-						_action.animation_count = _action.frame_start;
-						if (_action.name === scene.mainAnimation) {
-						//if (_action.name === 'opening') {
-						//if (_action.name === 'opening' || _action.name === 'animation01') {
-						//if (_openingAnimation) {
-							_action.play = 1;
-						} else {
-							_action.play = 0;
-						} //0: stop, 1: play loop, 2: play once (return to first frame), 3: play once (stay at last frame)
-						_action.forward = true;
-						//_action.speed = 0.4;
-						_action.speed =  FPS_blender / FPS * ANIMATION_SPEED_MULTIPLIER;
-						ob.animationData.push(_action);
+						_track.strips.push(_action);
 					}
+					_track.animation_count = scene.sceneAnimations.name(scene.mainAnimation).frame_start;
+					//console.log(_track.name.split('.'));
+					if (_track.name.split('.')[0] == scene.mainAnimation) {
+					//if (_track.name === scene.mainAnimation) {
+						_track.play = 1;
+					} else {
+						_track.play = 0;
+					} //0: stop, 1: play loop, 2: play once (return to first frame), 3: play once (stay at last frame)
+					//console.log('\t\tstate:', _track.play? 'play': 'stop');
+					_track.forward = true;
+					_track.speed =  FPS_blender / FPS * ANIMATION_SPEED_MULTIPLIER;
+					ob.nLATracks.push(_track);
 				}
+				//console.log('NLA Tracks:', ob.nLATracks);
 			}
-			/*
-			let _hasObjectAction = dv.getInt8(off, true);
-			off += 1;
-			if (_hasObjectAction) {
-				ob.objectAction = readAction(dv, off, ob.openingAnimation);
-				off = ob.objectAction.off;
-			}
-			*/
+			// CONSTRAINTS
 			ob.constraints = [];
 			let _numConstraints = readInt32(dv, _counter);
-			//* let _numConstraints = dv.getInt32(off, true);
-			//* off += 4;
 			for (var i = 0; i < _numConstraints; ++i) {
 				let _constraint = new object();
 				_constraint.type = readInt32(dv, _counter);
-				//* _constraint.type = dv.getInt32(off, true);
-				//* off += 4;
 				let _cts;
 				switch (_constraint.type) {
 					case 20: //TRACK_TO
 						_constraint.target = readString(dv, _counter);
-						//* _cts = readString(dv, off);
-						//* _constraint.target = _cts.string;
-						//* off += 4 + _cts.length;
-						//_constraint.target = readString(dv, off);
-						//off += 4 + _constraint.target.length;
 						_constraint.trackAxis = readInt32(dv, _counter);
-						//* _constraint.trackAxis = dv.getInt32(off, true);
-						//0: 'TRACK_X', 1: 'TRACK_Y', 2: 'TRACK_Z', 3: 'TRACK_NEGATIVE_X', 4: 'TRACK_NEGATIVE_Y', 5: 'TRACK_NEGATIVE_Z'
-						//* off += 4;
 						_constraint.upAxis = readInt32(dv, _counter);
-						//* _constraint.upAxis = dv.getInt32(off, true);
-						//0: 'UP_X', 1: 'UP_Y', 2: 'UP_Z'
-						//* off += 4;
 						break;
 					case 23: //CHILD_OF
 						_constraint.target = readString(dv, _counter);
-						//* _cts = readString(dv, off);
-						//* _constraint.target = _cts.string;
-						//* off += 4 + _cts.length;
-						//_constraint.target = readString(dv, off);
-						//off += 4 + _constraint.target.length;
 						_constraint.useGeometries = [];
 						for (var j = 0; j < 9; ++j) {
 							_constraint.useGeometries.push(readInt8(dv, _counter) === 1 ? true: false);
-							//* _constraint.useGeometries.push(dv.getInt8(off, true) === 1 ? true: false);
-							//* off += 1;
 						}
 						break;
 					case 25: //FOLLOW_PATH
 						_constraint.target = readString(dv, _counter);
-						//* _cts = readString(dv, off);
-						//* _constraint.target = _cts.string;
-						//* off += 4 + _cts.length;
-						//_constraint.target = readString(dv, off);
-						//off += 4 + _constraint.target.length;
 						_constraint.useCurveFollow = readInt8(dv, _counter) === 1 ? true: false;
-						//* _constraint.useCurveFollow = dv.getInt8(off, true) === 1 ? true: false;
-						//* off += 1;
 						_constraint.forwardAxis = readInt32(dv, _counter);
-						//* _constraint.forwardAxis = dv.getInt32(off, true);
 						//0: 'FORWARD_X', 1: 'FORWARD_Y', 2: 'FORWARD_Z', 3: 'TRACK_NEGATIVE_X', 4: 'TRACK_NEGATIVE_Y', 5: 'TRACK_NEGATIVE_Z'
-						//* off += 4;
 						_constraint.upAxis = readInt32(dv, _counter);
-						//* _constraint.upAxis = dv.getInt32(off, true);
 						//0: 'UP_X', 1: 'UP_Y', 2: 'UP_Z'
-						//* off += 4;
 						break;
 					default:
 						return;
@@ -2104,6 +2095,24 @@ window.onload = function(){
 			}
 			if (ob.constraints.length > 0) {
 				console.log(ob.name, ob.constraints);
+			}
+
+			ob.armature = '';
+			// MODIFIERS
+			ob.modifiers = [];
+			let _numModifiers = readInt32(dv, _counter);
+			for (var i = 0; i < _numModifiers; ++i) {
+				let _modifier = new object();
+				_modifier.type = readInt32(dv, _counter);
+				switch (_modifier.type) {
+					case 27: //ARMATURE
+						_modifier.object = readString(dv, _counter);
+						ob.armature = _modifier.object;
+						break;
+					default:
+						return;
+				}
+				ob.modifiers.push(_modifier);
 			}
 
 			let _indexChildOf = -1;
@@ -2115,20 +2124,54 @@ window.onload = function(){
 			}
 
 			if (ob.type == 0) {//object type 'MESH'
-				//console.log(ob.name);
+				var coord = new Array();
+				var uv_coord = new Array();
+				let bone_index = new Array();
+				let bone_weight = new Array();
+
+				//console.log('object name:', ob.name);
 				let im = m.identity(m.create());
 				m.transpose(ob.mMatrix, im);
+				ob.numVertexGroups = readInt32(dv, _counter);
+				ob.vertexGroups = new obArray();
+				for (var i = 0; i < ob.numVertexGroups; ++i) {
+					ob.vertexGroups.push({
+						name: readString(dv, _counter),
+						index: readInt32(dv, _counter)
+					})
+				}
+				//console.log('number of vertex groups:', ob.numVertexGroups);
+				//console.log('vertex groups:', ob.vertexGroups);
+
 				ob.numLoop = readInt32(dv, _counter);
-				//* ob.numLoop = dv.getInt32(off, true);
-				//* off += 4;
-				//console.log(ob.name, ob.numLoop);
+				//console.log('numLoop:', ob.numLoop);
 
 				for	(var i = 0; i < ob.numLoop; ++i) {
 					for (var j = 0; j < 3; ++ j) {
 						coord.push(readFloat32(dv, _counter));
-						//* coord.push(dv.getFloat32(off, true));
-						//* off += 4;
 					}
+					if (ob.numVertexGroups > 0) {
+						let _bi = [];
+						let _bw = [];
+						let _numVG = readInt32(dv, _counter);
+						for (var j = 0; j < _numVG; ++j) {
+							_bi.push(readInt32(dv, _counter));
+							_bw.push(readFloat32(dv, _counter));
+						}
+						for (var j = 0; j < 2; ++j) {
+							if (_numVG > j) {
+								bone_index.push(_bi[j]);
+								bone_weight.push(_bw[j]);
+							} else {
+								bone_index.push(0);
+								bone_weight.push(0.0);
+							}
+						}
+					} else {
+						bone_index.push(0, 0);
+						bone_weight.push(0.0, 0.0);
+					}
+					//console.log(coord.slice(-3), bone_index.slice(-2), bone_weight.slice(-2));
 				}
 				if (ob.kind === 'selection_mesh' || ob.name === ob.selectMesh || ob.name === ob.pointMesh) {
 					//let im = m.identity(m.create());
@@ -2147,8 +2190,6 @@ window.onload = function(){
 				for	(var i = 0; i < ob.numLoop; ++i) {
 					for (var j = 0; j < 2; ++ j) {
 						uv_coord.push(readFloat32(dv, _counter));
-						//* uv_coord.push(dv.getFloat32(off, true));
-						//* off += 4;
 					}
 				}
 
@@ -2156,8 +2197,6 @@ window.onload = function(){
 					let tb = [];
 					for (var j = 0; j < 3; ++j) {
 						tb.push(readFloat32(dv, _counter));
-						//* tb.push(dv.getFloat32(off,true));
-						//* off += 4;
 					}
 					m.multiplyV(im, tb.concat(1), tb);
 					bound_box.push(tb);
@@ -2188,9 +2227,11 @@ window.onload = function(){
 				//console.log(uv_coord);
 				//console.log(ind);
 
-				var vPosition     = create_vbo(coord);
-				var vTextureCoord = create_vbo(uv_coord);
-				ob.VBOList       = [vPosition, vTextureCoord];
+				let vPosition     = create_vbo(coord);
+				let vTextureCoord = create_vbo(uv_coord);
+				let vBoneIndex = create_vbo(bone_index);
+				let vBoneWeight = create_vbo(bone_weight);
+				ob.VBOList       = [vPosition, vTextureCoord, vBoneIndex, vBoneWeight];
 				ob.iIndex        = create_ibo(ind);
 
 				for (var i = 0 in ob.textureList) {
@@ -2200,53 +2241,59 @@ window.onload = function(){
 				}
 			} else if (ob.type === 1) {//object type 'CURVE'
 				let _numSplines = readInt32(dv, _counter);
-				//* let _numSplines = dv.getInt32(off, true);
-				//* off += 4;
 				ob.splines = [];
 				for (var ii = 0; ii < _numSplines; ++ii) {
 					let _spline = new object();
 					_spline.numP = readInt32(dv, _counter);
-					//* _spline.numP = dv.getInt32(off, true);
-					//* off += 4;
 					_spline.points = [];
 					for (var jj = 0; jj < _spline.numP * 9; ++jj) {
 						_spline.points.push(readFloat32(dv, _counter));
-						//* _spline.points.push(dv.getFloat32(off, true));
-						//* off += 4;
 					}
 					ob.splines.push(_spline);
 				}
 
 				let _hasCurveAction = readInt8(dv, _counter);
-				//* let _hasCurveAction = dv.getInt8(off, true);
-				//* off += 1;
 				if (_hasCurveAction) {
 					console.log(ob.name);
 					ob.curveAction = readAction(dv, off, ob.openingAnimation);
 					off = ob.curveAction.off;
 				}
 
+			} else if (ob.type == 5) {//object type 'ARMATURE'
+				ob.numBones = readInt32(dv, _counter);
+				ob.bones = new obArray();
+				for (var i = 0; i < ob.numBones; ++i) {
+					ob.bones.push({
+						name: readString(dv, _counter),
+						parent: readString(dv, _counter),
+						length: readFloat32(dv, _counter),
+						head: readVec(dv, _counter, 3),
+						matrix_local: new Float32Array(readMat(dv, _counter, 4)),
+						matrix: new Float32Array(readMat(dv, _counter, 3)),
+						matrix0: m.identity(m.create()), // for animation (local transform)
+						matrixV: m.identity(m.create()), // for animation (vertex transform)
+						matrixTest: m.identity(m.create()), // for debagging purpose
+						rotation_mode: readInt32(dv, _counter)
+					})
+				}
+				//console.log('armature object:', ob.name);
+				//console.log('number of bones:', ob.numBones);
+				//console.log('bones:', ob.bones);
+
 			} else if (ob.type == 8) {//object type 'CAMERA'
 				var _pMatrix = m.identity(m.create());
 				ob.camera_type = readInt32(dv, _counter);
-				//* ob.camera_type = dv.getInt32(off, true);
-				//* off += 4;
 				ob.clip_start = readFloat32(dv, _counter);
-				//* ob.clip_start = dv.getFloat32(off, true);
-				//* off += 4;
 				ob.clip_end = readFloat32(dv, _counter);
-				//* ob.clip_end = dv.getFloat32(off, true);
-				//* off += 4;
+				//console.log('camera_type:', ob.camera_type);
 				switch (ob.camera_type) {// 0: PERSP, 1: ORTHO
 					case 0: //PERSP
 						ob.angle_y = readFloat32(dv, _counter);
-						//* ob.angle_y = dv.getFloat32(off, true);
 						ob.angle_y0 = ob.angle_y; //initial value. Do not change!
 						m.perspective(ob.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, ob.clip_start, ob.clip_end, _pMatrix);
 						break;
 					case 1: //ORTHO
 						ob.ortho_scale = readFloat32(dv, _counter);
-						//* ob.ortho_scale = dv.getFloat32(off, true);
 						m.ortho(-ob.ortho_scale * c.width, ob.ortho_scale * c.width, ob.ortho_scale * c.height, -ob.ortho_scale * c.height, ob.clip_start, ob.clip_end, _pMatrix);
 						break;
 				}
@@ -2421,6 +2468,10 @@ window.onload = function(){
 			}
 			//console.log('----------------');
 			objects.sort((a, b) => a.order > b.order);
+			console.log(objects);
+
+			//animationUpdate();
+			/*
 			for (let i in objects) {
 				//console.log(objects[i].name, objects[i].order);
 				if (objects[i].constraints.length > 0) {
@@ -2430,6 +2481,7 @@ window.onload = function(){
 					}
 				}
 			}
+			*/
 		}
 		return ready;
 	}
@@ -2497,6 +2549,89 @@ window.onload = function(){
 		return action;
 	}
 
+	function evaluateNLATrack(_obName, _track) {
+		let _ob = objects.name(_obName);
+		let _x = _track.animation_count;
+		//let _x = scene.sceneAnimations.name(scene.activeAnimation).animation_count;
+		let _stripIndex = 0;
+		//let _strip;
+		//let _group;
+		for (var i = 0; i < _track.strips.length; i++) {
+			if (_x <= _track.strips[i].frame_end) {
+			//if (_x >= _track.strips[i].frame_start && _x <= _track.strips[i].frame_end) {
+				_stripIndex = i;
+				//_strip = _track.strips[i];
+				break;
+			}
+		}
+		let _strip = _track.strips[_stripIndex];
+		if (_track.type === 'transform') {
+			_ob.mMatrix0 = evaluateTransform(_ob.location, _ob.rotation, _ob.scale, _ob.rotation_mode, _strip.groups.name('transform'), (_x - _strip.frame_start) / _strip.scale % (_strip.action_frame_end - _strip.action_frame_start) + _strip.action_frame_start);
+		} else if (_track.type === 'pose') {
+			//console.log('_strip:', _strip.name);
+			for (var i = 0; i < _strip.groups.length; i++) {
+				let _group = _strip.groups[i];
+				let _bone = _ob.bones.name(_group.name);
+				_bone.matrix0 = evaluateTransform([0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0], [1.0, 1.0, 1.0], _bone.rotation_mode, _group, (_x - _strip.frame_start) / _strip.scale % (_strip.action_frame_end - _strip.action_frame_start) + _strip.action_frame_start);
+			}
+			for (var i = 0; i < _ob.bones.length; i++) {
+				let _bone = _ob.bones[i];
+				//console.log('\tchild bone: ', _bone.name);
+				let _lMatrixInv = m.identity(m.create());
+				m.inverse(_bone.matrix_local, _lMatrixInv);
+				//m.transpose(_bone.matrix_local, _lMatrixInv);
+				//m.inverse(_lMatrixInv, _lMatrixInv);
+				//_bone.matrixV = vertexTransformMatrixWithBone(_bone, _ob.bones);
+				m.multiply(vertexTransformMatrixWithBone(_bone, _ob.bones), _lMatrixInv, _bone.matrixV);
+			}
+		}
+	}
+
+	function vertexTransformMatrixWithBone(_bone, _bones) {
+		//console.log('\t\tparent bone: ', _bone.name);
+		let _headMatrix = m.identity(m.create());
+		let _boneMatrix = m.identity(m.create());
+		let _m0Matrix = m.identity(m.create());
+		m.translate(_headMatrix, _bone.head, _headMatrix);
+		_bone.matrixTest = _headMatrix;
+		m.to4x4(_bone.matrix, _boneMatrix);
+		//m.transpose(_boneMatrix, _boneMatrix);
+
+		m.multiply(_boneMatrix, _bone.matrix0, _m0Matrix);
+		//m.multiply(_bone.matrix, _bone.matrix0, _m0Matrix);
+		m.multiply(_headMatrix, _m0Matrix, _m0Matrix);
+		if (_bone.parent != '') {
+			let pBone = _bones.name(_bone.parent);
+			let _lengthMatix = m.identity(m.create());
+			m.translate(_lengthMatix, [0.0, pBone.length, 0.0], _lengthMatix);
+			m.multiply(_lengthMatix, _m0Matrix, _m0Matrix);
+			m.multiply(vertexTransformMatrixWithBone(pBone, _bones), _m0Matrix, _m0Matrix);
+		}
+		return _m0Matrix;
+	}
+
+	function evaluateTransform(_loc, _rot, _sc, _rotMode, _group, _xAc) {
+		let _locVec = _loc;
+		let _rotVec = _rot;
+		let _scVec = _sc;
+		let _rotation_mode = _rotMode;
+
+		for (var i = 0; i < _group.fCurves.length; i++) {
+			let _fCurve = _group.fCurves[i];
+			if (_fCurve.dataPath == 'location') {
+				_locVec[_fCurve.arrayIndex] = bezier2D(_fCurve.handles, _xAc);
+			} else if (_fCurve.dataPath == 'scale') {
+				_scVec[_fCurve.arrayIndex] = bezier2D(_fCurve.handles, _xAc);
+			} else if (_fCurve.dataPath == 'rotation_euler') {
+				_rotVec[_fCurve.arrayIndex] = bezier2D(_fCurve.handles, _xAc);
+			} else if (_fCurve.dataPath == 'rotation_quaternion') {
+				_rotVec[_fCurve.arrayIndex] = bezier2D(_fCurve.handles, _xAc);
+			}
+		}
+
+		return transformationMatrix(_locVec, _rotVec, _scVec, _rotation_mode);
+	}
+
 	function evaluateAction(_obName, _action) {
 	//function evaluateAction(_obName) {
 		let _ob = objects.name(_obName);
@@ -2526,26 +2661,7 @@ window.onload = function(){
 		//_ob.rotation = rotVec;
 		//_ob.scale = scVec;
 	}
-	/*
-	function evaluateAction(_action, _x, _loc, _rot, _scale, _rotation_mode) {
-		let locVec = _loc.slice();
-		let rotVec = _rot.slice();
-		let scVec = _scale.slice();
 
-		for (var i = 0; i < _action.numFCurves; i++) {
-			if (_action.fCurves[i].dataPath == 'location') {
-				locVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
-			} else if (_action.fCurves[i].dataPath == 'scale') {
-				scVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
-			} else if (_action.fCurves[i].dataPath == 'rotation_euler') {
-				rotVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
-			} else if (_action.fCurves[i].dataPath == 'rotation_quaternion') {
-				rotVec[_action.fCurves[i].arrayIndex] = bezier2D(_action.fCurves[i].handles, _x);
-			}
-		}
-		return transformationMatrix(locVec, rotVec, scVec, _rotation_mode);
-	}
-	*/
 	function evaluateMaterialAction(_action, _x) {
 		let material = function () {
 
@@ -2620,9 +2736,9 @@ window.onload = function(){
 	}
 
 	function bezier2D(_handles, _x) {
-		if (_handles[0].co.x > _x) {
+		if (_handles[0].co.x >= _x) {
 			return _handles[0].co.y;
-		} else if (_handles[_handles.length - 1].co.x < _x) {
+		} else if (_handles[_handles.length - 1].co.x <= _x) {
 			return _handles[_handles.length - 1].co.y;
 		//if ((_handles[0].co.x > _x) || (_handles[_handles.length - 1].co.x < _x)) {
 		//	return null;

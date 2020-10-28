@@ -8,14 +8,27 @@
         <script src="js/minMatrixb.js" type="text/javascript"></script>
 
         <script id="vs" type="x-shader/x-vertex">
+          const int boneCount = 20;
     			attribute vec3  position;
     			attribute vec2  textureCoord;
+          attribute vec2  boneIndices; //test
+          attribute vec2  boneWeights; //test
+          uniform   bool  useBone; //test
     			uniform   mat4  mvpMatrix;
-    			uniform   vec2  tex_shift;
+          uniform   mat4  bonemvpMatrix[boneCount]; //test
+          uniform   vec2  tex_shift;
     			varying   vec2  vTextureCoord;
     			void main(void){
     				vTextureCoord = textureCoord + tex_shift;
-    				gl_Position    = mvpMatrix * vec4(position, 1.0);
+    				//gl_Position    = mvpMatrix * vec4(position, 1.0);
+            if (useBone) {
+              vec4 p0 = bonemvpMatrix[int(boneIndices.x)] * vec4(position, 1.0);
+              vec4 p1 = bonemvpMatrix[int(boneIndices.y)] * vec4(position, 1.0);
+              gl_Position = p0 * boneWeights.x / (boneWeights.x + boneWeights.y)  + p1 * boneWeights.y / (boneWeights.x + boneWeights.y);
+              //gl_Position = p0 * boneWeights.x  + p1 * boneWeights.y;
+            } else {
+              gl_Position = mvpMatrix * vec4(position, 1.0);
+            }
     			}
         </script>
         <script id="fs" type="x-shader/x-fragment">
@@ -79,7 +92,8 @@
 			<p>Copyright &copy; Taku Hanai</p>
 		</div>
 		<div class="debugger" id="text">log</div>
-    <!--param name="scene_name" value="kurushima_bridges"-->
+    <!--param name="scene_name" value="kurushima_bridges_movie"-->
     <param name="scene_name" value="hsbe">
+    <!--param name="scene_name" value="visitor"-->
     </body>
 </html>

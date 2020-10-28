@@ -245,6 +245,25 @@ function matIV(){
 		dest[15] = ( i * t - j * r + k * q) * ivd;
 		return dest;
 	};
+	this.to4x4 = function(mat, dest) {
+		dest[0] = mat[0];
+		dest[1] = mat[1];
+		dest[2] = mat[2];
+		dest[3] = 0;
+		dest[4] = mat[3];
+		dest[5] = mat[4];
+		dest[6] = mat[5];
+		dest[7] = 0;
+		dest[8] = mat[6];
+		dest[9] = mat[7];
+		dest[10] = mat[8];
+		dest[11] = 0;
+		dest[12] = 0;
+		dest[13] = 0;
+		dest[14] = 0;
+		dest[15] = 1;
+		return dest;
+	}
 }
 
 function qtnIV(){
@@ -500,7 +519,7 @@ function hsva(h, s, v, a){
 	var k = v * (1 - s * (1 - f));
 	var color = new Array();
 	if(!s > 0 && !s < 0){
-		color.push(v, v, v, a); 
+		color.push(v, v, v, a);
 	} else {
 		var r = new Array(v, n, m, m, k, v);
 		var g = new Array(k, v, v, n, m, m);
