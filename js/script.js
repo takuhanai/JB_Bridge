@@ -678,14 +678,10 @@ window.onload = function(){
 					let currentDist = Math.sqrt((ct1.x - ct0.x) * (ct1.x - ct0.x) + (ct1.y - ct0.y) * (ct1.y - ct0.y));
 					let prevDist = Math.sqrt((pt1.x - pt0.x) * (pt1.x - pt0.x) + (pt1.y - pt0.y) * (pt1.y - pt0.y));
 
-					//let ay = objects[obCamera[camMode]].angle_y;
-					//let ay = objects.name(obCamera[camMode]).angle_y;
-					let ay = objects.name(activeCamera).angle_y;
+					let ay = objects.name(activeCamera).data.angle_y;
 					ay -= 0.001 * (currentDist - prevDist);
 					if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
-						//objects[obCamera[camMode]].angle_y = ay;
-						//objects.name(obCamera[camMode]).angle_y = ay;
-						objects.name(activeCamera).angle_y = ay;
+						objects.name(activeCamera).data.angle_y = ay;
 					}
 				}
 				prevTouchLocations = currentTouchLocations;
@@ -715,9 +711,7 @@ window.onload = function(){
 			let _cam_UI3D = objects.name('camera_UI3D');
 			if (shiftKeyPressed || mouseButton === 1) {
 				//m.translate(objects['camera_whole_origin'].mMatrix0, [-1.0 * dX, 0, 1.0 * dY],
-				let cameraCoeff = Math.tan(_cam.angle_y / 2.0) / Math.tan(_cam.angle_y0 / 2.0);
-				//console.log(_cam.angle_y, _cam.angle_y0);
-				//console.log(scene.cameraTranslationDelta * cameraCoeff * dX);
+				let cameraCoeff = Math.tan(_cam.data.angle_y / 2.0) / Math.tan(_cam.data.angle_y0 / 2.0);
 				if (scene.UI === 'first_layer') {
 					m.translate(_cam_o.mMatrix0, [-scene.cameraTranslationDelta * cameraCoeff * dX, scene.cameraTranslationDelta * cameraCoeff * dY, 0], _cam_o.mMatrix0);
 				} else {
@@ -805,19 +799,10 @@ window.onload = function(){
 			//let _obCamera = objects[obCamera[camMode]];
 			//let _obCamera = objects.name(obCamera[camMode]);
 			let _obCamera = objects.name(activeCamera);
-			switch (_obCamera.camera_type) {// 0: PERSP, 1: ORTHO
+			switch (_obCamera.data.camera_type) {// 0: PERSP, 1: ORTHO
 				case 0: //PERSP
-					//eText.textContent = _obCamera.angle_y;
 					let _currentRect = c.getBoundingClientRect();
-					m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, _currentRect.width / _currentRect.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
-					//m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
-					/*
-					if (!_UI3D) {
-						m.perspective(_obCamera.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
-					} else {
-						m.perspective(_obCamera.angle_y0 / 1.0 * 180.0 / Math.PI, c.width / c.height, _obCamera.clip_start, _obCamera.clip_end, _obCamera.pMatrix);
-					}
-					*/
+					m.perspective(_obCamera.data.angle_y / 1.0 * 180.0 / Math.PI, _currentRect.width / _currentRect.height, _obCamera.data.clip_start, _obCamera.data.clip_end, _obCamera.pMatrix);
 					break;
 			}
 			m.inverse(_obCamera.mMatrix, vMatrix);
@@ -844,16 +829,46 @@ window.onload = function(){
 		}
 	}
 
+	function evaluateNLATracks(_ob) {
+		if (_ob.hasOwnProperty('nLATracks')) {
+			for (var j in _ob.nLATracks) {
+				if (_ob.nLATracks[j].play != 0 && !animationPosed) {
+					evaluateNLATrack(_ob, _ob.nLATracks[j]);
+					actionIncrement(_ob.nLATracks[j]);
+				}
+			}
+		}
+	}
+
   function animationUpdate(){
     for (var i in objects) {
 			let _ob = objects[i];
+			evaluateNLATracks(_ob);
+			/*
 			if (_ob.hasOwnProperty('nLATracks')) {
 				for (var j in _ob.nLATracks) {
 					if (_ob.nLATracks[j].play != 0 && !animationPosed) {
-						evaluateNLATrack(_ob.name, _ob.nLATracks[j]);
+						evaluateNLATrack(_ob, _ob.nLATracks[j]);
+						//evaluateNLATrack(_ob.name, _ob.nLATracks[j]);
 						actionIncrement(_ob.nLATracks[j]);
 					}
 				}
+			}
+			*/
+
+			if (_ob.hasOwnProperty('data')) {
+				evaluateNLATracks(_ob.data);
+				/*
+				if (_ob.data.hasOwnProperty('nLATracks')) {
+					for (var j in _ob.data.nLATracks) {
+						if (_ob.data.nLATracks[j].play != 0 && !animationPosed) {
+							evaluateNLATrack(_ob.data, _ob.data.nLATracks[j]);
+							//evaluateNLATrack(_ob.data.name, _ob.data.nLATracks[j]);
+							actionIncrement(_ob.data.nLATracks[j]);
+						}
+					}
+				}
+				*/
 			}
 			if (_ob.hasOwnProperty('materialAction') && _ob.materialAction.play != 0) {
 				_ob.alpha = evaluateMaterialAction(actions[i].materialAction, actions[i].materialAction.animation_count).alpha;
@@ -1097,8 +1112,7 @@ window.onload = function(){
 		function textRender() {
 			let _drawLevel = -1;
 			for (let i = 0; i < scene.textZoomAngle.length; i++) {
-				if (scene.textZoomAngle[i] > objects.name(activeCamera).angle_y) {
-				//if (scene.textZoomAngle[i] > objects.name(obCamera[camMode]).angle_y) {
+				if (scene.textZoomAngle[i] > objects.name(activeCamera).data.angle_y) {
 					_drawLevel = i;
 				}
 			}
@@ -1112,7 +1126,6 @@ window.onload = function(){
 					!(!drawInternal && _ot.attributes.hasOwnProperty('inner_text')) &&
 					!(!drawTerrain && _ot.attributes.hasOwnProperty('terrain_text'))
 				) {
-				//if (scene.textZoomAngle[_ot.level] > objects.name(obCamera[camMode]).angle_y) {
 					let _tMatrix = m.identity(m.create());
 					let _v = from3DPointTo2D(_ot.location.concat(1.0));
 					//_v[2] = 10;
@@ -1896,6 +1909,108 @@ window.onload = function(){
 		return _action;
 	}
 
+	function readNLATracks(_data, _dv, _counter) {
+		let _hasNLATracks = readInt8(_dv, _counter);
+		if (_hasNLATracks) {
+			_data.numNLATracks = readInt32(_dv, _counter);
+			_data.nLATracks = new obArray();
+			for (var i = 0; i < _data.numNLATracks; i++) {
+				let _track = new object();
+				_track.name = readString(_dv, _counter);
+				//let _type = _track.name.split('.')[1];
+				let _trackNameArray = _track.name.split('.');
+				if (_trackNameArray.length > 1) {
+					_track.type = _trackNameArray[1];
+				} else {
+					_track.type = 'transform';
+				}
+				/*
+				if (_type === 'pose') {
+				//if (_track.name.split('.')[1] === 'pose') {
+					_track.type = 'pose';
+				} else if (_type === 'prop') {
+					_track.type =
+				} else {
+					_track.type = 'transform';
+				}
+				*/
+				_track.numStrips = readInt32(_dv, _counter);
+				_track.strips = new obArray();
+				for (var j = 0; j < _track.numStrips; j++) {
+					let _action = new object();
+					_action.name = readString(_dv, _counter);
+					_action.action_frame_start = readFloat32(_dv, _counter);
+					_action.action_frame_end = readFloat32(_dv, _counter);
+					_action.frame_start = readFloat32(_dv, _counter);
+					_action.frame_end = readFloat32(_dv, _counter);
+					_action.repeat = readFloat32(_dv, _counter);
+					_action.scale = readFloat32(_dv, _counter);
+					_action.numFCurves = readInt32(_dv, _counter);
+					_action.groups = new obArray();
+					for (var ii = 0; ii < _action.numFCurves; ++ii) {
+						let _fCurve = new object();
+						let _dataPath = readString(_dv, _counter);
+						let _group;
+						/*
+						if (_track.type === 'transform') {
+							_fCurve.dataPath = _dataPath;
+							_group = 'transform';
+						} else if (_track.type === 'pose') {
+						*/
+						if (_track.type === 'pose') {
+							let _pathArray = pathAnalisys(_dataPath);
+							_group = _pathArray[1].split('"')[1];
+							_fCurve.dataPath = _pathArray[2];
+						} else {
+							_fCurve.dataPath = _dataPath;
+							_group = _track.type;
+						}
+						_fCurve.arrayIndex = readInt32(_dv, _counter);
+						_fCurve.numKP = readInt32(_dv, _counter);
+
+						_fCurve.handles = [];
+						for (var jj = 0; jj < _fCurve.numKP; ++jj) {
+							let _point = new object();
+							_point.interpolation = readInt32(_dv, _counter);
+							//Interpolation Mode 0: constant, 2: bezier
+							_point.handle_left = {
+								x: readFloat32(_dv, _counter),
+								y: readFloat32(_dv, _counter)
+							}
+							_point.co = {
+								x: readFloat32(_dv, _counter),
+								y: readFloat32(_dv, _counter)
+							}
+							_point.handle_right = {
+								x: readFloat32(_dv, _counter),
+								y: readFloat32(_dv, _counter)
+							}
+							_fCurve.handles.push(_point);
+						}
+						if (_action.groups.name(_group) === undefined) {
+							_action.groups.push({
+								name: _group,
+								fCurves: []
+							});
+						}
+						_action.groups.name(_group).fCurves.push(_fCurve);
+					}
+					_track.strips.push(_action);
+				}
+				_track.animation_count = scene.sceneAnimations.name(scene.mainAnimation).frame_start;
+				if (_track.name.split('.')[0] == scene.mainAnimation) {
+					_track.play = 1;
+				} else {
+					_track.play = 0;
+				} //0: stop, 1: play loop, 2: play once (return to first frame), 3: play once (stay at last frame)
+				//console.log('\t\tstate:', _track.play? 'play': 'stop');
+				_track.forward = true;
+				_track.speed =  FPS_blender / FPS * ANIMATION_SPEED_MULTIPLIER;
+				_data.nLATracks.push(_track);
+			}
+		}
+	}
+
 	function read3DModelData(_path, _objectName, _type) { //csvﾌｧｲﾙﾉ相対ﾊﾟｽor絶対ﾊﾟｽ
 		//var coord = new Array();
 		//var uv_coord = new Array();
@@ -1960,15 +2075,13 @@ window.onload = function(){
 			ob.mMatrix0 = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Local coordinate
 			ob.mMatrix = transformationMatrix(ob.location, ob.rotation, ob.scale, ob.rotation_mode);//Global coordinate
 
+			readNLATracks(ob, dv, _counter);
+			/*
 			let _hasNLATracks = readInt8(dv, _counter);
 			if (_hasNLATracks) {
 				ob.numNLATracks = readInt32(dv, _counter);
 				ob.nLATracks = new obArray();
-				//console.log('object name:', ob.name);
-				//ob.animationData = new obArray();
-				//let _numTracks = readInt32(dv, _counter);
 				for (var i = 0; i < ob.numNLATracks; i++) {
-				//for (var i = 0; i < _numTracks; i++) {
 					let _track = new object();
 					_track.name = readString(dv, _counter);
 					if (_track.name.split('.')[1] === 'pose') {
@@ -1978,16 +2091,9 @@ window.onload = function(){
 					}
 					_track.numStrips = readInt32(dv, _counter);
 					_track.strips = new obArray();
-					//let _tn = readString(dv, _counter);
-					//let _numStrips = readInt32(dv, _counter);
-					//let _hasStrip = readInt8(dv, _counter);
-					//console.log('\ttrack name:', _track.name);
 					for (var j = 0; j < _track.numStrips; j++) {
-					//if (_hasStrip) {
 						let _action = new object();
-						//_action.name = _tn;
 						_action.name = readString(dv, _counter);
-						//console.log('\t\taction name:', _action.name);
 						_action.action_frame_start = readFloat32(dv, _counter);
 						_action.action_frame_end = readFloat32(dv, _counter);
 						_action.frame_start = readFloat32(dv, _counter);
@@ -1996,7 +2102,6 @@ window.onload = function(){
 						_action.scale = readFloat32(dv, _counter);
 						_action.numFCurves = readInt32(dv, _counter);
 						_action.groups = new obArray();
-						//_action.fCurves = [];
 						for (var ii = 0; ii < _action.numFCurves; ++ii) {
 							let _fCurve = new object();
 							let _dataPath = readString(dv, _counter);
@@ -2007,9 +2112,7 @@ window.onload = function(){
 							} else if (_track.type === 'pose') {
 								let _pathArray = pathAnalisys(_dataPath);
 								_group = _pathArray[1].split('"')[1];
-								//_fCurve.poseBone = _pathArray[1].split('"')[1];
 								_fCurve.dataPath = _pathArray[2];
-								//console.log(_dataPath, _pathArray, _group, _fCurve.dataPath);
 							}
 							_fCurve.arrayIndex = readInt32(dv, _counter);
 							_fCurve.numKP = readInt32(dv, _counter);
@@ -2033,7 +2136,6 @@ window.onload = function(){
 								}
 								_fCurve.handles.push(_point);
 							}
-							//console.log('test:', _action.groups.name(_group).name);
 							if (_action.groups.name(_group) === undefined) {
 								_action.groups.push({
 									name: _group,
@@ -2041,14 +2143,11 @@ window.onload = function(){
 								});
 							}
 							_action.groups.name(_group).fCurves.push(_fCurve);
-							//_action.fCurves.push(_fCurve);
 						}
 						_track.strips.push(_action);
 					}
 					_track.animation_count = scene.sceneAnimations.name(scene.mainAnimation).frame_start;
-					//console.log(_track.name.split('.'));
 					if (_track.name.split('.')[0] == scene.mainAnimation) {
-					//if (_track.name === scene.mainAnimation) {
 						_track.play = 1;
 					} else {
 						_track.play = 0;
@@ -2058,8 +2157,8 @@ window.onload = function(){
 					_track.speed =  FPS_blender / FPS * ANIMATION_SPEED_MULTIPLIER;
 					ob.nLATracks.push(_track);
 				}
-				//console.log('NLA Tracks:', ob.nLATracks);
 			}
+			*/
 			// CONSTRAINTS
 			ob.constraints = [];
 			let _numConstraints = readInt32(dv, _counter);
@@ -2282,21 +2381,23 @@ window.onload = function(){
 
 			} else if (ob.type == 8) {//object type 'CAMERA'
 				var _pMatrix = m.identity(m.create());
-				ob.camera_type = readInt32(dv, _counter);
-				ob.clip_start = readFloat32(dv, _counter);
-				ob.clip_end = readFloat32(dv, _counter);
-				//console.log('camera_type:', ob.camera_type);
-				switch (ob.camera_type) {// 0: PERSP, 1: ORTHO
+				ob.data = new object();
+				ob.data.camera_type = readInt32(dv, _counter);
+				ob.data.clip_start = readFloat32(dv, _counter);
+				ob.data.clip_end = readFloat32(dv, _counter);
+				switch (ob.data.camera_type) {// 0: PERSP, 1: ORTHO
 					case 0: //PERSP
-						ob.angle_y = readFloat32(dv, _counter);
-						ob.angle_y0 = ob.angle_y; //initial value. Do not change!
-						m.perspective(ob.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, ob.clip_start, ob.clip_end, _pMatrix);
+						ob.data.angle_y = readFloat32(dv, _counter);
+						ob.data.angle_y0 = ob.data.angle_y; //initial value. Do not change!
+						m.perspective(ob.data.angle_y / 1.0 * 180.0 / Math.PI, c.width / c.height, ob.data.clip_start, ob.data.clip_end, _pMatrix);
+						ob.data.sensor_height = readFloat32(dv, _counter);
 						break;
 					case 1: //ORTHO
-						ob.ortho_scale = readFloat32(dv, _counter);
-						m.ortho(-ob.ortho_scale * c.width, ob.ortho_scale * c.width, ob.ortho_scale * c.height, -ob.ortho_scale * c.height, ob.clip_start, ob.clip_end, _pMatrix);
+						ob.data.ortho_scale = readFloat32(dv, _counter);
+						m.ortho(-ob.data.ortho_scale * c.width, ob.data.ortho_scale * c.width, ob.data.ortho_scale * c.height, -ob.data.ortho_scale * c.height, ob.data.clip_start, ob.data.clip_end, _pMatrix);
 						break;
 				}
+				readNLATracks(ob.data, dv, _counter);
 				ob.pMatrix = _pMatrix;
 			}
 
@@ -2549,40 +2650,40 @@ window.onload = function(){
 		return action;
 	}
 
-	function evaluateNLATrack(_obName, _track) {
-		let _ob = objects.name(_obName);
+	//function evaluateNLATrack(_obName, _track) {
+	function evaluateNLATrack(_ob, _track) {
+		//let _ob = objects.name(_obName);
 		let _x = _track.animation_count;
-		//let _x = scene.sceneAnimations.name(scene.activeAnimation).animation_count;
 		let _stripIndex = 0;
-		//let _strip;
-		//let _group;
 		for (var i = 0; i < _track.strips.length; i++) {
 			if (_x <= _track.strips[i].frame_end) {
-			//if (_x >= _track.strips[i].frame_start && _x <= _track.strips[i].frame_end) {
 				_stripIndex = i;
-				//_strip = _track.strips[i];
 				break;
 			}
 		}
 		let _strip = _track.strips[_stripIndex];
+		let _xAc = (_x - _strip.frame_start) / _strip.scale % (_strip.action_frame_end - _strip.action_frame_start) + _strip.action_frame_start;
 		if (_track.type === 'transform') {
-			_ob.mMatrix0 = evaluateTransform(_ob.location, _ob.rotation, _ob.scale, _ob.rotation_mode, _strip.groups.name('transform'), (_x - _strip.frame_start) / _strip.scale % (_strip.action_frame_end - _strip.action_frame_start) + _strip.action_frame_start);
+			_ob.mMatrix0 = evaluateTransform(_ob.location, _ob.rotation, _ob.scale, _ob.rotation_mode, _strip.groups.name('transform'), _xAc);
 		} else if (_track.type === 'pose') {
-			//console.log('_strip:', _strip.name);
 			for (var i = 0; i < _strip.groups.length; i++) {
 				let _group = _strip.groups[i];
 				let _bone = _ob.bones.name(_group.name);
-				_bone.matrix0 = evaluateTransform([0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0], [1.0, 1.0, 1.0], _bone.rotation_mode, _group, (_x - _strip.frame_start) / _strip.scale % (_strip.action_frame_end - _strip.action_frame_start) + _strip.action_frame_start);
+				_bone.matrix0 = evaluateTransform([0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0], [1.0, 1.0, 1.0], _bone.rotation_mode, _group, _xAc);
 			}
 			for (var i = 0; i < _ob.bones.length; i++) {
 				let _bone = _ob.bones[i];
-				//console.log('\tchild bone: ', _bone.name);
 				let _lMatrixInv = m.identity(m.create());
 				m.inverse(_bone.matrix_local, _lMatrixInv);
-				//m.transpose(_bone.matrix_local, _lMatrixInv);
-				//m.inverse(_lMatrixInv, _lMatrixInv);
-				//_bone.matrixV = vertexTransformMatrixWithBone(_bone, _ob.bones);
 				m.multiply(vertexTransformMatrixWithBone(_bone, _ob.bones), _lMatrixInv, _bone.matrixV);
+			}
+		} else if (_track.type === 'prop') {
+			let _group = _strip.groups.name('prop');
+			for (let i = 0; i < _group.fCurves.length; i++) {
+				let _fCurve = _group.fCurves[i];
+				if (_fCurve.dataPath == 'lens') {
+					_ob.angle_y = 2.0 * Math.atan(_ob.sensor_height / bezier2D(_fCurve.handles, _xAc) / 2.0);
+				}
 			}
 		}
 	}
@@ -2609,6 +2710,7 @@ window.onload = function(){
 		}
 		return _m0Matrix;
 	}
+
 
 	function evaluateTransform(_loc, _rot, _sc, _rotMode, _group, _xAc) {
 		let _locVec = _loc;
@@ -3034,16 +3136,9 @@ window.onload = function(){
 				_ob.rotation = _ob.rotation_o.slice();
 				_ob.scale = _ob.scale_o.slice();
 				if (_ob.type === 8) {
-					_ob.angle_y = _ob.angle_y0;
+					_ob.data.angle_y = _ob.data.angle_y0;
 				}
 			}
-			/*
-			let obc = objects.name('camera_orbit');
-			let obco = objects.name('camera_orbit_origin');
-			obc.angle_y = obc.angle_y0;
-			obc.mMatrix0 = transformationMatrix(obc.location, obc.rotation, obc.scale, obc.rotation_mode);
-			obco.mMatrix0 = transformationMatrix(obco.location, obco.rotation, obco.scale, obco.rotation_mode);
-			*/
 			cameraVertAngle = 0.0;
 			drawMap = false;
 			drawInternal = false;
@@ -3275,10 +3370,10 @@ window.onload = function(){
 			//let _obCam = objects.name(obCamera[camMode]);
 			if (scene.navigatable) {
 				let _obCam = objects.name(activeCamera);
-				let ay = _obCam.angle_y;
+				let ay = _obCam.data.angle_y;
 				ay += wheelDelta * e.deltaY;
 				if (ay < scene.cameraViewAngleMax && ay > scene.cameraViewAngleMin) {
-					_obCam.angle_y = ay;
+					_obCam.data.angle_y = ay;
 				}
 			}
 			//UIInteractionUpdate();
