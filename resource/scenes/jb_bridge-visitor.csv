@@ -9,4 +9,4 @@ armature_visitor,armature,armature_visitor,,,,,,,,,,,,,,,1060
 wataru,mesh,wataru,,,,,,,,,,,,,,,
 wataru_armature,armature,,,,,,,,,,,,,,,,
 animation name,number of items,frame start,frame end,camera,,,,,,,,,,,,,
-walk,0,1,72,camera_main,,,,,,,,,,,,,
+walk,0,1,120,camera_main,,,,,,,,,,,,,

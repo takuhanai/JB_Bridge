@@ -2654,7 +2654,8 @@ window.onload = function(){
 	function evaluateNLATrack(_ob, _track) {
 		//let _ob = objects.name(_obName);
 		let _x = _track.animation_count;
-		let _stripIndex = 0;
+		//let _stripIndex = 0;
+		let _stripIndex = _track.strips.length - 1;
 		for (var i = 0; i < _track.strips.length; i++) {
 			if (_x <= _track.strips[i].frame_end) {
 				_stripIndex = i;
@@ -2663,6 +2664,9 @@ window.onload = function(){
 		}
 		let _strip = _track.strips[_stripIndex];
 		let _xAc = (_x - _strip.frame_start) / _strip.scale % (_strip.action_frame_end - _strip.action_frame_start) + _strip.action_frame_start;
+		if ((_x - _strip.frame_start) / _strip.scale > (_strip.action_frame_end - _strip.action_frame_start) * _strip.repeat) {
+			_xAc = _strip.action_frame_end;
+		}
 		if (_track.type === 'transform') {
 			_ob.mMatrix0 = evaluateTransform(_ob.location, _ob.rotation, _ob.scale, _ob.rotation_mode, _strip.groups.name('transform'), _xAc);
 		} else if (_track.type === 'pose') {

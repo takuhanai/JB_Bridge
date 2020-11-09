@@ -55,13 +55,13 @@ camera_UI3D,camera,,,,,,,,,,,,,,,,
 8P_Sshaft,mesh,8P_Sshaft,,,,,,,,,,,,,,,646
 8P_Nshaft,mesh,8P_Nshaft,,,external,,,,,,,,,,,,543
 camera_animation01,camera,,,,,,,,,,,,,,,,
-wataru,mesh,wataru,,,,,,,,,,,,,,,
-wataru_armature,armature,,,,,,,,,,,,,,,,
+visitor,mesh,visitor,,,,,,,,,,,,,,,
+armature_visitor,armature,,,,,,,,,,,,,,,,
 elevator_wall,mesh,elevator_wall,,,,,,,,,,,,,,,
 elevator_door01,mesh,elevator_door01,,,,,,,,,,,,,,,
 elevator_door02,mesh,elevator_door02,,,,,,,,,,,,,,,
 animation name,number of items,frame start,frame end,camera,,,,,,,,,,,,,
 opening,0,1,600,camera_main,,,,,,,,,,,,,
-animation01,2,1,1350,camera_animation01,,,,,,,,,,,,,"83,686"
-stencil_on,644,,,,,,,,,,,,,,,,
-stencil_off,1181,,,,,,,,,,,,,,,,
+animation01,2,1,2200,camera_animation01,,,,,,,,,,,,,"83,686"
+stencil_on,842,,,,,,,,,,,,,,,,
+stencil_off,2028,,,,,,,,,,,,,,,,
