@@ -2554,13 +2554,15 @@ window.onload = function(){
 		for (let i in scene.sceneSounds) {
 			//let _sound = new Audio(_path + '/sounds/' + scene.sceneSounds[i].name + '.mp3');
 			let _sound = new Audio(_path + '/sounds/' + scene.sceneSounds[i].name + '.m4a');
-			//_sound.play();
+			_sound.load();
 			_sound.loop = true;
 			_sound.volume = 0.5;
 			scene.sceneSounds[i].sound = _sound;
+			/*
 			if (scene.mainSound === scene.sceneSounds[i].name) {
 				_sound.play();
 			}
+			*/
 		}
 	}
 
@@ -2570,45 +2572,40 @@ window.onload = function(){
 			let _ob = objects[i];
 			if (!_ob.dataReady) {
 				ready = false;
+				break;
 			}
-			//if (_ob.type == 0 && _ob.kind === 'mesh' && !_ob.texture[_ob.name]) {
 			if (_ob.type == 0 && _ob.kind === 'mesh' && !obTextures.name(_ob.textureList[0])) {
 				ready = false;
+				break;
 			}
 		}
 		for (var i = 0 in obUI) {
 			if(!obUI[i].dataReady) {
 				ready = false;
+				break;
 			}
-			//if (!obUI[i].texture[obUI[i].name]) {
 			if (!obTextures.name(obUI[i].textureList[0])) {
 				ready = false;
+				break;
 			}
 		}
 		if (ready) {
-			//console.log(activeCamera);
-			//console.log(obTextures);
 			for (let i in objects) {
 				let _order = countOrder(objects[i].name);
-				//let _order = countOrder(i);
-				//console.log(objects[i].name, _order);
 			}
-			//console.log('----------------');
 			objects.sort((a, b) => a.order > b.order);
-			//console.log(objects);
 
-			//animationUpdate();
-			/*
-			for (let i in objects) {
-				//console.log(objects[i].name, objects[i].order);
-				if (objects[i].constraints.length > 0) {
-					//console.log(objects[i].name);
-					for (let ii in objects[i].constraints) {
-						evaluateParent(objects[i].constraints[ii], true);
-					}
-				}
+			let _sound = scene.sceneSounds.name(scene.mainSound).sound;
+			// REFERENCE: https://qiita.com/shinkuFencer/items/b15488de72b32621acf9
+			if (_sound.readyState === 4) {
+			  _sound.play();
+			} else {
+			  // 再生可能状態でなければ再生可能状態になった時のイベント通知をセットします
+			  _sound.addEventListener('canplaythrough', function (e) {
+			    _sound.removeEventListener('canplaythrough', arguments.callee);
+			    _sound.play();
+			  });
 			}
-			*/
 		}
 		return ready;
 	}
