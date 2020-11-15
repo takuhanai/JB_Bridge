@@ -1,5 +1,5 @@
-number of objects,directory,parent scene,UI,number of scene animations,main scene animation,navigatable,,,,,,,,,,,number of scene animations
-34,oshima_bridge,hsbe,second_layer,1,opening,yes,,,,,,,,,,,0
+number of objects,directory,parent scene,UI,number of scene animations,main scene animation,navigatable,number of sounds,main scene sound,,,,,,,,,number of scene animations
+34,oshima_bridge,hsbe,second_layer,1,opening,yes,0,,,,,,,,,,0
 translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,,,,
 1.2,420.0,-420.0,420.0,-420.0,150.0,0,10.0,-80.0,1.2,0.1,1.2,0.8,0.4,,,,
 object,kind,texture01,texture02,opening animation,internal,terrain,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons

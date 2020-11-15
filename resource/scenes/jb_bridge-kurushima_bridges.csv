@@ -1,5 +1,5 @@
-number of objects,directory,parent scene,UI,number of scene animations,main scene animation,navigatable,,,,,,,,,,,
-54,kurushima_bridges,hsbe,second_layer,1,opening,yes,,,,,,,,,,,
+number of objects,directory,parent scene,UI,number of scene animations,main scene animation,navigatable,number of sounds,main scene sound,,,,,,,,,
+54,kurushima_bridges,hsbe,second_layer,1,opening,yes,0,,,,,,,,,,
 translation delta,X max,X min,Y max,Y min,Z max,Z min,Vertical Angle max,Vertical Angle min,View Angle max,View Angle min,Text Zoom Angle 0,Text Zoom Angle 1,Text Zoom Angle 2,,,,
 1.2,800,-3400,200,-200,200,2,10.0,-80.0,1.2,0.05,1.2,0.8,0.4,,,,
 object,kind,texture01,texture02,opening animation,internal,terrain,select mesh,point mesh,mappable,has detail,hidable,one side,normal x,normal y,normal z,description,number of polygons

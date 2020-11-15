@@ -233,6 +233,8 @@ window.onload = function(){
 	//let objects = new Array();
 	let objects = new obArray();
 
+	//let obSounds = new obArray();
+
 	//loadScene(scene_name);
 
 	const objectActions = [
@@ -277,6 +279,7 @@ window.onload = function(){
 
 	window.addEventListener('keydown', keyDown, false);
 	window.addEventListener('keyup', keyUp, false);
+	document.addEventListener('visibilitychange', visibilityChange, false);
 
 	let supportTouch = 'ontouchend' in document;
 	if (supportTouch) {
@@ -813,17 +816,16 @@ window.onload = function(){
 		if (scene.sceneAnimations.length > 0) {
 			let _anim = scene.sceneAnimations.name(scene.activeAnimation);
 			if (_anim.play != 0 && !animationPosed) {
-				//eText.textContent = _anim.stencil_on.toString() + ', ' + _anim.stencil_off.toString() + ', ' + _anim.animation_count.toString();
 				if (_anim.animation_count > _anim.stencil_on && _anim.animation_count < _anim.stencil_off) {
-					//eText.textContent = stencilMode.toString();
 					stencilMode = true;
-					//console.log(_anim.animation_count, stencilMode);
 				} else {
-					//eText.textContent = stencilMode.toString();
 					stencilMode = false;
 				}
-				//eText.textContent = _anim.animation_count;
-				//console.log(_anim.animation_count, _anim.stencil_on, _anim.stencil_off);
+				if (_anim.animation_count > _anim.text_off && _anim.animation_count < _anim.text_on) {
+					drawText = false;
+				} else {
+					drawText = true;
+				}
 				actionIncrement(_anim);
 			}
 		}
@@ -957,36 +959,30 @@ window.onload = function(){
 			_ac.animation_count -= _ac.speed;
 		}
 		if (_ac.animation_count > _frameEnd) {
-		//if (_ac.animation_count > _ac.frame_end) {
 			if (_ac.play == 1) {
 				_ac.animation_count = _frameStart;
-				//_ac.animation_count = _ac.frame_start;
+				scene.sceneSounds.name(scene.mainSound).sound.currentTime = 0;
 			} else if (_ac.play == 2) {
 				_ac.play = 0;
 				_ac.animation_count = _frameStart;
-				//_ac.animation_count = _ac.frame_start;
+				scene.sceneSounds.name(scene.mainSound).sound.pause();
+				scene.sceneSounds.name(scene.mainSound).sound.currentTime = 0;
 			} else if (_ac.play == 3) {
 				_ac.play = 0;
 				_ac.animation_count = _frameEnd;
-				//_ac.animation_count = _ac.frame_end;
 			}
 		}
 		if (_ac.animation_count < _frameStart) {
-		//if (_ac.animation_count < _ac.frame_start) {
 			if (_ac.play == 1) {
 				_ac.animation_count = _frameEnd;
-				//_ac.animation_count = _ac.frame_end;
 			} else if (_ac.play == 2) {
 				_ac.animation_count = _frameEnd;
-				//_ac.animation_count = _ac.frame_end;
 				_ac.play = 0;
 			} else if (_ac.play == 3) {
 				_ac.play = 0;
 				_ac.animation_count = _frameStart;
-				//_ac.animation_count = _ac.frame_start;
 			}
 		}
-		//eText.textContent = _ac.animation_count;
 	}
 
   // objects rendering
@@ -1111,6 +1107,7 @@ window.onload = function(){
 
 		function textRender() {
 			let _drawLevel = -1;
+			//eText.textContent = objects.name(activeCamera).data.angle_y;
 			for (let i = 0; i < scene.textZoomAngle.length; i++) {
 				if (scene.textZoomAngle[i] > objects.name(activeCamera).data.angle_y) {
 					_drawLevel = i;
@@ -1513,6 +1510,7 @@ window.onload = function(){
 		obUI = new obArray();
 		obTexts = new obArray();
 		obTextures = new obArray();
+		//obSounds = new obArray();
 
 		//camMode = 0;
 		//obCamera = [];
@@ -1543,6 +1541,8 @@ window.onload = function(){
 
 		//readTextData(resourcePath + scene.name);
 		readTextData(resourcePath + scene.directory);
+
+		readSoundData(resourcePath + scene.directory);
 
 		comment.style.visibility = 'hidden';
 		buttonContainerElement.style.visibility = 'hidden';
@@ -1606,6 +1606,8 @@ window.onload = function(){
 		scene.mainAnimation = _sceneData[sdIndex++];
 		scene.activeAnimation = scene.mainAnimation;
 		scene.navigatable = (_sceneData[sdIndex++] === 'yes') ? true : false;
+		scene.num_sounds = Number(_sceneData[sdIndex++]);
+		scene.mainSound = _sceneData[sdIndex++];
 		_off += 2;
 		sdIndex = 0;
 		_sceneData = lines[_off].split(',');
@@ -1745,6 +1747,16 @@ window.onload = function(){
 			sceneCamera = scene.sceneAnimations.name(scene.mainAnimation).camera;
 		} else {
 			sceneCamera = 'camera_main';
+		}
+		_off += 1;
+		scene.sceneSounds = new obArray();
+		for (var i = 0; i < scene.num_sounds; i++) {
+			let _soundData = lines[_off].split(',');
+			let _sound = {
+				name: _soundData[0]
+			};
+			_off += 1;
+			scene.sceneSounds.push(_sound);
 		}
 	}
 
@@ -2538,6 +2550,20 @@ window.onload = function(){
 		}
 	}
 
+	function readSoundData(_path) {
+		for (let i in scene.sceneSounds) {
+			//let _sound = new Audio(_path + '/sounds/' + scene.sceneSounds[i].name + '.mp3');
+			let _sound = new Audio(_path + '/sounds/' + scene.sceneSounds[i].name + '.m4a');
+			//_sound.play();
+			_sound.loop = true;
+			_sound.volume = 0.5;
+			scene.sceneSounds[i].sound = _sound;
+			if (scene.mainSound === scene.sceneSounds[i].name) {
+				_sound.play();
+			}
+		}
+	}
+
 	function checkAllDataReady() {
 		var ready = true;
 		for (var i in objects) {
@@ -2560,7 +2586,7 @@ window.onload = function(){
 			}
 		}
 		if (ready) {
-			console.log(activeCamera);
+			//console.log(activeCamera);
 			//console.log(obTextures);
 			for (let i in objects) {
 				let _order = countOrder(objects[i].name);
@@ -2569,7 +2595,7 @@ window.onload = function(){
 			}
 			//console.log('----------------');
 			objects.sort((a, b) => a.order > b.order);
-			console.log(objects);
+			//console.log(objects);
 
 			//animationUpdate();
 			/*
@@ -3224,10 +3250,13 @@ window.onload = function(){
 		if (buttonPressed('UI_play_pause_button', _location)) {
 			if (animationPosed) {
 				animationPosed = false;
+				scene.sceneSounds.name(scene.mainSound).sound.play();
 				obUI.name('UI_play_pause_button').texture_shift[0] = 0.0;
 				//sceneCamera = scene.sceneAnimations.name('animation01').camera;
 			} else {
 				animationPosed = true;
+				console.log(scene.sceneSounds.name(scene.mainSound).name);
+				scene.sceneSounds.name(scene.mainSound).sound.pause();
 				obUI.name('UI_play_pause_button').texture_shift[0] = 0.5;
 			}
 		}
@@ -3556,6 +3585,14 @@ window.onload = function(){
 				break;
 			default:
 				return;
+		}
+	}
+
+	function visibilityChange(e) {
+		if (document.visibilityState === 'visible' && !animationPosed) {
+			scene.sceneSounds.name(scene.mainSound).sound.play();
+		} else if (document.visibilityState === 'hidden') {
+			scene.sceneSounds.name(scene.mainSound).sound.pause();
 		}
 	}
 
