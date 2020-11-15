@@ -2555,6 +2555,9 @@ window.onload = function(){
 			//let _sound = new Audio(_path + '/sounds/' + scene.sceneSounds[i].name + '.mp3');
 			let _sound = new Audio(_path + '/sounds/' + scene.sceneSounds[i].name + '.m4a');
 			_sound.load();
+			_sound.play();
+			_sound.pause();
+			_sound.currentTime = 0;
 			_sound.loop = true;
 			_sound.volume = 0.5;
 			scene.sceneSounds[i].sound = _sound;
