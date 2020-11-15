@@ -2603,10 +2603,12 @@ window.onload = function(){
 			if (_sound.readyState === 4) {
 			  _sound.play();
 			} else {
+				ready = false;
 			  // 再生可能状態でなければ再生可能状態になった時のイベント通知をセットします
 			  _sound.addEventListener('canplaythrough', function (e) {
 			    _sound.removeEventListener('canplaythrough', arguments.callee);
 			    _sound.play();
+					allDataReady = true;
 			  });
 			}
 		}
