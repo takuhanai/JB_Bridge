@@ -2598,18 +2598,20 @@ window.onload = function(){
 			}
 			objects.sort((a, b) => a.order > b.order);
 
-			let _sound = scene.sceneSounds.name(scene.mainSound).sound;
-			// REFERENCE: https://qiita.com/shinkuFencer/items/b15488de72b32621acf9
-			if (_sound.readyState === 4) {
-			  _sound.play();
-			} else {
-				ready = false;
-			  // 再生可能状態でなければ再生可能状態になった時のイベント通知をセットします
-			  _sound.addEventListener('canplaythrough', function (e) {
-			    _sound.removeEventListener('canplaythrough', arguments.callee);
-			    _sound.play();
-					allDataReady = true;
-			  });
+			if (scene.mainSound != '') {
+				let _sound = scene.sceneSounds.name(scene.mainSound).sound;
+				// REFERENCE: https://qiita.com/shinkuFencer/items/b15488de72b32621acf9
+				if (_sound.readyState === 4) {
+					_sound.play();
+				} else {
+					ready = false;
+				  // 再生可能状態でなければ再生可能状態になった時のイベント通知をセットします
+				  _sound.addEventListener('canplaythrough', function (e) {
+				    _sound.removeEventListener('canplaythrough', arguments.callee);
+				    _sound.play();
+						allDataReady = true;
+				  });
+				}
 			}
 		}
 		return ready;
