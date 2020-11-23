@@ -37,5 +37,5 @@ sea_surface,mesh,sea_surface,,,,yes,,,,,,,,,,,2
 terrain,mesh,terrain,,,,yes,,,,,,,,,,,"3,260"
 cable_selection,selection_mesh,,,,,,,,,,,,,,,,
 suspender_selection,selection_mesh,,,,,,,,,,,,,,,,
-animation name,number of items,frame start,frame end,camera,,,,,,,,,,,,,"17,878"
-opening,0,1,600,camera_main,,,,,,,,,,,,,
+animation name,number of items,frame start,frame end,camera,sound,number of telops,,,,,,,,,,,"17,878"
+opening,0,1,600,camera_main,,0,,,,,,,,,,,

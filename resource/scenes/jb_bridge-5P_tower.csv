@@ -34,5 +34,5 @@ suddleR,mesh,suddleR,,,external,,,suddleR,,,,,,,,,518
 suddle_cover,mesh,suddle_cover,,,external,,suddle_cover,suddle_cover,,,yes,,,,,,"1,352"
 top_strat_wall,mesh,top_strat_wall,,,external,,,top_strat_wall,,,,,,,,,486
 lower_strat_wall,mesh,lower_strat_wall,,,external,,,lower_strat_wall,,,,,,,,,"1,156"
-animation name,number of items,frame start,frame end,camera,,,,,,,,,,,,,"37,955"
-opening,0,1,600,camera_main,,,,,,,,,,,,,
+animation name,number of items,frame start,frame end,camera,sound,number of telops,,,,,,,,,,,"37,955"
+opening,0,1,600,camera_main,,0,,,,,,,,,,,

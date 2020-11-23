@@ -57,5 +57,5 @@ camera_UI3D,camera,,,,,,,,,,,,,,,,
 camera_animation01,camera,,,,,,,,,,,,,,,,
 visitor_test,mesh,visitor_test,,,,,,,,,,,,,,,
 elevator_wall,mesh,elevator_wall,,,,,,,,,,,,,,,
-animation name,number of items,frame start,frame end,camera,,,,,,,,,,,,,
-opening,0,1,600,camera_main,,,,,,,,,,,,,"83,686"
+animation name,number of items,frame start,frame end,camera,sound,number of telops,,,,,,,,,,,
+opening,0,1,600,camera_main,,0,,,,,,,,,,,"83,686"

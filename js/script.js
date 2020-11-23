@@ -312,32 +312,21 @@ window.onload = function(){
 	let memo = document.createElement("textarea");
 	memo.className = "floating-memo";
 	memoContainerElement.appendChild(memo);
-	//memo.cols = memoCols.toString();
 	memo.style.width = '150px';
 	memo.style.height = '50px';
-	//memo.rows = memoRows.toString();
-	//memo.style.visibility = 'hidden'
 	memo.style.resize = 'none';
 
 	let memoOK = document.createElement('input');
 	memoOK.className = "floating-memoOK";
-	//memoOK.type = 'button';
 	memoOK.type = 'image';
-	//memoOK.style.background = "url('./resource/UI/html/UI_annotation_check.png')";
 	memoOK.src = './resource/UI/html/UI_annotation_check.png';
-	//memoOK.style.width = '20px';
-	//memoOK.style.height = '20px';
 	memoOK.onclick = memoOKPressed;
 	memoContainerElement.appendChild(memoOK);
 
 	let memoCancel = document.createElement('input');
 	memoCancel.className = "floating-memoCancel";
-	//memoCancel.type = 'button';
 	memoCancel.type = 'image';
-	//memoCancel.style.background = "url('./resource/UI/html/UI_annotation_cancel.png')";
 	memoCancel.src = './resource/UI/html/UI_annotation_cancel.png';
-	//memoCancel.style.width = '20px';
-	//memoCancel.style.height = '20px';
 	memoCancel.onclick = memoCancelPressed;
 	memoContainerElement.appendChild(memoCancel);
 
@@ -351,6 +340,17 @@ window.onload = function(){
 	obButton.onclick = obButtonPressed;
 	//obButton.style.visibility = 'hidden';
 	buttonContainerElement.appendChild(obButton);
+
+	let telop01Element = document.getElementById("telop01");
+	telop01Element.className = "telop01";
+	let telop01TextNode = document.createTextNode('');
+	telop01Element.appendChild(telop01TextNode);
+
+	let telop02Element = document.getElementById("telop02");
+	telop02Element.className = "telop02";
+	telop02Element.style.visibility = 'hidden';
+	let telop02TextNode = document.createTextNode('100m');
+	telop02Element.appendChild(telop02TextNode);
 
 /*
 	let overlayElement = document.getElementById('overlay');
@@ -542,7 +542,7 @@ window.onload = function(){
 			textRender();
 			UIInteractionUpdate();
       UIRender();
-
+			HTMLUpdate();
     }else{
       // canvasを初期化
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -826,6 +826,14 @@ window.onload = function(){
 				} else {
 					drawText = true;
 				}
+
+				if (telop02Element.style.visibility === 'hidden' && _anim.animation_count > _anim.altitude_on && _anim.animation_count < _anim.altitude_off) {
+					console.log(_anim.animation_count, _anim.altitude_on);
+					telop02Element.style.visibility = 'visible';
+				} else if (telop02Element.style.visibility === 'visible' && (_anim.animation_count < _anim.altitude_on || _anim.animation_count > _anim.altitude_off)) {
+					telop02Element.style.visibility = 'hidden';
+				}
+
 				actionIncrement(_anim);
 			}
 		}
@@ -896,6 +904,34 @@ window.onload = function(){
 			}
     }
   }
+
+	function HTMLUpdate() {
+		let _anim = scene.sceneAnimations.name(scene.activeAnimation);
+		for (let i in _anim.telops) {
+			let _telop = _anim.telops[i];
+			if (_telop.active) {
+				if (_anim.animation_count < _telop.frame_start + _telop.fade_frame) {
+					telop01Element.style.opacity = (_anim.animation_count - _telop.frame_start) / _telop.fade_frame;
+				}
+				if (_anim.animation_count > _telop.frame_end - _telop.fade_frame) {
+					telop01Element.style.opacity = (_telop.frame_end - _anim.animation_count) / _telop.fade_frame;
+				}
+				if (_anim.animation_count < _telop.frame_start || _anim.animation_count > _telop.frame_end) {
+					telop01TextNode.nodeValue = '';
+					_telop.active = false;
+				}
+			} else {
+				if (_anim.animation_count > _telop.frame_start && _anim.animation_count < _telop.frame_end) {
+					telop01Element.style.opacity = 0.0;
+					telop01TextNode.nodeValue = _telop.telop;
+					_telop.active = true;
+				}
+			}
+		}
+		if (objects.name('armature_visitor') != null) {
+			telop02TextNode.nodeValue = Math.round(objects.name('armature_visitor').location[2]).toString() + 'm';
+		}
+	}
 
 	function evaluateUI3DOb(_obName, _target) {
 		let _ob = objects.name(_obName);
@@ -1715,13 +1751,29 @@ window.onload = function(){
 				numItems: Number(_animData[1]),
 				frame_start: Number(_animData[2]),
 				frame_end: Number(_animData[3]),
-				camera: _animData[4]
+				camera: _animData[4],
+				sound: _animData[5],
+				numTelops: Number(_animData[6])
 			};
 			_off += 1;
 			console.log(_animation.name);
 			for (var j = 0; j < _animation.numItems; j++) {
 				let _line = lines[_off].split(',');
 				_animation[_line[0]] = Number(_line[1]);
+				_off += 1;
+			}
+			//_off += 1;
+			_animation.telops = new obArray();
+			for (var j = 0; j < _animation.numTelops; j++) {
+				let _telopData = lines[_off].split(',');
+				let _telop = {
+					frame_start: Number(_telopData[0]),
+					frame_end: Number(_telopData[1]),
+					fade_frame: Number(_telopData[2]),
+					telop: _telopData[3],
+					active: false
+				}
+				_animation.telops.push(_telop);
 				_off += 1;
 			}
 			_animation.animation_count = 0;
@@ -2614,6 +2666,7 @@ window.onload = function(){
 				}
 			}
 		}
+		//console.log(objects);
 		return ready;
 	}
 
