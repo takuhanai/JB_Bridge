@@ -81,7 +81,8 @@ window.onload = function(){
 		browser = 'Chrome';
 	} else if (navigator.userAgent.indexOf('Firefox') != -1) {
 		browser = 'Firefox';
-		wheelDelta = 0.005;
+		wheelDelta = 0.00005;
+		//wheelDelta = 0.005;
 	} else if (navigator.userAgent.indexOf('Safari') != -1) {
 		browser = 'Safari';
 	}
